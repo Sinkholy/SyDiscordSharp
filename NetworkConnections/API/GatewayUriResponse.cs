@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Http
+namespace API
 {
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class GatewayInfo

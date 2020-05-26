@@ -1,4 +1,4 @@
-﻿namespace Http.Enums
+﻿namespace API.Enums
 {
     enum TokenType : byte
     {

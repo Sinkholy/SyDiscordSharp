@@ -12,14 +12,14 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Http
+namespace API
 {
     public class DiscordHttpClient
     {
         private readonly HttpClient httpClient;
         public async Task<GatewayInfo> GetGatewayInfoAsync()
         {
-            HttpResponseMessage response = await this.SendAsync(HttpMethods.Get, "/api/gateway/bot");
+            HttpResponseMessage response = await SendAsync(HttpMethods.Get, "/api/gateway/bot");
             using (Stream stream = await response.Content.ReadAsStreamAsync())
             {
                 string content = new StreamReader(stream).ReadToEnd();
