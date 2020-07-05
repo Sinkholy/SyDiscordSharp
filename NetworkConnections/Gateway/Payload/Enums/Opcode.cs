@@ -4,7 +4,7 @@
     {
         Dispatch = 0,
         Heartbeat,
-        Identity,
+        Identify,
         PresenceUpdate,
         VoiceStateUpdate,
         Resume = 6,
