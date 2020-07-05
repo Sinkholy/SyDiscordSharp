@@ -19,24 +19,39 @@ using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Http;
+using API;
 using Gateway;
 
 using Discord;
 using Discord.WebSocket;
+using System.Collections.Concurrent;
+using System.Diagnostics;
 
 namespace SyDiscordSharp
 {
+    [JsonObject(MemberSerialization.OptIn)]
     class Program
     {
         static DiscordSocketClient client;
         static async Task Main(string[] args)
         {
             DiscordHttpClient httpClient = new DiscordHttpClient();
+            await httpClient.StartAsync();
             GatewayInfo gatewayInfo = await httpClient.GetGatewayInfoAsync();
-            DiscordGatewayClient gatewayClient = new DiscordGatewayClient(gatewayInfo.Uri);
-            await gatewayClient.StartAsync();
-            Console.WriteLine("end of main");
+            //TODO : GatewayUri должен содержать тип кодировки и версию API
+            DiscordGatewayClient gatewayClient = new DiscordGatewayClient();
+            gatewayClient.StartAsync(gatewayInfo.Uri);
+            //while (true)
+            //{
+            //    Console.WriteLine("Threads count: " + Process.GetCurrentProcess().Threads.Count);
+            //    await Task.Delay(200);
+            //}
+            Console.Read();
+
+
+
+
+
 
 
 
@@ -44,6 +59,6 @@ namespace SyDiscordSharp
             //await client.LoginAsync(TokenType.Bot, "NTU5MDkwMTUzOTM1NjAxNjY1.Xn113g.5hIVKJ9fsDES_arHH0EkZRTMBdA");
             //await client.StartAsync();
             //await Task.Delay(-1);
-        }
+         }
     }
 }

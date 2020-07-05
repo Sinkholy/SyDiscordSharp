@@ -79,7 +79,6 @@
     <Compile Include="DataObjects\Users\IUser.cs" />
     <Compile Include="PayloadHandler.cs" />
     <Compile Include="Payload\DataObjects\Dispatch.cs" />
-    <Compile Include="Payload\DataObjects\HeartbeatACK.cs" />
     <Compile Include="Payload\DataObjects\InvalidSession.cs" />
     <Compile Include="Payload\DataObjects\PresenceUpdate.cs" />
     <Compile Include="Payload\DataObjects\Reconnect.cs" />

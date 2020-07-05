@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Gateway.Enums;
-using Gateway.PayloadObjects;
 using Newtonsoft.Json;
 
 namespace Gateway.Payload.DataObjects
 {
-    class UpdateVoiceState
+    class VoiceStateUpdate
     {
         [JsonProperty(propertyName: "guildId", Order = 0)]
         public string GuildId;
@@ -20,7 +19,7 @@ namespace Gateway.Payload.DataObjects
         [JsonProperty(propertyName: "selfDeaf", Order = 0)]
         public bool SelfDeaf;
 
-        public UpdateVoiceState(string guildId, string channelId, bool selfMute, bool selfDeaf)
+        public VoiceStateUpdate(string guildId, string channelId, bool selfMute, bool selfDeaf)
         {
             this.GuildId = guildId;
             this.ChannelId = channelId;

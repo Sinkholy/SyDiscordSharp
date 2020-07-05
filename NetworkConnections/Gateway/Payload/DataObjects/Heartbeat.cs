@@ -8,8 +8,13 @@ using System.Threading.Tasks;
 namespace Gateway.Payload.DataObjects
 {
     [JsonObject(MemberSerialization.OptIn)]
-    class HeartBeat
+    class Heartbeat : IGatewayDataObject
     {
-
+        [JsonProperty(PropertyName = "s")] // TODO : какой-то баг при добавлении order дропает студию
+        public string Sequence;
+        public Heartbeat(string sequence)
+        {
+            Sequence = sequence;
+        }
     }
 }
