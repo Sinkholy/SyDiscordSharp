@@ -44,11 +44,51 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataObjects\Activity.cs" />
+    <Compile Include="DataObjects\Channels\ChannelCategory.cs" />
+    <Compile Include="DataObjects\Channels\Channel.cs" />
+    <Compile Include="DataObjects\Channels\IGuildChannel.cs" />
+    <Compile Include="DataObjects\Channels\Voice\GuildVoiceChannel.cs" />
+    <Compile Include="DataObjects\Channels\IChannel.cs" />
+    <Compile Include="DataObjects\Channels\Overwrite.cs" />
+    <Compile Include="DataObjects\Channels\Text\DMTextChannel.cs" />
+    <Compile Include="DataObjects\Channels\Text\GroupDMTextChannel.cs" />
+    <Compile Include="DataObjects\Channels\Text\GuildNewsChannel.cs" />
+    <Compile Include="DataObjects\Channels\Text\GuildStoreChannel.cs" />
+    <Compile Include="DataObjects\Channels\Text\GuildTextChannel.cs" />
+    <Compile Include="DataObjects\Channels\Text\GuildTextChannelBase.cs" />
+    <Compile Include="DataObjects\Channels\Text\ITextChannel.cs" />
+    <Compile Include="DataObjects\Channels\Text\TextChannel.cs" />
+    <Compile Include="DataObjects\Channels\Voice\IVoiceChannel.cs" />
+    <Compile Include="DataObjects\Emojis\Emoji.cs" />
+    <Compile Include="DataObjects\Emojis\GuildEmoji.cs" />
+    <Compile Include="DataObjects\Emojis\IEmoji.cs" />
+    <Compile Include="DataObjects\Guilds\GuildBase.cs" />
+    <Compile Include="DataObjects\Guilds\GuildPreview.cs" />
+    <Compile Include="DataObjects\Guilds\IGuild.cs" />
+    <Compile Include="DataObjects\Guilds\Guild.cs" />
+    <Compile Include="DataObjects\Guilds\UnavailableGuild.cs" />
+    <Compile Include="DataObjects\Presence.cs" />
+    <Compile Include="DataObjects\Role.cs" />
+    <Compile Include="DataObjects\Users\GuildUser.cs" />
+    <Compile Include="DataObjects\Voice\VoiceRegion.cs" />
+    <Compile Include="DataObjects\Voice\VoiceState.cs" />
     <Compile Include="DiscordGatewayClient.cs" />
-    <Compile Include="Payload\DataObjects\GuildRequestMembers.cs" />
+    <Compile Include="EventHandler.cs" />
+    <Compile Include="Gateway.cs" />
+    <Compile Include="DataObjects\Users\IUser.cs" />
+    <Compile Include="PayloadHandler.cs" />
+    <Compile Include="Payload\DataObjects\Dispatch.cs" />
+    <Compile Include="Payload\DataObjects\HeartbeatACK.cs" />
+    <Compile Include="Payload\DataObjects\InvalidSession.cs" />
+    <Compile Include="Payload\DataObjects\PresenceUpdate.cs" />
+    <Compile Include="Payload\DataObjects\Reconnect.cs" />
+    <Compile Include="Payload\DataObjects\RequestGuildMembers.cs" />
+    <Compile Include="Payload\Enums\Events.cs" />
+    <Compile Include="Payload\EventObjects\IEvent.cs" />
+    <Compile Include="Payload\EventObjects\Ready.cs" />
     <Compile Include="Payload\DataObjects\Heartbeat.cs" />
-    <Compile Include="Payload\DataObjects\UpdateStatus.cs" />
-    <Compile Include="Payload\DataObjects\UpdateVoiceState.cs" />
+    <Compile Include="Payload\DataObjects\VoiceStateUpdate.cs" />
     <Compile Include="Payload\Enums\CloseCode.cs" />
     <Compile Include="Payload\Enums\GameType.cs" />
     <Compile Include="Payload\Enums\Opcode.cs" />
@@ -56,12 +96,15 @@
     <Compile Include="Payload\GatewayPayload.cs" />
     <Compile Include="Payload\DataObjects\Common\Presences.cs" />
     <Compile Include="Payload\DataObjects\Hello.cs" />
-    <Compile Include="Payload\DataObjects\Identity.cs" />
+    <Compile Include="Payload\DataObjects\Identify.cs" />
     <Compile Include="Payload\DataObjects\Interfaces\IGatewayDataObject.cs" />
     <Compile Include="Payload\DataObjects\Resume.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="DataObjects\Users\User.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="DataObjects\Channels\ChannelClassDiagram.cd" />
+    <None Include="DataObjects\Guilds\GuildsClassDiagram.cd" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />
