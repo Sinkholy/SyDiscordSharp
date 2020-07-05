@@ -1,4 +1,4 @@
-﻿using Http.Enums;
+﻿using API.Enums;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -17,6 +17,26 @@ namespace API
     public class DiscordHttpClient
     {
         private readonly HttpClient httpClient;
+        public DiscordHttpClient()
+        {
+            Uri baseApiUri = GetBaseApiUri();
+            (TokenType Type, string Token) botTokenAndType = GetTokenAndType();
+            AuthenticationHeaderValue authHeader = new AuthenticationHeaderValue(botTokenAndType.Type.ToString(), botTokenAndType.Token);
+            httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Authorization = authHeader;
+            httpClient.BaseAddress = baseApiUri;
+            //TODO : таймаут для запроса
+        }
+        public async Task StartAsync()//TODO : нормальные исключения
+        {
+            bool connected = await TryToConnect();
+            if (!connected)
+                throw new Exception("Connect");
+
+            bool authorized = await TryToAuthorize();
+            if (!authorized)
+                throw new Exception("Auth");
+        }
         public async Task<GatewayInfo> GetGatewayInfoAsync()
         {
             HttpResponseMessage response = await SendAsync(HttpMethods.Get, "/api/gateway/bot");
@@ -26,19 +46,34 @@ namespace API
                 return JsonConvert.DeserializeObject<GatewayInfo>(content);
             }
         }
-        public DiscordHttpClient()
+        private async Task<bool> TryToConnect() //TODO : реализовать проверку подключения к дискорду
         {
-            Uri baseApiUri = this.GetBaseApiUri();
-            (TokenType Type, string Token) botTokenAndType = this.GetTokenAndType();
-            AuthenticationHeaderValue authHeader = new AuthenticationHeaderValue(botTokenAndType.Type.ToString(), botTokenAndType.Token);
-            httpClient = new HttpClient();
-            httpClient.DefaultRequestHeaders.Authorization = authHeader;
-            httpClient.BaseAddress = baseApiUri;
+            await Task.Delay(1);
+            return true;
+        }
+        private async Task<bool> TryToAuthorize()
+        {
+            HttpResponseMessage response = await SendAsync(HttpMethods.Get, "/api/users/@me");
+            if (response.IsSuccessStatusCode)
+            {
+                return true;
+            }
+            else
+            {
+                if (response.ReasonPhrase == "Unauthorized")
+                {
+                    return false;
+                }
+                else // TODO : исключение?
+                {
+                    return false; //Заглушка
+                }
+            }
         }
         private (TokenType Type, string Token) GetTokenAndType() //TODO : подтягивать из конфига
         {
             TokenType type = TokenType.Bot;
-            string token = "NTU5MDkwMTUzOTM1NjAxNjY1.Xqx1NQ.egtltET15L0bDfA89oGOr2MVXr0";
+            string token = "NTU5MDkwMTUzOTM1NjAxNjY1.XtKPog.7epgH4xS8QxLqGgiGyBLCladnyI";
             return (Type: type, Token: token);
         }
         private Uri GetBaseApiUri()
