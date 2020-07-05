@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gateway.PayloadObjects
+namespace Gateway.Payload.DataObjects
 {
     [JsonObject(MemberSerialization.OptIn)]
     public class Resume : IGatewayDataObject
@@ -15,12 +15,12 @@ namespace Gateway.PayloadObjects
         [JsonProperty(propertyName: "session_id", Order = 1)]
         public string SessionId;
         [JsonProperty(propertyName: "seq", Order = 2)]
-        public int Sequence;
-        public Resume(string token, string session_id)
+        public string LastSequence;
+        public Resume(string token, string session_id, string lastSequence)
         {
-            this.Token = token;
-            this.SessionId = session_id;
-            this.Sequence = 1337;
+            Token = token;
+            SessionId = session_id;
+            LastSequence = lastSequence;
         }
     }
 }
