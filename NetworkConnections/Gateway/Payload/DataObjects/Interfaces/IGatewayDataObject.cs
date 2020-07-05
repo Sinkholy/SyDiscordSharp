@@ -6,9 +6,9 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gateway.PayloadObjects
+namespace Gateway.Payload.DataObjects
 {
-    interface IGatewayDataObject
+    public interface IGatewayDataObject
     {
     }
 }
