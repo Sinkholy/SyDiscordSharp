@@ -1,4 +1,5 @@
-﻿using Gateway.DataObjects.Guilds;
+﻿using Gateway.DataObjects.Channels;
+using Gateway.DataObjects.Guilds;
 using Gateway.Payload.Enums;
 using Gateway.Payload.EventObjects;
 using Newtonsoft.Json;
@@ -56,7 +57,8 @@ namespace Gateway
         {
             Enum.TryParse(eventName, out Events currentEventName);
             if (currentEventName == Events.UnknownEvent) throw new Exception("UnknownEvent"); //TODO : здесь я не уверен, что нужно исключение, скорее логирование
-            IEvent currentEventData = IEventFactory(eventData, currentEventName);
+            IEvent currentEventData = IEventFactory(currentEventName);
+            JsonConvert.PopulateObject(eventData, currentEventData);
             switch (currentEventName)
             {
                 case Events.CHANNEL_CREATE:
@@ -156,23 +158,86 @@ namespace Gateway
                     WebhooksUpdate(currentEventData);
                     break;
                 default:
-                    throw new Exception("Unknown event"); //TODO : АААААААААА ИСКЛЮЧЕНИЕ
+                    throw new Exception("Unknown event"); //TODO : АААААААААА ИСКЛЮЧЕНИЕ    
+                                                          //хотя нет не надо лучше логировать данные
             }
         }
-        private IEvent IEventFactory(string eventData, Events eventName)
+        private IEvent IEventFactory(Events eventName)
         {
-            Guild guild;
-            if (eventName == Events.READY) return JsonConvert.DeserializeObject<Ready>(eventData);
-            else if (eventName == Events.GUILD_CREATE)
+            IEvent result;
+            switch (eventName)
             {
-                guild = JsonConvert.DeserializeObject<Guild>(eventData);
-                return guild;
+                case Events.CHANNEL_CREATE:
+                    result = Activator.CreateInstance(typeof(Channel), true) as IChannel;
+                    break;
+                //case Events.CHANNEL_DELETE:
+                //    break;
+                //case Events.CHANNEL_PINS_UPDATE:
+                //    break;
+                //case Events.CHANNEL_UPDATE:
+                //    break;
+                //case Events.GUILD_BAN_ADD:
+                //    break;
+                //case Events.GUILD_BAN_REMOVE:
+                //    break;
+                case Events.GUILD_CREATE:
+                    result = new Guild();
+                    break;
+                //case Events.GUILD_DELETE:
+                //    break;
+                //case Events.GUILD_EMOJIS_UPDATE:
+                //    break;
+                //case Events.GUILD_INTEGRATIONS_UPDATE:
+                //    break;
+                //case Events.GUILD_MEMBER_ADD:
+                //    break;
+                //case Events.GUILD_MEMBER_REMOVE:
+                //    break;
+                //case Events.GUILD_MEMBER_UPDATE:
+                //    break;
+                //case Events.GUILD_ROLE_CREATE:
+                //    break;
+                //case Events.GUILD_ROLE_DELETE:
+                //    break;
+                //case Events.GUILD_ROLE_UPDATE:
+                //    break;
+                //case Events.GUILD_UPDATE:
+                //    break;
+                //case Events.INVITE_CREATE:
+                //    break;
+                //case Events.INVITE_DELETE:
+                //    break;
+                //case Events.MESSAGE_CREATE:
+                //    break;
+                //case Events.MESSAGE_DELETE:
+                //    break;
+                //case Events.MESSAGE_DELETE_BULK:
+                //    break;
+                //case Events.MESSAGE_REACTION_ADD:
+                //    break;
+                //case Events.MESSAGE_REACTION_REMOVE:
+                //    break;
+                //case Events.MESSAGE_REACTION_REMOVE_ALL:
+                //    break;
+                //case Events.MESSAGE_REACTION_REMOVE_EMOJI:
+                //    break;
+                //case Events.MESSAGE_UPDATE:
+                //    break;
+                //case Events.PRESENCE_UPDATE:
+                //    break;
+                //case Events.READY:
+                //    break;
+                //case Events.TYPING_START:
+                //    break;
+                //case Events.VOICE_STATE_UPDATE:
+                //    break;
+                //case Events.WEBHOOKS_UPDATE:
+                //    break;
+                default:
+                    result = new Ready();
+                    break;
             }
-            else if (eventName == Events.MESSAGE_REACTION_ADD)
-            {
-
-            }
-            return new SomeEvent();
+            return result;
         }
         internal EventHandler()
         {
