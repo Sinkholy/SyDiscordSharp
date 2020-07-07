@@ -1,4 +1,5 @@
-﻿using Gateway.DataObjects.Guilds;
+﻿using Gateway.DataObjects.Channels;
+using Gateway.DataObjects.Guilds;
 using Gateway.Payload.Enums;
 using Gateway.Payload.EventObjects;
 using Newtonsoft.Json;
@@ -19,142 +20,222 @@ namespace Gateway
         internal delegate void newEvent(IEvent eventData);
 
         #region Events to raise
-        [Event(Events.READY)]
         internal event newEvent Ready = delegate { };
-        [Event(Events.GUILD_CREATE)]
         internal event newEvent GuildCreate = delegate { };
-        [Event(Events.GUILD_UPDATE)]
         internal event newEvent GuildUpdate = delegate { };
-        [Event(Events.GUILD_DELETE)]
         internal event newEvent GuildDelete = delegate { };
-        [Event(Events.GUILD_ROLE_CREATE)]
         internal event newEvent GuildRoleCreate = delegate { };
-        [Event(Events.GUILD_ROLE_UPDATE)]
         internal event newEvent GuildRoleUpdate = delegate { };
-        [Event(Events.GUILD_ROLE_DELETE)]
         internal event newEvent GuildRoleDelete = delegate { };
-        [Event(Events.CHANNEL_CREATE)]
         internal event newEvent ChannelCreate = delegate { };
-        [Event(Events.CHANNEL_UPDATE)]
         internal event newEvent ChannelUpdate = delegate { };
-        [Event(Events.CHANNEL_DELETE)]
         internal event newEvent ChannelDelete = delegate { };
-        [Event(Events.CHANNEL_PINS_UPDATE)]
         internal event newEvent ChannelPinsUpdate = delegate { };
-        [Event(Events.GUILD_MEMBER_ADD)]
         internal event newEvent GuildMemberAdd = delegate { };
-        [Event(Events.GUILD_MEMBER_UPDATE)]
         internal event newEvent GuildMemberUpdate = delegate { };
-        [Event(Events.GUILD_MEMBER_REMOVE)]
         internal event newEvent GuildMemberRemove = delegate { };
-        [Event(Events.GUILD_BAN_ADD)]
         internal event newEvent GuildBanAdd = delegate { };
-        [Event(Events.GUILD_BAN_REMOVE)]
         internal event newEvent GuildBanRemove = delegate { };
-        [Event(Events.GUILD_EMOJIS_UPDATE)]
         internal event newEvent GuildEmojisUpdate = delegate { };
-        [Event(Events.GUILD_INTEGRATIONS_UPDATE)]
         internal event newEvent GuildIntegrationsUpdate = delegate { };
-        [Event(Events.WEBHOOKS_UPDATE)]
         internal event newEvent WebhooksUpdate = delegate { };
-        [Event(Events.INVITE_CREATE)]
         internal event newEvent InviteCreate = delegate { };
-        [Event(Events.INVITE_DELETE)]
         internal event newEvent InviteDelete = delegate { };
-        [Event(Events.VOICE_STATE_UPDATE)]
         internal event newEvent VoiceStateUpdate = delegate { };
-        [Event(Events.PRESENCE_UPDATE)]
         internal event newEvent PresenceUpdate = delegate { };
-        [Event(Events.MESSAGE_CREATE)]
         internal event newEvent MessageCreate = delegate { };
-        [Event(Events.MESSAGE_UPDATE)]
         internal event newEvent MessageUpdate = delegate { };
-        [Event(Events.MESSAGE_DELETE)]
         internal event newEvent MessageDelete = delegate { };
-        [Event(Events.MESSAGE_DELETE_BULK)]
         internal event newEvent MessageDeleteBulk = delegate { };
-        [Event(Events.MESSAGE_REACTION_ADD)]
         internal event newEvent MessageReactionAdd = delegate { };
-        [Event(Events.MESSAGE_REACTION_REMOVE)]
         internal event newEvent MessageReactionRemove = delegate { };
-        [Event(Events.MESSAGE_REACTION_REMOVE_ALL)]
         internal event newEvent MessageReactionRemoveAll = delegate { };
-        [Event(Events.MESSAGE_REACTION_REMOVE_EMOJI)]
         internal event newEvent MessageReactionEmoji = delegate { };
-        [Event(Events.TYPING_START)]
         internal event newEvent TypingStart = delegate { };
         #endregion
         internal void OnNewEventCreated(string eventData, string eventName)
         {
-            Enum.TryParse(eventName, out Events currentEvent);
-            if (currentEvent == Events.UnknownEvent) throw new Exception("UnknownEvent"); //TODO : здесь я не уверен, что нужно исключение, скорее логирование
-            if (handleEvent.ContainsKey(currentEvent))
+            Enum.TryParse(eventName, out Events currentEventName);
+            if (currentEventName == Events.UnknownEvent) throw new Exception("UnknownEvent"); //TODO : здесь я не уверен, что нужно исключение, скорее логирование
+            IEvent currentEventData = IEventFactory(currentEventName);
+            JsonConvert.PopulateObject(eventData, currentEventData);
+            switch (currentEventName)
             {
-                if (handleEvent[currentEvent])
-                {
-                    IEvent eventParsed = IEventFactory(eventData, currentEvent);
-                    RaiseEvent(currentEvent, eventParsed);
-                }
-                else
-                {
-                    //TODO : логировать данные ивента для будущего восстановление или хотя бы ознакомления
-                }
-            }
-            else
-            {
-                bool found = TryToGetEventMethod(currentEvent);
-                if (found)
-                {
-                    IEvent eventParsed = IEventFactory(eventData, currentEvent);
-                    RaiseEvent(currentEvent, eventParsed);
-                }
-                else
-                {
-                    //TODO : логировать данные ивента для будущего восстановление или хотя бы ознакомления
-                }
-            }
-        }
-        private IEvent IEventFactory(string eventData, Events eventName)
-        {
-            Guild guild;
-            if (eventName == Events.READY) return JsonConvert.DeserializeObject<Ready>(eventData);
-            else if (eventName == Events.GUILD_CREATE)
-            {
-                guild = JsonConvert.DeserializeObject<Guild>(eventData);
-                return guild;
-            }
-            else if (eventName == Events.MESSAGE_REACTION_ADD)
-            {
-
-            }
-            return new SomeEvent();
-        }
-        private bool TryToGetEventMethod(Events eventName)
-        {
-            Events currentIterationEventName;
-            for (int i = 0; i < events.Length; i++)
-            {
-                currentIterationEventName = events[i].GetCustomAttribute<Event>().EventName;
-                if (currentIterationEventName == eventName)
-                {
-                    handleEvent.Add(eventName, true);
-                    return true;
-                }
-            }
-            return false;
-        }
-        private string GetEventFieldName(Events eventName)
-        {
-            string result = string.Empty;
-            Events currentIterationEventName;
-            for (int i = 0; i < events.Length; i++)
-            {
-                currentIterationEventName = events[i].GetCustomAttribute<Event>().EventName;
-                if (currentIterationEventName == eventName)
-                {
-                    result = events[i].Name;
+                case Events.CHANNEL_CREATE:
+                    ChannelCreate(currentEventData);
                     break;
-                }
+                case Events.CHANNEL_DELETE:
+                    ChannelDelete(currentEventData);
+                    break;
+                case Events.CHANNEL_PINS_UPDATE:
+                    ChannelPinsUpdate(currentEventData);
+                    break;
+                case Events.CHANNEL_UPDATE:
+                    ChannelUpdate(currentEventData);
+                    break;
+                case Events.GUILD_BAN_ADD:
+                    GuildBanAdd(currentEventData);
+                    break;
+                case Events.GUILD_BAN_REMOVE:
+                    GuildBanRemove(currentEventData);
+                    break;
+                case Events.GUILD_CREATE:
+                    GuildCreate(currentEventData);
+                    break;
+                case Events.GUILD_DELETE:
+                    GuildDelete(currentEventData);
+                    break;
+                case Events.GUILD_EMOJIS_UPDATE:
+                    GuildEmojisUpdate(currentEventData);
+                    break;
+                case Events.GUILD_INTEGRATIONS_UPDATE:
+                    GuildIntegrationsUpdate(currentEventData);
+                    break;
+                case Events.GUILD_MEMBER_ADD:
+                    GuildMemberAdd(currentEventData);
+                    break;
+                case Events.GUILD_MEMBER_REMOVE:
+                    GuildMemberRemove(currentEventData);
+                    break;
+                case Events.GUILD_MEMBER_UPDATE:
+                    GuildMemberUpdate(currentEventData);
+                    break;
+                case Events.GUILD_ROLE_CREATE:
+                    GuildRoleCreate(currentEventData);
+                    break;
+                case Events.GUILD_ROLE_DELETE:
+                    GuildRoleDelete(currentEventData);
+                    break;
+                case Events.GUILD_ROLE_UPDATE:
+                    GuildRoleUpdate(currentEventData);
+                    break;
+                case Events.GUILD_UPDATE:
+                    GuildUpdate(currentEventData);
+                    break;
+                case Events.INVITE_CREATE:
+                    InviteCreate(currentEventData);
+                    break;
+                case Events.INVITE_DELETE:
+                    InviteDelete(currentEventData);
+                    break;
+                case Events.MESSAGE_CREATE:
+                    MessageCreate(currentEventData);
+                    break;
+                case Events.MESSAGE_DELETE:
+                    MessageDelete(currentEventData);
+                    break;
+                case Events.MESSAGE_DELETE_BULK:
+                    MessageDeleteBulk(currentEventData);
+                    break;
+                case Events.MESSAGE_REACTION_ADD:
+                    MessageReactionAdd(currentEventData);
+                    break;
+                case Events.MESSAGE_REACTION_REMOVE:
+                    MessageReactionRemove(currentEventData);
+                    break;
+                case Events.MESSAGE_REACTION_REMOVE_ALL:
+                    MessageReactionRemoveAll(currentEventData);
+                    break;
+                case Events.MESSAGE_REACTION_REMOVE_EMOJI:
+                    MessageReactionEmoji(currentEventData);
+                    break;
+                case Events.MESSAGE_UPDATE:
+                    MessageUpdate(currentEventData);
+                    break;
+                case Events.PRESENCE_UPDATE:
+                    PresenceUpdate(currentEventData);
+                    break;
+                case Events.READY:
+                    Ready(currentEventData);
+                    break;
+                case Events.TYPING_START:
+                    TypingStart(currentEventData);
+                    break;
+                case Events.VOICE_STATE_UPDATE:
+                    VoiceStateUpdate(currentEventData);
+                    break;
+                case Events.WEBHOOKS_UPDATE:
+                    WebhooksUpdate(currentEventData);
+                    break;
+                default:
+                    throw new Exception("Unknown event"); //TODO : АААААААААА ИСКЛЮЧЕНИЕ    
+                                                          //хотя нет не надо лучше логировать данные
+            }
+        }
+        private IEvent IEventFactory(Events eventName)
+        {
+            IEvent result;
+            switch (eventName)
+            {
+                case Events.CHANNEL_CREATE:
+                    result = Activator.CreateInstance(typeof(Channel), true) as IChannel;
+                    break;
+                //case Events.CHANNEL_DELETE:
+                //    break;
+                //case Events.CHANNEL_PINS_UPDATE:
+                //    break;
+                //case Events.CHANNEL_UPDATE:
+                //    break;
+                //case Events.GUILD_BAN_ADD:
+                //    break;
+                //case Events.GUILD_BAN_REMOVE:
+                //    break;
+                case Events.GUILD_CREATE:
+                    result = new Guild();
+                    break;
+                //case Events.GUILD_DELETE:
+                //    break;
+                //case Events.GUILD_EMOJIS_UPDATE:
+                //    break;
+                //case Events.GUILD_INTEGRATIONS_UPDATE:
+                //    break;
+                //case Events.GUILD_MEMBER_ADD:
+                //    break;
+                //case Events.GUILD_MEMBER_REMOVE:
+                //    break;
+                //case Events.GUILD_MEMBER_UPDATE:
+                //    break;
+                //case Events.GUILD_ROLE_CREATE:
+                //    break;
+                //case Events.GUILD_ROLE_DELETE:
+                //    break;
+                //case Events.GUILD_ROLE_UPDATE:
+                //    break;
+                //case Events.GUILD_UPDATE:
+                //    break;
+                //case Events.INVITE_CREATE:
+                //    break;
+                //case Events.INVITE_DELETE:
+                //    break;
+                //case Events.MESSAGE_CREATE:
+                //    break;
+                //case Events.MESSAGE_DELETE:
+                //    break;
+                //case Events.MESSAGE_DELETE_BULK:
+                //    break;
+                //case Events.MESSAGE_REACTION_ADD:
+                //    break;
+                //case Events.MESSAGE_REACTION_REMOVE:
+                //    break;
+                //case Events.MESSAGE_REACTION_REMOVE_ALL:
+                //    break;
+                //case Events.MESSAGE_REACTION_REMOVE_EMOJI:
+                //    break;
+                //case Events.MESSAGE_UPDATE:
+                //    break;
+                //case Events.PRESENCE_UPDATE:
+                //    break;
+                //case Events.READY:
+                //    break;
+                //case Events.TYPING_START:
+                //    break;
+                //case Events.VOICE_STATE_UPDATE:
+                //    break;
+                //case Events.WEBHOOKS_UPDATE:
+                //    break;
+                default:
+                    result = new Ready();
+                    break;
             }
             return result;
         }
@@ -162,24 +243,6 @@ namespace Gateway
         {
             events = GetType().GetEvents(BindingFlags.NonPublic | BindingFlags.Instance);
             handleEvent = new Dictionary<Events, bool>(capacity: events.Length);
-        }
-        private Delegate[] GetEventDelegates(Events eventName)
-        {
-            string eventFieldName = GetEventFieldName(eventName);
-            if (eventFieldName == string.Empty) throw new Exception("Cannot find event field"); //TODO : исключение или ну его нахер
-            return (GetType().GetField(eventFieldName, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this) as MulticastDelegate).GetInvocationList();
-        }
-        private void RaiseEvent(Events eventName, IEvent eventData)
-        {
-            object[] parameters = new object[1] { eventData };
-            Delegate[] delegates = GetEventDelegates(eventName);
-            foreach (var handler in delegates) Console.WriteLine(1); 
-                //handler.Method.Invoke(handler.Target, parameters);
-        }
-        private class Event : Attribute
-        {
-            internal Events EventName { get; private set; }
-            internal Event(Events eventName) => EventName = eventName;
         }
         private class SomeEvent : IEvent { }
     }
