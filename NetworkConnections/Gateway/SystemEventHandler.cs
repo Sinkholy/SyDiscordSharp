@@ -1,5 +1,6 @@
-﻿using Gateway.Enums;
-using Gateway.Payload.DataObjects;
+﻿using Gateway.Payload.DataObjects;
+using Gateway.Payload.DataObjects.Dispatch;
+using Gateway.Payload.DataObjects.Enums;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Concurrent;

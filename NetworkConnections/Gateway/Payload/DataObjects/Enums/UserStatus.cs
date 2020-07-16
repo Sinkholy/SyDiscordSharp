@@ -1,4 +1,4 @@
-﻿namespace Gateway.DataObjects.Enums
+﻿namespace Gateway.Payload.DataObjects.Enums
 {
     public enum UserStatus
     {

@@ -1,6 +1,6 @@
-﻿using Gateway.DataObjects.Channels;
-using Gateway.DataObjects.Guilds;
-using Gateway.DataObjects.Users;
+﻿using Gateway.Entities.Channels;
+using Gateway.Entities.Guilds;
+using Gateway.Entities.Users;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

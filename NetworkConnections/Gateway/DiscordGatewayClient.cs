@@ -1,9 +1,9 @@
 ﻿using Gateway.DataObjects;
-using Gateway.DataObjects.Events;
-using Gateway.DataObjects.Guilds;
-using Gateway.DataObjects.Users;
-using Gateway.Enums;
+using Gateway.Entities.Guilds;
+using Gateway.Entities.Users;
 using Gateway.Payload.DataObjects;
+using Gateway.Payload.DataObjects.Dispatch.DispatchEvents;
+using Gateway.Payload.DataObjects.Enums;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
