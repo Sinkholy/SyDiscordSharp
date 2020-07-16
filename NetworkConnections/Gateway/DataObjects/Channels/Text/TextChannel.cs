@@ -8,11 +8,13 @@ using System.Threading.Tasks;
 
 namespace Gateway.DataObjects.Channels.Text
 {
-    [JsonObject(MemberSerialization.OptIn)]
     internal abstract class TextChannel : Channel, ITextChannel
     {
+        internal IMessage LastMessage; //TODO : получение сообщения + при наличии обернуть в IMessage
+        internal IMessage[] PinnedMessages; //А ещё лучше обернуть их в гетеры и сетеры через метод для сокрытия
+
         [JsonProperty(PropertyName = "last_message_id")]
-        internal string LastMessageIdentifier;
+        private string lastMessageIdentifier;
 
         #region ITextChannel implementation
         public void SendMessage(IMessage message) { }
@@ -22,7 +24,7 @@ namespace Gateway.DataObjects.Channels.Text
         internal TextChannel(string id, ChannelType type, string lastMsgId)
             : base(id, type)
         {
-            LastMessageIdentifier = lastMsgId;
+            lastMessageIdentifier = lastMsgId;
         }
         internal TextChannel(ChannelType type)
             : base(type) { }
