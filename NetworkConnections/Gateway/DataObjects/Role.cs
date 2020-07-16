@@ -7,24 +7,23 @@ using System.Threading.Tasks;
 
 namespace Gateway.DataObjects
 {
-    [JsonObject(MemberSerialization.OptIn)]
     public class Role
     {
         [JsonProperty(PropertyName = "id")]
-        public string Identifier;
+        public string Identifier { get; private set; }
         [JsonProperty(PropertyName = "name")]
-        public string Name;
+        public string Name { get; private set; }
         [JsonProperty(PropertyName = "color")]
-        public int Color; //Hexadecimal
+        public int Color { get; private set; } //Hexadecimal
         [JsonProperty(PropertyName = "position")]
-        public int Position;
+        public int Position { get; private set; }
         [JsonProperty(PropertyName = "permissions")]
-        public int Permissions;
+        public int Permissions { get; private set; }
         [JsonProperty(PropertyName = "hoist")]
-        public bool Hoist;
+        public bool Hoist { get; private set; }
         [JsonProperty(PropertyName = "managed")]
-        public bool Managed;
+        public bool Managed { get; private set; }
         [JsonProperty(PropertyName = "mentionable")]
-        public bool Mentionable;
+        public bool Mentionable { get; private set; }
     }
 }
