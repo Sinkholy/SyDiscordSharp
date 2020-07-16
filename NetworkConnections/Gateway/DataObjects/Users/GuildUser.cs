@@ -1,4 +1,5 @@
 ﻿using Gateway.DataObjects.Guilds;
+using Gateway.DataObjects.Roles;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -11,35 +12,55 @@ using System.Threading.Tasks;
 
 namespace Gateway.DataObjects.Users
 {
-    [JsonObject(MemberSerialization.OptIn)]
     internal class GuildUser : IUser
     {
+        #region IUser implementation
+        public bool Verified => User.Verified;
+        public bool MFA => User.MFA;
+        public string Identifier => User.Identifier;
+        public string eMail => User.eMail;
+        public string Username => User.Username;
+        public string Discriminator => User.Discriminator;
+        public string FullName => User.FullName;
+        public bool IsBot => User.IsBot;
+        public string AvatarIdentifier => User.AvatarIdentifier;
+        public string Locale => User.Locale;
+        public bool System => User.System;
+        public PremiumType PremiumType => User.PremiumType;
+        public UserFlags Flags => User.Flags;
+        public UserFlags PublicFlags => User.PublicFlags;
+        #endregion
+        #region Public props\fields
         public IReadOnlyCollection<Role> Roles => roles as IReadOnlyCollection<Role>;
-
-        internal List<Role> roles;
-        [JsonProperty(PropertyName = "roles")]
-        internal string[] rolesId;
-        [JsonProperty(PropertyName = "user")]
-        internal User User;
-        [JsonProperty(PropertyName = "nick")]
-        internal string Nickname;
         [JsonProperty(PropertyName = "joined_at")]
-        internal DateTime JoinedAt;
+        public DateTime JoinedAt { get; private set; }
         [JsonProperty(PropertyName = "premium_since")]
-        internal DateTime? PremiumSince;
+        public DateTime? PremiumSince { get; private set; }
+        [JsonProperty(PropertyName = "nick")]
+        public string Nickname { get; private set; }
+
         [JsonProperty(PropertyName = "deaf")]
-        internal bool Deafeaned;
+        public bool Deafeaned { get; private set; }
         [JsonProperty(PropertyName = "mute")]
-        internal bool Muted;
+        public bool Muted { get; private set; }
+        public IGuild Guild { get; set; }
+        #endregion
+        #region Private props\fields
+        internal List<Role> roles { get; private set; }
+        [JsonProperty(PropertyName = "roles")]
+        internal string[] RolesIdentifiers { get; private set; }
+        [JsonProperty(PropertyName = "user")]
+        internal User User { get; private set; }
+        [JsonProperty(PropertyName = "guild_id")]
+        internal string GuildIdentifier;
+        #endregion
 
         [OnDeserialized]
-        private void FinishInicialization(StreamingContext context)
+        private void CompleteDeserialization(StreamingContext context)
         {
-            roles = new List<Role>(capacity: rolesId.Length);
+            if(GuildIdentifier != null)
+                Guild = DiscordGatewayClient.TryToGetGuild(GuildIdentifier);
+            roles = new List<Role>(capacity: RolesIdentifiers.Length);
         }
-        #region IUser implementation
-        public string Identifier => User.Identifier;
-        public string Username => User.Username;
-        #endregion
     }
 }
