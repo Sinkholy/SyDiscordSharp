@@ -4,7 +4,6 @@ using Gateway.DataObjects.Channels.Voice;
 using Gateway.DataObjects.Users;
 using Gateway.DataObjects.Voice;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,29 +11,43 @@ using System.Runtime.Serialization;
 
 namespace Gateway.DataObjects.Guilds //TAI : ленивая загрузка всего и вся (ролей\пользователей etc.)
 {
-    [JsonObject(MemberSerialization.OptOut)]
     internal class Guild : GuildPreview
     {
+        #region RO collections
+        public IReadOnlyCollection<IChannel> Channels => channels;
+        public IReadOnlyCollection<ChannelCategory> ChannelCategories
+            => channels.Where(x => x is ChannelCategory)
+                       .Select(x => x as ChannelCategory)
+                       .ToList() as IReadOnlyCollection<ChannelCategory>;
+        public IReadOnlyCollection<IVoiceChannel> VoiceChannels
+            => channels.Where(x => x is IVoiceChannel)
+                       .Select(x => x as IVoiceChannel)
+                       .ToList() as IReadOnlyCollection<IVoiceChannel>;
+        public IReadOnlyCollection<ITextChannel> TextChannels
+            => channels.Where(x => x is ITextChannel)
+                       .Select(x => x as ITextChannel)
+                       .ToList() as IReadOnlyCollection<ITextChannel>;
+        #endregion
         #region internal fields\properties
-        internal IChannel PublicUpdatesChannel  //Смотри на канал виджетов
+        public IChannel PublicUpdatesChannel  //Смотри на канал виджетов
             => channels.Where(x => x.Identifier == publicUpdatesChannelIdentifier).SingleOrDefault();
-        internal IChannel WidgetChannel //TODO : узнать что из себя представляет Widget-канал и изменить тип
+        public IChannel WidgetChannel //TODO : узнать что из себя представляет Widget-канал и изменить тип
             => channels.Where(x => x.Identifier == widgetChannelIdentifier).SingleOrDefault();
-        internal ITextChannel RulesChannel 
+        public ITextChannel RulesChannel 
             => channels.Where(x => x.Identifier == rulesChannelIdentifier)
                        .Select(x => x as ITextChannel)
-                       .SingleOrDefault(); 
-        internal ITextChannel SystemChannel 
+                       .SingleOrDefault();
+        public ITextChannel SystemChannel 
             => channels.Where(x => x.Identifier == systemChannelIdentifier)
                        .Select(x => x as ITextChannel)
                        .SingleOrDefault();
-        internal IVoiceChannel AfkChannel //Например в этом поле можно впихнуть ленивую загрузку
+        public IVoiceChannel AfkChannel //Например в этом поле можно впихнуть ленивую загрузку
             => channels.Where(x => x.Identifier == afkChannelIdentifier)
                        .Select(x => x as IVoiceChannel)
                        .SingleOrDefault();
-        internal GuildUser Owner 
-            => Users.Where(x => x.Identifier == ownerIdentifier)
-                    .SingleOrDefault();
+        public IUser Owner 
+            => Users.Where(x => (x as IUser).Identifier == ownerIdentifier)
+                                            .SingleOrDefault() as IUser;
 
         [JsonProperty(PropertyName = "owner")]
         internal bool IsOwner;
@@ -60,8 +73,6 @@ namespace Gateway.DataObjects.Guilds //TAI : ленивая загрузка в�
         internal DateTime JoinedAt;
         [JsonProperty(PropertyName = "large")]
         internal bool Large;
-        [JsonProperty(PropertyName = "unavailable")]
-        internal bool Unavailable;
         [JsonProperty(PropertyName = "member_count")]
         internal int MemberCount;
         [JsonProperty(PropertyName = "voice_states")]
@@ -70,8 +81,6 @@ namespace Gateway.DataObjects.Guilds //TAI : ленивая загрузка в�
         internal GuildUser[] Users;
         [JsonProperty(PropertyName = "presences")]
         internal Presence[] Presences;
-        [JsonProperty(PropertyName = "afk_timeout")]
-        [JsonConverter(typeof(GuildAfkTimeoutConverter))]
         internal TimeSpan AfkTimeout;
         [JsonProperty(PropertyName = "max_presences")]
         internal int MaxPresences = 25000; //TODO : при получении null-значения(json), необходимо 
@@ -94,6 +103,8 @@ namespace Gateway.DataObjects.Guilds //TAI : ленивая загрузка в�
         internal int MaxVideoChannelUsers;
         #endregion
         #region private fields\properties
+        [JsonProperty(PropertyName = "afk_timeout")]
+        private int afkTimeout;
         [JsonProperty(PropertyName = "public_updates_channel_id")]
         private string publicUpdatesChannelIdentifier;
         [JsonProperty(PropertyName = "widget_channel_id")]
@@ -109,63 +120,47 @@ namespace Gateway.DataObjects.Guilds //TAI : ленивая загрузка в�
         [JsonProperty(PropertyName = "channels")]
         private IChannel[] channels;
         #endregion
-        #region RO collections
-        public IReadOnlyCollection<IChannel> Channels => channels;
-        public IReadOnlyCollection<ChannelCategory> ChannelCategories 
-            => channels.Where(x => x is ChannelCategory)
-                       .Select(x => x as ChannelCategory)
-                       .ToList() as IReadOnlyCollection<ChannelCategory>;
-        public IReadOnlyCollection<IVoiceChannel> VoiceChannels 
-            => channels.Where(x => x is IVoiceChannel)
-                       .Select(x => x as IVoiceChannel)
-                       .ToList() as IReadOnlyCollection<IVoiceChannel>;
-        public IReadOnlyCollection<ITextChannel> TextChannels
-            => channels.Where(x => x is ITextChannel)
-                       .Select(x => x as ITextChannel)
-                       .ToList() as IReadOnlyCollection<ITextChannel>;
-        #endregion
 
+        internal IChannel TryToGetChannel(string id) //TAI : каналы\юзеров\роли запихать в словари для быстрого доступа?
+        {                                            //может быть актуально при частом доступе(а он будет, по идее);
+            return channels.Where(x => x.Identifier == id).SingleOrDefault();
+        }
+        internal IUser TryToGetUser(string id)
+        {
+            return Users.Where(x => (x as IUser).Identifier == id).SingleOrDefault() as IUser;
+        }
+        internal Role TryToGetRole(string id)
+        {
+            return Roles.Where(x => x.Identifier == id).SingleOrDefault();
+        }
 
+        #region Deserialization methods
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
+            AfkTimeout = TimeSpan.FromSeconds(afkTimeout);
             UpdateChennelsGuildId();
-            UpdateUsersRoles();
+            UpdateUsers();
         }
         private void UpdateChennelsGuildId()
         {
-            foreach(IChannel channel in channels)
-                (channel as IGuildChannel).UpdateChannelGuildId(this as IGuild);
+            foreach(IGuildChannel channel in channels)
+                channel.UpdateChannelGuildId(this as IGuild);
         }
-        private void UpdateUsersRoles()
+        private void UpdateUsers()
         {
             foreach (GuildUser user in Users)
             {
-                foreach (string roleId in user.rolesId)
+                foreach (string roleId in user.RolesIdentifiers)
                 {
-                    Role role = this.Roles.Where(x => x.Identifier == roleId).SingleOrDefault();
+                    Role role = Roles.Where(x => x.Identifier == roleId).SingleOrDefault();
                     user.roles.Add(role);
                 }
+                if (user.Guild == null)
+                    user.Guild = this;
             }
         }
-
-        private class GuildAfkTimeoutConverter : JsonConverter
-        {
-            public override bool CanConvert(Type objectType) => objectType == typeof(TimeSpan);
-            public override bool CanRead => true;
-            public override bool CanWrite => false;
-            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
-            {
-                JToken input = JToken.Load(reader);
-                double seconds = double.Parse(input.ToString());
-                return TimeSpan.FromSeconds(seconds);
-            }
-            /// <summary>
-            /// Not implemented
-            /// </summary>
-            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
-                => throw new NotImplementedException();
-        }
+        #endregion
     }
     internal enum PremiumTier : byte
     {

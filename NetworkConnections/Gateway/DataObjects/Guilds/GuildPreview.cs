@@ -1,60 +1,37 @@
 ﻿using Gateway.DataObjects.Emojis;
-using Gateway.Payload.EventObjects;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Gateway.DataObjects.Guilds
 {
-    [JsonObject(MemberSerialization.OptOut)]
-    internal class GuildPreview : IGuild, IEvent
+    internal class GuildPreview : IGuild
     {
         [JsonProperty(PropertyName = "id")]
         public string Identifier { get; private set; }
         [JsonProperty(PropertyName = "name")]
-        internal string Name;
+        public string Name { get; private set; }
         [JsonProperty(PropertyName = "icon")]
-        internal string Icon;
+        public string Icon { get; private set; }
         [JsonProperty(PropertyName = "splash")]
-        internal string Splash;
+        public string Splash { get; private set; }
         [JsonProperty(PropertyName = "discovery_splash")]
-        internal string DiscoverySplash;
+        public string DiscoverySplash { get; private set; }
         [JsonProperty(PropertyName = "approximate_member_count")]
-        internal int ApproximateMemberCount;
+        public int ApproximateMemberCount { get; private set; }
         [JsonProperty(PropertyName = "approximate_presence_count")]
-        internal int ApproximatePresenceCount;
+        public int ApproximatePresenceCount { get; private set; }
         [JsonProperty(PropertyName = "description")]
-        internal string Description;
+        public string Description { get; private set; }
         [JsonProperty(PropertyName = "emojis")]
-        internal GuildEmoji[] Emojis;
+        public GuildEmoji[] Emojis { get; private set; }
         [JsonProperty(PropertyName = "features")]
-        internal GuildFeatures[] Features;
+        public GuildFeatures[] Features { get; private set; }
         [JsonProperty(PropertyName = "available")]
-        internal bool Available;
+        public bool Unavailable { get; private set; }
 
         public void UpdateGuild(IGuild newGuildInfo)
         {
 
         }
-    }
-    internal enum GuildFeatures
-    {
-        InviteSplash,
-        VipRegions,
-        VanityUrl,
-        Verified,
-        Partnered,
-        Public,
-        Commerce,
-        News,
-        Discoverable,
-        Featurable,
-        AnimatedIcon,
-        Banner,
-        PublicDisabled,
-        WelcomeScreenEnabled
     }
 }
