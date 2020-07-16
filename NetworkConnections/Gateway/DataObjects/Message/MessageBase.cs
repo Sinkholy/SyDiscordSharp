@@ -1,6 +1,5 @@
 ﻿using Gateway.DataObjects.Channels;
 using Gateway.DataObjects.Guilds;
-using Gateway.Payload.EventObjects;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -11,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Gateway.DataObjects.Message
 {
-    internal class MessageBase : IMessage, IEvent
+    internal class MessageBase : IMessage
     {
         [JsonProperty(PropertyName = "id")]
         public string Identifier { get; private set; }
@@ -26,18 +25,11 @@ namespace Gateway.DataObjects.Message
         [OnDeserialized]
         private void CompleteDeserialization(StreamingContext context)
         {
-            DiscordGatewayClient gatewayClient = DiscordGatewayClient.GetInstance();
-            Guild targetGuild;
-            IChannel targetChannel;
-
-            if (gatewayClient.guilds[this.guildIdentifier] is Guild)
+            Guild targetGuild = DiscordGatewayClient.TryToGetGuild(guildIdentifier) as Guild;
+            IChannel targetChannel = null;
+            if (targetGuild != null)
             {
-                targetGuild = gatewayClient.guilds[this.guildIdentifier] as Guild;
-                targetChannel = targetGuild.Channels.Where(x => x.Identifier == channelIdentifier).SingleOrDefault();
-            }
-            else
-            {
-                throw new Exception();//TODO : исключение или зачем?
+                targetChannel = targetGuild.TryToGetChannel(channelIdentifier);
             }
             Guild = targetGuild;
             Channel = targetChannel;

@@ -1,14 +1,16 @@
 ﻿using Gateway.DataObjects.Channels;
 using Gateway.DataObjects.Channels.Text;
+using Gateway.DataObjects.Emojis;
 using Gateway.DataObjects.Guilds;
+using Gateway.DataObjects.Roles;
 using Gateway.DataObjects.Users;
-using Gateway.Payload.EventObjects;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Runtime.Serialization;
+using System.Security.Cryptography.X509Certificates;
 using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
@@ -67,56 +69,33 @@ namespace Gateway.DataObjects.Message
         [OnDeserialized]
         private void CompleteDeserialization(StreamingContext context)
         {
-            DiscordGatewayClient gatewayClient = DiscordGatewayClient.GetInstance();
             List<Role> targetRoles = new List<Role>(capacity: mentionedRoles.Length);
             List<IUser> targetUsers = new List<IUser>(capacity: mentionedUsers.Length);
             List<IChannel> targetChannels = new List<IChannel>(capacity: mentionedChannels.Length);
-            Guild targetGuild;
-            IUser targetAuthor;
-            IChannel targetChannel;
+            Guild targetGuild = DiscordGatewayClient.TryToGetGuild(guildIdentifier) as Guild;
+            IUser targetAuthor = null;
+            IChannel targetChannel = null;
 
-            if (gatewayClient.guilds[guildIdentifier] is Guild)
+            if (targetGuild != null)
             {
-                targetGuild = gatewayClient.guilds[guildIdentifier] as Guild;
-                targetAuthor = targetGuild.Users.Where(x => x.Identifier == author.Identifier)
-                                                .SingleOrDefault();
-                targetChannel = targetGuild.Channels.Where(x => x.Identifier == channelIdentifier)
-                                                    .SingleOrDefault();
-            }
-            else
-            {
-                throw new Exception();//TODO : исключение или зачем?
+                targetAuthor = targetGuild.TryToGetUser(author.Identifier);
+                targetChannel = targetGuild.TryToGetChannel(channelIdentifier);
             }
             foreach (string roleId in mentionedRoles)
             {
-                Role role = targetGuild.Roles.Where(x => x.Identifier == roleId).SingleOrDefault();
+                Role role = targetGuild.TryToGetRole(roleId);
                 if (role != null)
                     targetRoles.Add(role);
-                else
-                {
-                    //TODO : исключенеи или куда?
-                }
             }
             foreach(User user in mentionedUsers)
             {
-                GuildUser guildUser = targetGuild.Users.Where(x => x.Identifier == user.Identifier).SingleOrDefault();
-                if(guildUser != null)
-                    targetUsers.Add(guildUser);
-                else
-                {
-                    //TODO : исключение или почему?
-                }
+                targetUsers.Add(targetGuild.TryToGetUser(user.Identifier));
             }
             foreach (ChannelMention channelMention in mentionedChannels)
             {
-                IChannel channel = 
-                    targetGuild.Channels.Where(x => x.Identifier == channelMention.Identifier).SingleOrDefault();
+                IChannel channel = targetGuild.TryToGetChannel(channelMention.Identifier);
                 if (channel != null)
                     targetChannels.Add(channel);
-                else
-                {
-                    //TODO : исключение или кому?
-                }
             }
             Guild = targetGuild;
             Channel = targetChannel;
@@ -124,7 +103,8 @@ namespace Gateway.DataObjects.Message
             MentionedUsers = targetUsers;
             MentionedChannels = targetChannels;
             Author = targetAuthor;
-            UpdateMessageReferences();
+            if(MessageReference != null)
+                UpdateMessageReferences();
         }
         private void UpdateMessageReferences()
         {
@@ -147,7 +127,6 @@ namespace Gateway.DataObjects.Message
         }
     }
 
-    [JsonObject(MemberSerialization.OptIn)]
     internal class MessageActivity
     {
         [JsonProperty(PropertyName = "type")]
@@ -156,7 +135,6 @@ namespace Gateway.DataObjects.Message
         internal string PartyId;
     }
 
-    [JsonObject(MemberSerialization.OptIn)]
     internal class MessageAttachment //TAI : хранить адресс как Uri, а не как строку
     {
         [JsonProperty(PropertyName = "id")]
@@ -175,7 +153,6 @@ namespace Gateway.DataObjects.Message
         internal int Width;
     }
 
-    [JsonObject(MemberSerialization.OptIn)]
     internal class MessageApplication
     {
         [JsonProperty(PropertyName = "id")]
@@ -190,8 +167,7 @@ namespace Gateway.DataObjects.Message
         internal string Name;
     }
 
-    [JsonObject(MemberSerialization.OptIn)]
-    internal class MessageReference //TODO : доделать филды
+    internal class MessageReference
     {
         internal Message Message;
         internal IChannel Channel;
@@ -203,6 +179,16 @@ namespace Gateway.DataObjects.Message
         private string channelIdentifier;
         [JsonProperty(PropertyName = "guild_id")]
         private string guildIdentifier;
+    }
+
+    internal class Reaction
+    {
+        [JsonProperty(PropertyName = "count")]
+        internal int Count;
+        [JsonProperty(PropertyName = "me")]
+        internal bool Me;
+        [JsonProperty(PropertyName = "emoji")]
+        internal Emoji Emoji; // TODO : необходимо понять, что есть partiel-emoji и мб созлдать новый класс
     }
 
     [Flags]
