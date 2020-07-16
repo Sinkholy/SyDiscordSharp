@@ -1,6 +1,6 @@
-﻿using Gateway.Enums;
+﻿using Gateway.DataObjects.Events;
+using Gateway.Enums;
 using Gateway.Payload.DataObjects;
-using Gateway.Payload.EventObjects;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static Gateway.DispatchEventHandler;
 
 namespace Gateway
 {
@@ -38,7 +39,7 @@ namespace Gateway
         internal delegate void payloadReceived(string payloadJson);
         internal delegate void reachedRateLimit(TimeSpan tillNextMinute);
         internal delegate void voidEvent();
-        internal event payloadReceived NewPayload = delegate { };
+        internal event payloadReceived NewPayloadReceived = delegate { };
         internal event voidEvent Zombied = delegate { };
         internal event reachedRateLimit ReachedRateLimit = delegate { };
         #endregion
@@ -92,7 +93,7 @@ namespace Gateway
                 else
                 {
                     socketSemaphore.Release();
-                    NewPayload(jsonResultBuilder.ToString());
+                    NewPayloadReceived(jsonResultBuilder.ToString());
                 }
             }
         }
@@ -129,9 +130,9 @@ namespace Gateway
         }
         internal void OnHeartbeatAck(IGatewayDataObject data) => heartbeatAckReceived = true;
         internal void OnSequenceReceived(string sequence) => lastSequence = sequence;
-        internal void OnReady(IEvent eventData)
+        internal void OnReady(object sender, EventHandlerArgs args)
         {
-            Ready ready = eventData as Ready;
+            Ready ready = args.EventData as Ready;
             sessionIdentifier = ready.SessionIdentifier;
         }
         #endregion
