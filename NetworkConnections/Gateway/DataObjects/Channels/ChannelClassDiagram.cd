@@ -9,7 +9,7 @@
     <Lollipop Position="0.186" />
   </Class>
   <Class Name="Gateway.DataObjects.Channels.Text.DMTextChannel">
-    <Position X="3" Y="6.75" Width="1.75" />
+    <Position X="3" Y="7" Width="1.75" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>DataObjects\Channels\Text\DMTextChannel.cs</FileName>
@@ -33,7 +33,7 @@
   <Class Name="Gateway.DataObjects.Channels.Text.TextChannel">
     <Position X="4.25" Y="3.75" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAACAAAAAAAAAAAABAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAQAEAAAAAAAAAAAACAAAAAAAEAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>DataObjects\Channels\Text\TextChannel.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="1.249" />
@@ -47,12 +47,12 @@
     <Lollipop Position="1.191" />
   </Class>
   <Class Name="Gateway.DataObjects.Channels.ChannelCategory">
-    <Position X="12" Y="3.75" Width="1.5" />
+    <Position X="12" Y="3.75" Width="3.25" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAQAAAAAAAAABAAAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>DataObjects\Channels\ChannelCategory.cs</FileName>
     </TypeIdentifier>
-    <Lollipop Position="1.015" />
+    <Lollipop Position="0.14" />
   </Class>
   <Class Name="Gateway.DataObjects.Channels.Text.GuildNewsChannel">
     <Position X="5.75" Y="11" Width="1.75" />
