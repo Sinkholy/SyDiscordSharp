@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Gateway
 {
-    class PayloadHandler
+    class SystemEventHandler
     {
         private List<Thread> handlers;
         internal delegate void newSystemEvent(IGatewayDataObject payload);
@@ -72,7 +72,7 @@ namespace Gateway
                 }
             }
         }
-        internal PayloadHandler(ConcurrentQueue<GatewayPayload> payloads) 
+        internal SystemEventHandler(ConcurrentQueue<GatewayPayload> payloads) 
         {
             handlers = new List<Thread>(capacity: 8);
             AddNewHandler(payloads);

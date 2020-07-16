@@ -1,4 +1,4 @@
-﻿namespace Gateway.Enums
+﻿namespace Gateway.DataObjects.Enums
 {
     public enum Opcode : byte
     {

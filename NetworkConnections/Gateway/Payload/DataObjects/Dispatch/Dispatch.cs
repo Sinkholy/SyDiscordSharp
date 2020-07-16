@@ -1,14 +1,9 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Gateway.Payload.DataObjects
+namespace Gateway.Payload.DataObjects.Dispatch
 {
-    [JsonObject(MemberSerialization.OptOut)]
     [JsonConverter(typeof(GatewayDispatchPayloadConverter))]
     internal class Dispatch : IGatewayDataObject
     {

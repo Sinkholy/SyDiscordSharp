@@ -9,23 +9,22 @@ using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gateway.Payload.EventObjects
+namespace Gateway.DataObjects.Events
 {
-    [JsonObject(MemberSerialization.OptIn)]
-    internal class Ready : IEvent // TODO : Order's 
+    internal class Ready // TODO : Order's 
     {
-        [JsonProperty(PropertyName = "v", Order = 0)]
-        internal int GatewayVersion;
-        [JsonProperty(PropertyName = "user", Order = 1)]
-        internal User User;
-        [JsonProperty(PropertyName = "guilds", Order = 2)]
-        internal List<UnavailableGuild> Guilds;
-        [JsonProperty(PropertyName = "session_id", Order = 3)]
-        internal string SessionIdentifier;
+        [JsonProperty(PropertyName = "v")]
+        internal int GatewayVersion { get; private set; }
+        [JsonProperty(PropertyName = "user")]
+        internal User User { get; private set; }
+        [JsonProperty(PropertyName = "guilds")]
+        internal GuildPreview[] Guilds { get; private set; }
+        [JsonProperty(PropertyName = "session_id")]
+        internal string SessionIdentifier { get; private set; }
         //[JsonProperty(PropertyName = "application", Order = 4)]
         //internal ReadyApplication Application;
-        [JsonProperty(PropertyName = "_trace", Order = 5)]
-        internal object Trace;
+        [JsonProperty(PropertyName = "_trace")]
+        internal object Trace { get; private set; }
         internal Ready() { }
 
 
