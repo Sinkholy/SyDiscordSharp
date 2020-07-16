@@ -39,7 +39,7 @@ namespace SyDiscordSharp
             await httpClient.StartAsync();
             GatewayInfo gatewayInfo = await httpClient.GetGatewayInfoAsync();
             //TODO : GatewayUri должен содержать тип кодировки и версию API
-            DiscordGatewayClient gatewayClient = new DiscordGatewayClient();
+            DiscordGatewayClient gatewayClient = DiscordGatewayClient.GetInstance();
             gatewayClient.StartAsync(gatewayInfo.Uri);
             //while (true)
             //{
