@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using Gateway.DataObjects.Roles;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace Gateway.DataObjects.Emojis
         [JsonProperty(PropertyName = "require_colons")]
         public bool RequireColons;
         [JsonProperty(PropertyName = "managed")]
-        public bool Managed;
+        public bool Managed;    
         [JsonProperty(PropertyName = "available")]
         public bool Available;
     }
