@@ -60,92 +60,94 @@ namespace Gateway
         internal event EventHandler<EventHandlerArgs> VoiceServerUpdated = delegate { };
         internal event EventHandler<EventHandlerArgs> WebhooksUpdated = delegate { };
         #endregion
-        internal void OnNewEventCreated(string eventData, string eventName)
+        internal void OnNewClientEventReceived(string eventName, string eventData)
         {
             Enum.TryParse(eventName, out Events eventToRaiseName);
             if (eventToRaiseName == Events.UnknownEvent) 
                 throw new Exception("UnknownEvent"); //TODO : здесь я не уверен, что нужно исключение, скорее логирование
             EventHandlerArgs eventArgs;
             object eventArgsData;
+            //Console.WriteLine(eventName + "!!!!!!!!!!!!!!!!!!!!!");
+            //Console.WriteLine(eventData);
             switch (eventToRaiseName)
             {
-                case Events.Ready:
+                case Events.READY:
                     eventArgsData = JsonConvert.DeserializeObject<Ready>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     Ready(this, eventArgs);
                     break;
-                case Events.Resumed:
+                case Events.RESUMED:
                     //TODO
                     break;
-                case Events.Reconnect:
+                case Events.RECONNECT:
                     //TODO
                     break;
-                case Events.ChannelCreated:
+                case Events.CHANNEL_CREATE:
                     eventArgsData = JsonConvert.DeserializeObject<IChannel>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     ChannelCreated(this, eventArgs);
                     break;
-                case Events.ChannelUpdated:
+                case Events.CHANNEL_UPDATE:
                     eventArgsData = JsonConvert.DeserializeObject<IChannel>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     ChannelUpdated(this, eventArgs);
                     break;
-                case Events.ChannelDeleted:
+                case Events.CHANNEL_DELETE:
                     eventArgsData = JsonConvert.DeserializeObject<IChannel>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     ChannelDeleted(this, eventArgs);
                     break;
-                case Events.ChannelPinsUpdated:
+                case Events.CHANNEL_PINS_UPDATE:
                     eventArgsData = JsonConvert.DeserializeObject<ChannelPinsUpdatedEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     ChannelPinsUpdated(this, eventArgs);
                     break;
-                case Events.GuildCreated:
+                case Events.GUILD_CREATE:
                     eventArgsData = JsonConvert.DeserializeObject<Guild>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildCreated(this, eventArgs);
                     break;
-                case Events.GuildUpdated:
+                case Events.GUILD_UPDATE:
                     eventArgsData = JsonConvert.DeserializeObject<Guild>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildUpdated(this, eventArgs);
                     break;
-                case Events.GuildDeleted:
+                case Events.GUILD_DELETE:
                     eventArgsData = JsonConvert.DeserializeObject<GuildPreview>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildDeleted(this, eventArgs);
                     break;
-                case Events.GuildBanAdded:
+                case Events.GUILD_BAN_ADD:
                     eventArgsData = JsonConvert.DeserializeObject<Ban>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildBanAdded(this, eventArgs);
                     break;
-                case Events.GuildBanDeleted:
+                case Events.GUILD_BAN_REMOVE:
                     eventArgsData = JsonConvert.DeserializeObject<Ban>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildBanRemoved(this, eventArgs);
                     break;
-                case Events.GuildEmojisUpdated:
+                case Events.GUILD_EMOJIS_UPDATE:
                     eventArgsData = JsonConvert.DeserializeObject<GuildEmojiUpdatedEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildEmojisUpdated(this, eventArgs);
                     break;
-                case Events.GuildIntegrationUpdated: //TODO : хз что за интеграция нужно помять
+                case Events.GUILD_INTEGRATIONS_UPDATE: //TODO : хз что за интеграция нужно помять
                     //eventArgsData = JToken.Load(eventData);
                     //eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     //GuildIntegrationsUpdate(this, eventArgs);
                     break;
-                case Events.GuildMemberAdded:
+                case Events.GUILD_MEMBER_ADD:
                     eventArgsData = JsonConvert.DeserializeObject<GuildUser>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildMemberAdded(this, eventArgs);
                     break;
-                case Events.GuildMemberRemoved:
+                case Events.GUILD_MEMBER_REMOVE:
                     eventArgsData = JsonConvert.DeserializeObject<GuildMember>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildMemberRemoved(this, eventArgs);
                     break;
-                case Events.GuildMemberUpdated:
+                case Events.GUILD_MEMBER_UPDATE:
                     eventArgsData = JsonConvert.DeserializeObject<GuildUser>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildMemberUpdated(this, eventArgs);
@@ -155,97 +157,97 @@ namespace Gateway
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildMemberChunksReceived(this, eventArgs);
                     break;
-                case Events.GuildRoleCreated:
+                case Events.GUILD_ROLE_CREATE:
                     eventArgsData = JsonConvert.DeserializeObject<RoleEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildRoleCreated(this, eventArgs);
                     break;
-                case Events.GuildRoleUpdated:
+                case Events.GUILD_ROLE_UPDATE:
                     eventArgsData = JsonConvert.DeserializeObject<RoleEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildRoleUpdated(this, eventArgs);
                     break;
-                case Events.GuildRoleDeleted:
+                case Events.GUILD_ROLE_DELETE:
                     eventArgsData = JsonConvert.DeserializeObject<RoleEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildRoleDeleted(this, eventArgs);
                     break;
-                case Events.InviteCreated:
+                case Events.INVITE_CREATE:
                     eventArgsData = JsonConvert.DeserializeObject<Invite>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     InviteCreated(this, eventArgs);
                     break;
-                case Events.InviteDeleted:
+                case Events.INVITE_DELETE:
                     eventArgsData = JsonConvert.DeserializeObject<InviteBase>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     InviteDeleted(this, eventArgs);
                     break;
-                case Events.MessageCreated:
+                case Events.MESSAGE_CREATE:
                     eventArgsData = JsonConvert.DeserializeObject<Message>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     MessageCreated(this, eventArgs);
                     break;
-                case Events.MessageUpdated:
+                case Events.MESSAGE_UPDATE:
                     eventArgsData = JsonConvert.DeserializeObject<Message>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     MessageUpdated(this, eventArgs);
                     break;
-                case Events.MessageDeleted:
+                case Events.MESSAGE_DELETE:
                     eventArgsData = JsonConvert.DeserializeObject<MessageBase>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     MessageDeleted(this, eventArgs);
                     break;
-                case Events.MessageDeletedBulk:
+                case Events.MESSAGE_DELETE_BULK:
                     eventArgsData = JsonConvert.DeserializeObject<MessageBase[]>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     MessageDeletedBulk(this, eventArgs);
                     break;
-                case Events.MessageReactionAdded:
+                case Events.MESSAGE_REACTION_ADD:
                     eventArgsData = JsonConvert.DeserializeObject<MessageReactionEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     MessageReactionAdded(this, eventArgs);
                     break;
-                case Events.MessageReactionRemoved:
+                case Events.MESSAGE_REACTION_REMOVE:
                     eventArgsData = JsonConvert.DeserializeObject<MessageReactionEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     MessageReactionRemoved(this, eventArgs);
                     break;
-                case Events.MessageReactionRemovedAll:
+                case Events.MESSAGE_REACTION_REMOVE_ALL:
                     eventArgsData = JsonConvert.DeserializeObject<MessageReactionEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     MessageReactionRemovedAll(this, eventArgs);
                     break;
-                case Events.MessageReactionEmojiRemoved:
+                case Events.MESSAGE_REACTION_REMOVE_EMOJI:
                     eventArgsData = JsonConvert.DeserializeObject<MessageReactionEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     MessageReactionEmoji(this, eventArgs);
                     break;
-                case Events.PresenceUpdated:
+                case Events.PRESENCE_UPDATE:
                     eventArgsData = JsonConvert.DeserializeObject<PresenceUpdatedEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     PresenceUpdated(this, eventArgs);
                     break;
-                case Events.TypingStarted:
+                case Events.TYPING_START:
                     eventArgsData = JsonConvert.DeserializeObject<UserTypingEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     TypingStarted(this, eventArgs);
                     break;
-                case Events.UserUpdated:
+                case Events.USER_UPDATE:
                     eventArgsData = JsonConvert.DeserializeObject<User>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     UserUpdated(this, eventArgs);
                     break;
-                case Events.VoiceStateUpdated:
+                case Events.VOICE_STATE_UPDATE:
                     eventArgsData = JsonConvert.DeserializeObject<VoiceState>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     VoiceStateUpdated(this, eventArgs);
                     break;
-                case Events.VoiceServerUpdated:
+                case Events.VOICE_SERVER_UPDATE:
                     eventArgsData = JsonConvert.DeserializeObject<VoiceServerUpdate>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     VoiceServerUpdated(this, eventArgs);
                     break;
-                case Events.WebhooksUpdated:
+                case Events.WEBHOOKS_UPDATE:
                     eventArgsData = JsonConvert.DeserializeObject<WebhookUpdatedEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     WebhooksUpdated(this, eventArgs);
