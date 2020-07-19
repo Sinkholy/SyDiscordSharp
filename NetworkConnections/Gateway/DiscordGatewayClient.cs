@@ -2,6 +2,7 @@
 using Gateway.Entities.Guilds;
 using Gateway.Entities.Users;
 using Gateway.Payload.DataObjects;
+using Gateway.Payload.DataObjects.Dispatch;
 using Gateway.Payload.DataObjects.Dispatch.DispatchEvents;
 using Gateway.Payload.DataObjects.Enums;
 using Newtonsoft.Json;
@@ -56,29 +57,50 @@ namespace Gateway
         #endregion
         #region Public fields
         public TimeSpan Uptime => DateTime.Now - readyReceived;
+        public IReadOnlyCollection<IGuild> Guilds
+            => guilds.Values.ToList() as IReadOnlyCollection<IGuild>;
         #endregion
         #region Internal fields
-        internal IReadOnlyCollection<IGuild> Guilds
-            => guilds.Values.ToList() as IReadOnlyCollection<IGuild>;
-        internal User BotUser;
+        internal Dictionary<string, IGuild> guilds { get; private set; }
+        internal Dictionary<string, List<string>> userGuilds { get; private set; }
+        internal User BotUser { get; private set; }
         internal Uri GatewayUri { get; private set; }//RO?
-        internal Dictionary<string, IGuild> guilds;
+        #endregion
+        #region Internal events
+        internal delegate void VoidEvent();
+        internal delegate void NewSequence(string seq);
+        internal delegate void NewClientEvent(string eventName, string eventData);
+        internal delegate void NewSystemEvent(Opcode opcode, IGatewayDataObject data);
+        internal event NewClientEvent NewClientEventReceived = delegate { };
+        internal event NewSystemEvent NewSystemEventReceived = delegate { };
+        internal event NewSequence NewSequenceReceived = delegate { };
         #endregion
         #region Private fields
-        private readonly ConcurrentQueue<GatewayPayload> payloadsReceived;
         private readonly string botToken = "NTU5MDkwMTUzOTM1NjAxNjY1.XtKPog.7epgH4xS8QxLqGgiGyBLCladnyI"; //TODO : перенести токен в конфиг и объеденить методы с API
         private readonly JsonSerializer jsonSerializer;
         private Gateway gateway;
-        private readonly SystemEventHandler payloadHandler;
-        private readonly DispatchEventHandler eventHandler;
+        private readonly SystemEventHandler systemEventHandler;
+        private readonly DispatchEventHandler dispatchEventHandler;
         private ClientWebSocket clientWebSocket;
         private short identifyLimit; // TODO : метод обновлящий значение при отправке новой идентификации
                                      // и изначальное записывание значения полученое при первичном запросе к HTTP API
         private DateTime readyReceived;
-        private Dictionary<string, List<string>> userGuilds;
         #endregion
         #region Event handlers
-        private void OnConnection() => Console.WriteLine(1);//TODO : do smth
+        private void OnNewPayloadReceivedAsync(string payloadStr)
+        {
+            Console.WriteLine("Payload handler thread ID: " + Thread.CurrentThread.ManagedThreadId);
+            GatewayPayload payload = JsonConvert.DeserializeObject<GatewayPayload>(payloadStr);
+            if (payload.Opcode == Opcode.Dispatch)
+            {
+                NewClientEventReceived(payload.EventName, (payload.Data as Dispatch).EventData);
+            }
+            else
+            {
+                NewSystemEventReceived(payload.Opcode, payload.Data);
+            }
+        }
+        private void OnConnection(IGatewayDataObject payload) => Console.WriteLine(1);//TODO : do smth
         private void OnReady(object sender, EventHandlerArgs args)
         {
             Ready ready = args.EventData as Ready;
@@ -87,7 +109,7 @@ namespace Gateway
                 guilds.Add(guild.Identifier, guild as IGuild);
             readyReceived = DateTime.Now;
         }
-        private void OnGuildCreate(object sender, EventHandlerArgs args)
+        private void OnGuildCreated(object sender, EventHandlerArgs args)
         {
             IGuild guild = args.EventData as IGuild;
             if (guilds.ContainsKey(guild.Identifier))
@@ -104,18 +126,24 @@ namespace Gateway
             gateway = new Gateway(clientWebSocket, GatewayUri, botToken);
 
             #region Event's handler's binding
-            payloadHandler.Connected += gateway.OnConnection;
-            payloadHandler.HeartbeatACK += gateway.OnHeartbeatAck;
-            payloadHandler.NewSequenceReceived += gateway.OnSequenceReceived;
-            payloadHandler.NewEvent += eventHandler.OnNewEventCreated;
-            eventHandler.GuildCreated += OnGuildCreate;
-            eventHandler.Ready += OnReady;
-            eventHandler.Ready += gateway.OnReady;
-            gateway.NewPayloadReceived += AddToQueue;
+            NewSequenceReceived += gateway.OnSequenceReceived;
+            NewClientEventReceived += dispatchEventHandler.OnNewClientEventReceived;
+            NewSystemEventReceived += systemEventHandler.OnNewSystemEventReceived;
+
+            systemEventHandler.Connected += gateway.OnConnection;
+            systemEventHandler.Connected += OnConnection;
+            systemEventHandler.HeartbeatACK += gateway.OnHeartbeatAck;
+
+            dispatchEventHandler.GuildCreated += OnGuildCreated;
+            dispatchEventHandler.Ready += OnReady;
+            dispatchEventHandler.Ready += gateway.OnReady;
+
+            gateway.NewPayloadReceived += OnNewPayloadReceivedAsync;
             #endregion
             await gateway.ConnectToGatewayAsync();
             await AuthorizeAsync();
         }
+        public IGuild[] GetUserGuilds(IUser user) => GetUserGuilds(user.Identifier);
         public IGuild[] GetUserGuilds(string userId)
         {
             List<string> guildsIdentifiers = userGuilds[userId];
@@ -126,7 +154,6 @@ namespace Gateway
             }
             return guilds.ToArray();
         }
-        public IGuild[] GetUserGuilds(IUser user) => GetUserGuilds(user.Identifier);
         #endregion
         #region Private methods
         private string SerializeJson(object toSerialize)
@@ -152,7 +179,6 @@ namespace Gateway
         {
             return JsonConvert.DeserializeObject<TObject>(value); // TAI: он тут вообще нужен?
         }
-
         private async Task AuthorizeAsync()
         {
             IdentifyProperties properties = new IdentifyProperties("SinkholesImpl", "SinkholesDevice");
@@ -160,21 +186,15 @@ namespace Gateway
             GatewayPayload payload = new GatewayPayload(Opcode.Identify, identityObj);
             await gateway.SendAsync(clientWebSocket, payload, WebSocketMessageType.Text, CancellationToken.None);
         }
-        private void AddToQueue(string eventData)
-        {
-            GatewayPayload payload = DeserializeJson<GatewayPayload>(eventData);
-            payloadsReceived.Enqueue(payload);
-        }
         #endregion
         #region Ctor's
         private DiscordGatewayClient() 
         {
             guilds = new Dictionary<string, IGuild>();
-            payloadsReceived = new ConcurrentQueue<GatewayPayload>();
             clientWebSocket = new ClientWebSocket();
             jsonSerializer = new JsonSerializer();
-            payloadHandler = new SystemEventHandler(payloadsReceived);
-            eventHandler = new DispatchEventHandler();
+            systemEventHandler = new SystemEventHandler();
+            dispatchEventHandler = new DispatchEventHandler();
         }
         #endregion
     }

@@ -20,13 +20,13 @@ namespace Gateway.Payload.DataObjects.Dispatch.DispatchEvents
         [JsonProperty(PropertyName = "guild_id")]
         internal string GuildIdentifier { get; private set; }
         [JsonProperty(PropertyName = "roles")]
-        internal Role[] RolesIdentifiers;
+        internal string[] RolesIdentifiers { get; private set; }
         [JsonProperty(PropertyName = "activity")]
         internal Activity Game { get; private set; }
         [JsonProperty(PropertyName = "activities")]
         internal Activity[] Activities { get; private set; }
         [JsonProperty(PropertyName = "premium_since")]
-        internal DateTime PremiumSince { get; private set; }
+        internal DateTime? PremiumSince { get; private set; }
         [JsonProperty(PropertyName = "status")]
         internal UserStatus Status { get; private set; }
         [JsonProperty(PropertyName = "client_status")]
@@ -69,9 +69,9 @@ namespace Gateway.Payload.DataObjects.Dispatch.DispatchEvents
             /// </summary>
             [JsonProperty(PropertyName = "url")]
             internal string Url { get; private set; } //Only Type == 1(streaming)
-            internal DateTime CreatedUtc { get; private set; }
-            internal DateTime StartedUtc { get; private set; }
-            internal DateTime? EndedUtc { get; private set; }
+            internal DateTime CreatedAt { get; private set; }
+            internal DateTime? StartedAt { get; private set; }
+            internal DateTime? EndedAt { get; private set; }
             [JsonProperty(PropertyName = "application_id")]
             internal string ApplicationIdentifier { get; private set; }
             [JsonProperty(PropertyName = "details")]
@@ -92,28 +92,26 @@ namespace Gateway.Payload.DataObjects.Dispatch.DispatchEvents
             internal ActivityFlags Flags { get; private set; }
 
             [JsonProperty(PropertyName = "created_at")]
-            private int createdAtUnix;
+            private long createdAtUnix;
             [JsonProperty(PropertyName = "timestamps")]
             private Timestamps timestamps;
 
-            private DateTime ConvertDateTimeFromUnix(int seconds)
-            {
-                DateTime original = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-                return original.AddSeconds(seconds);
-            }
             [OnDeserialized]
             private void CompleteDeserialization(StreamingContext context)
             {
-                CreatedUtc = ConvertDateTimeFromUnix(createdAtUnix);
-                StartedUtc = ConvertDateTimeFromUnix(timestamps.Start);
-                EndedUtc = ConvertDateTimeFromUnix(timestamps.End);
+                CreatedAt = DateTimeOffset.FromUnixTimeMilliseconds(createdAtUnix).LocalDateTime;
+                if(timestamps != null)
+                {
+                    StartedAt = DateTimeOffset.FromUnixTimeMilliseconds(timestamps.Start).LocalDateTime;
+                    EndedAt = DateTimeOffset.FromUnixTimeMilliseconds(timestamps.End ?? 0).LocalDateTime;
+                }
             }
             private class Timestamps
             {
                 [JsonProperty(PropertyName = "start")]
-                internal int Start { get; private set; }
+                internal long Start { get; private set; }
                 [JsonProperty(PropertyName = "end")]
-                internal int End { get; private set; }
+                internal long? End { get; private set; }
             }
         }
         internal class ActivityParty

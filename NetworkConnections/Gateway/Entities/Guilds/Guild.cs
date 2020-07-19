@@ -79,8 +79,8 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         internal VoiceState[] VoiceStates;
         [JsonProperty(PropertyName = "members")]
         internal GuildUser[] Users;
-        [JsonProperty(PropertyName = "presences")]
-        internal Presence[] Presences;
+        //[JsonProperty(PropertyName = "presences")]
+        //internal Presence[] Presences;
         internal TimeSpan AfkTimeout;
         [JsonProperty(PropertyName = "max_presences")]
         internal int MaxPresences = 25000; //TODO : при получении null-значения(json), необходимо 

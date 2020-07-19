@@ -16,7 +16,7 @@ namespace Gateway.Payload.DataObjects.Dispatch.DispatchEvents
         internal IChannel Channel { get; private set; }
         internal IGuild Guild { get; private set; }
         internal IUser User { get; private set; }
-        internal DateTime UtcTime { get; private set; }
+        internal DateTime DateTime { get; private set; }
         internal bool InGuild { get; private set; } = false;
 
         [JsonProperty(PropertyName = "timestamp")]
@@ -48,12 +48,7 @@ namespace Gateway.Payload.DataObjects.Dispatch.DispatchEvents
             User = targetUser;
             Channel = targetChannel;
             Guild = targetGuild;
-            UtcTime = ConvertDateTimeFromUnix(timestamp);
-        }
-        private DateTime ConvertDateTimeFromUnix(int seconds)
-        {
-            DateTime original = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-            return original.AddSeconds(seconds);
+            DateTime = DateTimeOffset.FromUnixTimeSeconds(timestamp).LocalDateTime;
         }
     }
 }
