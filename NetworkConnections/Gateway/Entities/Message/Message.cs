@@ -78,22 +78,22 @@ namespace Gateway.Entities.Message
             {
                 targetAuthor = targetGuild.TryToGetUser(author.Identifier);
                 targetChannel = targetGuild.TryToGetChannel(channelIdentifier);
-            }
-            foreach (string roleId in mentionedRoles)
-            {
-                Role role = targetGuild.TryToGetRole(roleId);
-                if (role != null)
-                    targetRoles.Add(role);
-            }
-            foreach(User user in mentionedUsers)
-            {
-                targetUsers.Add(targetGuild.TryToGetUser(user.Identifier));
-            }
-            foreach (ChannelMention channelMention in mentionedChannels)
-            {
-                IChannel channel = targetGuild.TryToGetChannel(channelMention.Identifier);
-                if (channel != null)
-                    targetChannels.Add(channel);
+                foreach (string roleId in mentionedRoles)
+                {
+                    Role role = targetGuild.TryToGetRole(roleId);
+                    if (role != null)
+                        targetRoles.Add(role);
+                }
+                foreach (User user in mentionedUsers)
+                {
+                    targetUsers.Add(targetGuild.TryToGetUser(user.Identifier));
+                }
+                foreach (ChannelMention channelMention in mentionedChannels)
+                {
+                    IChannel channel = targetGuild.TryToGetChannel(channelMention.Identifier);
+                    if (channel != null)
+                        targetChannels.Add(channel);
+                }
             }
             Guild = targetGuild;
             Channel = targetChannel;
