@@ -16,7 +16,7 @@ namespace Gateway
 {
     internal class Gateway
     {
-        private readonly Thread socketListener,
+        private readonly Task socketListener,
                                 rateLimitListener,
                                 heart;
         private Uri gatewayUri;
@@ -77,13 +77,14 @@ namespace Gateway
                 //buffer = new byte[chunkSize]; //TAI : нужно ли здесь обнуление?
                 jsonResultBuilder.Clear();
                 jsonResultBuilder.Capacity = CalculateJsonBuilderCapacity(jsonResultBuilder.Length);
-                WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None); // TAI : CTS
+                WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None).ConfigureAwait(false); // TAI : CTS
                 socketSemaphore.Wait();
+                Console.WriteLine("Gateway thread ID: " + Thread.CurrentThread.ManagedThreadId);
                 jsonResultBuilder.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
                 while (!result.EndOfMessage)
                 {
                     //buffer = new byte[chunkSize]; //TAI : нужно ли здесь обнуление?
-                    result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                    result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None).ConfigureAwait(false);
                     jsonResultBuilder.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
                 }
                 if (result.MessageType == WebSocketMessageType.Close)
@@ -93,7 +94,11 @@ namespace Gateway
                 else
                 {
                     socketSemaphore.Release();
-                    NewPayloadReceived(jsonResultBuilder.ToString());
+#pragma warning disable 4014
+                    string payload = jsonResultBuilder.ToString();
+                    Task.Factory.StartNew(() => NewPayloadReceived(payload))
+                                .ConfigureAwait(false);
+#pragma warning disable 4014
                 }
             }
         }
@@ -139,7 +144,7 @@ namespace Gateway
         #region Private method's
         private async void Reconnect() //TODO : доделать метод восстановления
         {//TODO : нужен механизм останаливающий\запускающий сердце
-            heart.Suspend();
+            //heart.Suspend();
             socketSemaphore.Wait();
             socket.Abort();
             await socket.ConnectAsync(gatewayUri, CancellationToken.None);
@@ -147,7 +152,7 @@ namespace Gateway
             GatewayPayload payload = new GatewayPayload(Opcode.Resume, resumeObj);
             await SendAsync(socket, payload, WebSocketMessageType.Text, CancellationToken.None);
             socketSemaphore.Release();
-            heart.Resume();
+            //heart.Resume();
         }
         private int CalculateJsonBuilderCapacity(int builderLenth) //TODO : Считать медиану
         {
@@ -198,15 +203,18 @@ namespace Gateway
         #endregion
         #region Constructor's
         internal Gateway(ClientWebSocket socket, Uri gatewayUri, string botToken)
-        {
+        {//TAI : размер стэков потоков
             this.botToken = botToken;
             this.gatewayUri = gatewayUri;
             this.socket = socket;
             ReachedRateLimit += OnLimitReached;
             Zombied += Reconnect;
-            heart = new Thread(new ThreadStart(Heartbeat), 0);
-            socketListener = new Thread(new ThreadStart(ListenToSocket), 0); //TAI : размер стэка
-            rateLimitListener = new Thread(new ThreadStart(ListenToRateLimit), 0);
+            heart = new Task(Heartbeat);
+            heart.ConfigureAwait(false);
+            socketListener = new Task(ListenToSocket);
+            socketListener.ConfigureAwait(false);
+            rateLimitListener = new Task(ListenToRateLimit);
+            rateLimitListener.ConfigureAwait(false);
         }
         #endregion
     }
