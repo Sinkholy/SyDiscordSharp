@@ -47,7 +47,14 @@ namespace Gateway
                        eventNameJson = json["t"].ToString(),
                        dataTypeFullName;
                 Opcode opcode = ParseOpcode(opcodeJson);
-                dataTypeFullName = $"{objectType.Namespace}.Payload.DataObjects.{opcode}";
+                if(opcode == Opcode.Dispatch)
+                {
+                    dataTypeFullName = $"{objectType.Namespace}.Payload.DataObjects.Dispatch.{opcode}";
+                }
+                else
+                {
+                    dataTypeFullName = $"{objectType.Namespace}.Payload.DataObjects.{opcode}";
+                }
                 Type dataType = objectType.Assembly.GetType(dataTypeFullName);
                 IGatewayDataObject dataObject = JsonConvert.DeserializeObject(dataJson, dataType) as IGatewayDataObject;
 
