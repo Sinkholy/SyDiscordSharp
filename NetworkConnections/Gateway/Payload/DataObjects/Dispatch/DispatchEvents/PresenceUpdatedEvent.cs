@@ -25,8 +25,8 @@ namespace Gateway.Payload.DataObjects.Dispatch.DispatchEvents
         internal Activity Game { get; private set; }
         [JsonProperty(PropertyName = "activities")]
         internal Activity[] Activities { get; private set; }
-        //[JsonProperty(PropertyName = "premium_since")]
-        internal DateTime PremiumSince { get; private set; }
+        [JsonProperty(PropertyName = "premium_since")]
+        internal DateTime? PremiumSince { get; private set; }
         [JsonProperty(PropertyName = "status")]
         internal UserStatus Status { get; private set; }
         [JsonProperty(PropertyName = "client_status")]
