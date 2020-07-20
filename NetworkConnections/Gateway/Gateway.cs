@@ -16,9 +16,21 @@ namespace Gateway
 {
     internal class Gateway
     {
+        #region Delegates and events
+        private delegate void socketCloseReceived(WebSocketCloseStatus? status, string description);
+        private event socketCloseReceived SocketCloseReceived = delegate { };
+
+        internal delegate void PayloadReceived(string payloadJson);
+        internal delegate void reachedRateLimit(TimeSpan tillNextMinute);
+        internal delegate void VoidEvent();
+        internal event PayloadReceived NewPayloadReceived = delegate { };
+        internal event VoidEvent Zombied = delegate { };
+        internal event reachedRateLimit ReachedRateLimit = delegate { };
+        #endregion
+        #region Private fields
         private readonly Task socketListener,
-                                rateLimitListener,
-                                heart;
+                                rateLimitListener;
+        private Task heart;
         private Uri gatewayUri;
         private readonly ClientWebSocket socket;
         private readonly SemaphoreSlim socketSemaphore = new SemaphoreSlim(1);
@@ -31,17 +43,7 @@ namespace Gateway
         private int chunkSize = 1024 * 4, //TODO : подтягивать из конфига, 
                     messageCount = 0,
                     messageTotalLength = 0;
-        #region Delegates and events
-        private delegate void socketCloseReceived(WebSocketCloseStatus? status, string description);
-        private event socketCloseReceived SocketCloseReceived = delegate { };
-        
-        internal delegate void lastSequenceChanged(string oldSequence, string newSequence);
-        internal delegate void payloadReceived(string payloadJson);
-        internal delegate void reachedRateLimit(TimeSpan tillNextMinute);
-        internal delegate void voidEvent();
-        internal event payloadReceived NewPayloadReceived = delegate { };
-        internal event voidEvent Zombied = delegate { };
-        internal event reachedRateLimit ReachedRateLimit = delegate { };
+        private CancellationTokenSource heartCTS;
         #endregion
 
         #region Thread's tasks
@@ -104,14 +106,14 @@ namespace Gateway
         }
         private async void Heartbeat()
         {
-            Heartbeat heartbeatObj = new Heartbeat(lastSequence);
+            Heartbeat heartbeatObj = new Heartbeat();
             GatewayPayload payload = new GatewayPayload(Opcode.Heartbeat, heartbeatObj);
             while (true)
             {
                 if (heartbeatAckReceived)
                 {
-                    heartbeatObj.Sequence = lastSequence;
-                    await SendAsync(socket, payload, WebSocketMessageType.Text, CancellationToken.None);
+                    heartbeatObj.Sequence =  lastSequence;
+                    await SendAsync(payload, WebSocketMessageType.Text, CancellationToken.None);
                     heartbeatAckReceived = false;
                 }
                 else
@@ -142,17 +144,23 @@ namespace Gateway
         }
         #endregion
         #region Private method's
-        private async void Reconnect() //TODO : доделать метод восстановления
-        {//TODO : нужен механизм останаливающий\запускающий сердце
-            //heart.Suspend();
+        private async void Reconnect()
+        {
+            heartCTS.Cancel();
             socketSemaphore.Wait();
             socket.Abort();
             await socket.ConnectAsync(gatewayUri, CancellationToken.None);
             Resume resumeObj = new Resume(botToken, sessionIdentifier, lastSequence);
             GatewayPayload payload = new GatewayPayload(Opcode.Resume, resumeObj);
-            await SendAsync(socket, payload, WebSocketMessageType.Text, CancellationToken.None);
+            await SendAsync(payload, WebSocketMessageType.Text, CancellationToken.None);
             socketSemaphore.Release();
-            //heart.Resume();
+            ImplantNewHeart();
+        }
+        private void ImplantNewHeart()
+        {
+            heartCTS = new CancellationTokenSource();
+            heart = new Task(Heartbeat, heartCTS.Token);
+            heart.ConfigureAwait(false);
         }
         private int CalculateJsonBuilderCapacity(int builderLenth) //TODO : Считать медиану
         {
@@ -167,12 +175,14 @@ namespace Gateway
             await socket.ConnectAsync(gatewayUri, CancellationToken.None);
             if (socket.State != WebSocketState.Open)
             {
-                throw new Exception("cannot connect"); // TODO : попытку переподключения
+                DiscordGatewayClient.RaiseLog("Cannot connect to gateway. Retrying in 5s");
+                await ConnectToGatewayAsync();
+                return;
             }
             rateLimitListener.Start();
             socketListener.Start();
         }
-        internal async Task SendAsync(ClientWebSocket client, GatewayPayload payload, WebSocketMessageType msgType, CancellationToken cts)
+        internal async Task SendAsync(GatewayPayload payload, WebSocketMessageType msgType, CancellationToken cts)
         {
             string jsonPayload = JsonConvert.SerializeObject(payload, typeof(GatewayPayload), null); // TODO : сериализацию с помощью внещнего проекта
             byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonPayload);
@@ -184,17 +194,17 @@ namespace Gateway
             if (chunksCount == 1)
             {
                 socketSemaphore.Wait();
-                await client.SendAsync(new ArraySegment<byte>(jsonBytes), msgType, true, cts);
+                await socket.SendAsync(new ArraySegment<byte>(jsonBytes), msgType, true, cts);
             }
             else
             {
                 for (int i = 0; i < chunksCount; i++)
                 {
-                    bool isLastMsg = i == chunksCount ? true : false;
+                    bool isLastMsg = i == chunksCount;
                     int offset = i * chunkSize,
                         count = isLastMsg ? (jsonBytes.Length - chunkSize * i) : chunkSize;
                     socketSemaphore.Wait();
-                    await client.SendAsync(new ArraySegment<byte>(jsonBytes, offset, count), msgType, isLastMsg, cts);
+                    await socket.SendAsync(new ArraySegment<byte>(jsonBytes, offset, count), msgType, isLastMsg, cts);
                 }
             }
             payloadSentLastMinute++;
@@ -202,15 +212,14 @@ namespace Gateway
         }
         #endregion
         #region Constructor's
-        internal Gateway(ClientWebSocket socket, Uri gatewayUri, string botToken)
+        internal Gateway(Uri gatewayUri, string botToken)
         {//TAI : размер стэков потоков
             this.botToken = botToken;
             this.gatewayUri = gatewayUri;
-            this.socket = socket;
+            socket = new ClientWebSocket();
             ReachedRateLimit += OnLimitReached;
             Zombied += Reconnect;
-            heart = new Task(Heartbeat);
-            heart.ConfigureAwait(false);
+            ImplantNewHeart();
             socketListener = new Task(ListenToSocket);
             socketListener.ConfigureAwait(false);
             rateLimitListener = new Task(ListenToRateLimit);
