@@ -10,11 +10,8 @@ namespace Gateway.Payload.DataObjects
     [JsonObject(MemberSerialization.OptIn)]
     class Heartbeat : IGatewayDataObject
     {
-        [JsonProperty(PropertyName = "s")] // TODO : какой-то баг при добавлении order дропает студию
+        [JsonProperty(PropertyName = "s")]
         public string Sequence;
-        public Heartbeat(string sequence)
-        {
-            Sequence = sequence;
-        }
+        public Heartbeat() { }
     }
 }
