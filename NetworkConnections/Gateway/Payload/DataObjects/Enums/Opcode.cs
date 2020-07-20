@@ -12,6 +12,7 @@
         RequestGuildMembers,
         InvalidSession,
         Hello,
-        HeartbeatACK
+        HeartbeatACK,
+        UnknownOpcode = 255
     }
 }
