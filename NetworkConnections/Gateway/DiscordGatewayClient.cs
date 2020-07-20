@@ -45,6 +45,10 @@ namespace Gateway
                 return instance;
             }
         }
+        internal static void RaiseLog(string logData)
+        {
+            GetInstance().Log(logData);
+        }
         internal static IGuild TryToGetGuild(string id)
         {
             DiscordGatewayClient client = GetInstance();
@@ -60,6 +64,10 @@ namespace Gateway
         public IReadOnlyCollection<IGuild> Guilds
             => guilds.Values.ToList() as IReadOnlyCollection<IGuild>;
         #endregion
+        #region Public events
+        public delegate void ToLog(string logData);
+        public event ToLog Log = delegate { };
+        #endregion
         #region Internal fields
         internal Dictionary<string, IGuild> guilds { get; private set; }
         internal Dictionary<string, List<string>> userGuilds { get; private set; }
@@ -71,6 +79,7 @@ namespace Gateway
         internal delegate void NewSequence(string seq);
         internal delegate void NewClientEvent(string eventName, string eventData);
         internal delegate void NewSystemEvent(Opcode opcode, IGatewayDataObject data);
+
         internal event NewClientEvent NewClientEventReceived = delegate { };
         internal event NewSystemEvent NewSystemEventReceived = delegate { };
         internal event NewSequence NewSequenceReceived = delegate { };
@@ -81,7 +90,6 @@ namespace Gateway
         private Gateway gateway;
         private readonly SystemEventHandler systemEventHandler;
         private readonly DispatchEventHandler dispatchEventHandler;
-        private ClientWebSocket clientWebSocket;
         private short identifyLimit; // TODO : метод обновлящий значение при отправке новой идентификации
                                      // и изначальное записывание значения полученое при первичном запросе к HTTP API
         private DateTime readyReceived;
@@ -89,7 +97,6 @@ namespace Gateway
         #region Event handlers
         private void OnNewPayloadReceivedAsync(string payloadStr)
         {
-            Console.WriteLine("Payload handler thread ID: " + Thread.CurrentThread.ManagedThreadId);
             GatewayPayload payload = JsonConvert.DeserializeObject<GatewayPayload>(payloadStr);
             if (payload.Opcode == Opcode.Dispatch)
             {
@@ -123,7 +130,7 @@ namespace Gateway
         public async Task StartAsync(Uri gatewayUri) //TAI : подписать этот метод на некое событие в HTTP-клиенте сигнализирующее о получении /gateway ответа 
         {
             GatewayUri = gatewayUri;
-            gateway = new Gateway(clientWebSocket, GatewayUri, botToken);
+            gateway = new Gateway(GatewayUri, botToken);
 
             #region Event's handler's binding
             NewSequenceReceived += gateway.OnSequenceReceived;
@@ -184,14 +191,13 @@ namespace Gateway
             IdentifyProperties properties = new IdentifyProperties("SinkholesImpl", "SinkholesDevice");
             Identify identityObj = new Identify(botToken, properties, IdentifyIntents.None);
             GatewayPayload payload = new GatewayPayload(Opcode.Identify, identityObj);
-            await gateway.SendAsync(clientWebSocket, payload, WebSocketMessageType.Text, CancellationToken.None);
+            await gateway.SendAsync(payload, WebSocketMessageType.Text, CancellationToken.None);
         }
         #endregion
         #region Ctor's
         private DiscordGatewayClient() 
         {
             guilds = new Dictionary<string, IGuild>();
-            clientWebSocket = new ClientWebSocket();
             jsonSerializer = new JsonSerializer();
             systemEventHandler = new SystemEventHandler();
             dispatchEventHandler = new DispatchEventHandler();
