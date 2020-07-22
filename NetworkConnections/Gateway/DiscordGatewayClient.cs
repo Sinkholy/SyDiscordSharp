@@ -1,4 +1,5 @@
 ﻿using Gateway.DataObjects;
+using Gateway.Entities;
 using Gateway.Entities.Channels;
 using Gateway.Entities.Guilds;
 using Gateway.Entities.Users;
@@ -118,7 +119,7 @@ namespace Gateway
         {
             Ready ready = args.EventData as Ready;
             BotUser = ready.User;
-            foreach(var guild in ready.Guilds) 
+            foreach(var guild in ready.Guilds)
                 guilds.Add(guild.Identifier, guild as IGuild);
             readyReceived = DateTime.Now;
         }
@@ -129,7 +130,7 @@ namespace Gateway
                 guilds[guild.Identifier] = guild;
             else
                 guilds.Add(guild.Identifier, guild);
-            
+
         }
         private void OnGuildUpdated(object sender, EventHandlerArgs args)
         {
@@ -206,6 +207,65 @@ namespace Gateway
                 }
             }
         }
+        private void OnRoleCreated(object sender, EventHandlerArgs args)
+        {
+            RoleEvent createdRole = args.EventData as RoleEvent;
+            if (!guilds.ContainsKey(createdRole.GuildIdentifier))
+                Log("Handling RoleCreated event. Cannot find target guild");
+            else
+            {
+                if (guilds[createdRole.GuildIdentifier] is Guild guild)
+                {
+                    guild.AddRole(createdRole.Role);
+                }
+                else
+                {
+                    Log("Handling RoleCreated event. Cannot cast target IGuild to Guild");
+                }
+            }
+        }
+        private void OnRoleUpdated(object sender, EventHandlerArgs args)
+        {
+            RoleEvent updatedRole = args.EventData as RoleEvent;
+            if (!guilds.ContainsKey(updatedRole.GuildIdentifier))
+                Log("Handling RoleUpdated event. Cannot find target guild");
+            else
+            {
+                if (guilds[updatedRole.GuildIdentifier] is Guild guild)
+                {
+                    Role roleToUpdate = guild.TryToGetRole(updatedRole.Role.Identifier);
+                    if(roleToUpdate is null)
+                    {
+                        Log("Handling RoleUpdated event. Cannot find target role");
+                    }
+                    else
+                    {
+                        roleToUpdate.UpdateRole(updatedRole.Role);
+                    }
+                }
+                else
+                {
+                    Log("Handling RoleUpdated event. Cannot cast target IGuild to Guild");
+                }
+            }
+        }
+        private void OnRoleDeleted(object sender, EventHandlerArgs args)
+        {
+            RoleDeletedEvent deletedRole = args.EventData as RoleDeletedEvent;
+            if (!guilds.ContainsKey(deletedRole.GuildIdentifier))
+                Log("Handling RoleDeleted event. Cannot find target guild");
+            else
+            {
+                if (guilds[deletedRole.GuildIdentifier] is Guild guild)
+                {
+                    guild.RemoveRole(deletedRole.RoleIdentifier);
+                }
+                else
+                {
+                    Log("Handling RoleDeleted event. Cannot cast target IGuild to Guild");
+                }
+            }
+        }
         #endregion
         #region Public methods
         public async Task StartAsync(Uri gatewayUri) //TAI : подписать этот метод на некое событие в HTTP-клиенте сигнализирующее о получении /gateway ответа 
@@ -228,8 +288,13 @@ namespace Gateway
             dispatchEventHandler.ChannelCreated += OnChannelCreated;
             dispatchEventHandler.ChannelUpdated += OnChannelUpdated;
             dispatchEventHandler.ChannelDeleted += OnChannelDeleted;
+            dispatchEventHandler.GuildRoleCreated += OnRoleCreated;
+            dispatchEventHandler.GuildRoleUpdated += OnRoleUpdated;
+            dispatchEventHandler.GuildRoleDeleted += OnRoleDeleted;
             dispatchEventHandler.Ready += OnReady;
             dispatchEventHandler.Ready += gateway.OnReady;
+
+            this.Log += (x) => Console.WriteLine(x);
 
             gateway.NewPayloadReceived += OnNewPayloadReceivedAsync;
             #endregion

@@ -112,12 +112,12 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         private string afkChannelIdentifier;
         [JsonProperty(PropertyName = "system_channel_id")]
         private string systemChannelIdentifier;
-        [JsonProperty(PropertyName = "roles")]
         internal List<Role> Roles
         {
             get => _roles ?? new List<Role>(capacity: 0);
             set => _roles = value;
         }
+        [JsonProperty(PropertyName = "roles")]
         private List<Role> _roles;
         [JsonProperty(PropertyName = "members")]
         internal List<GuildUser> Users
@@ -148,6 +148,18 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
             if (channelToRemove != null)
             {
                 channels.Remove(channelToRemove);
+            }
+        }
+        internal void AddRole(Role role)
+        {
+            Roles.Add(role);
+        }
+        internal void RemoveRole(string roleId)
+        {
+            Role roleToRemove = Roles.Where(x => x.Identifier == roleId).SingleOrDefault();
+            if(roleToRemove != null)
+            {
+                Roles.Remove(roleToRemove);
             }
         }
         internal IChannel TryToGetChannel(string id) //TAI : каналы\юзеров\роли запихать в словари для быстрого доступа?

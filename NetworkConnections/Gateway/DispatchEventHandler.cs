@@ -1,6 +1,7 @@
 ﻿using Gateway.DataObjects;
 using Gateway.DataObjects.Voice;
 using Gateway.Entities;
+using Gateway.Entities.Channels;
 using Gateway.Entities.Guilds;
 using Gateway.Entities.Invite;
 using Gateway.Entities.Message;
@@ -14,7 +15,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Remoting.Channels;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
@@ -63,11 +63,11 @@ namespace Gateway
         internal void OnNewClientEventReceived(string eventName, string eventData)
         {
             Enum.TryParse(eventName, out Events eventToRaiseName);
-            if (eventToRaiseName == Events.UnknownEvent) 
-                throw new Exception("UnknownEvent"); //TODO : здесь я не уверен, что нужно исключение, скорее логирование
+            if (eventToRaiseName == Events.UnknownEvent)
+                DiscordGatewayClient.RaiseLog($"Unknown dispatch event. /n Event name: {eventName} /n Event data: {eventData}");
             EventHandlerArgs eventArgs;
             object eventArgsData;
-            //Console.WriteLine(eventName + "!!!!!!!!!!!!!!!!!!!!!");
+            //Console.WriteLine(eventName + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
             //Console.WriteLine(eventData);
             switch (eventToRaiseName)
             {
@@ -168,7 +168,7 @@ namespace Gateway
                     GuildRoleUpdated(this, eventArgs);
                     break;
                 case Events.GUILD_ROLE_DELETE:
-                    eventArgsData = JsonConvert.DeserializeObject<RoleEvent>(eventData);
+                    eventArgsData = JsonConvert.DeserializeObject<RoleDeletedEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     GuildRoleDeleted(this, eventArgs);
                     break;
@@ -257,17 +257,17 @@ namespace Gateway
         #region Ctor's
         internal DispatchEventHandler() { }
         #endregion
-        internal class EventHandlerArgs : EventArgs
+    }
+    public class EventHandlerArgs : EventArgs
+    {
+        public Type EventDataObjectType { get; private set; }
+        public Events EventName { get; private set; }
+        public object EventData { get; private set; }
+        internal EventHandlerArgs(Type eventDataType, Events eventName, object eventData)
         {
-            public Type EventDataObjectType { get; private set; }
-            public Events EventName { get; private set; }
-            public object EventData { get; private set; }
-            internal EventHandlerArgs(Type eventDataType, Events eventName, object eventData)
-            {
-                EventDataObjectType = eventDataType;
-                EventName = eventName;
-                EventData = eventData;
-            }
+            EventDataObjectType = eventDataType;
+            EventName = eventName;
+            EventData = eventData;
         }
     }
 }
