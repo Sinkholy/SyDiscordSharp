@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 
 namespace Gateway.Entities.Guilds //TAI : ленивая загрузка всего и вся (ролей\пользователей etc.)
 {
@@ -28,16 +29,16 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
                        .Select(x => x as ITextChannel)
                        .ToList() as IReadOnlyCollection<ITextChannel>;
         #endregion
-        #region internal fields\properties
+        #region Public fields\properties
         public IChannel PublicUpdatesChannel  //Смотри на канал виджетов
             => channels.Where(x => x.Identifier == publicUpdatesChannelIdentifier).SingleOrDefault();
         public IChannel WidgetChannel //TODO : узнать что из себя представляет Widget-канал и изменить тип
             => channels.Where(x => x.Identifier == widgetChannelIdentifier).SingleOrDefault();
-        public ITextChannel RulesChannel 
+        public ITextChannel RulesChannel
             => channels.Where(x => x.Identifier == rulesChannelIdentifier)
                        .Select(x => x as ITextChannel)
                        .SingleOrDefault();
-        public ITextChannel SystemChannel 
+        public ITextChannel SystemChannel
             => channels.Where(x => x.Identifier == systemChannelIdentifier)
                        .Select(x => x as ITextChannel)
                        .SingleOrDefault();
@@ -45,10 +46,11 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
             => channels.Where(x => x.Identifier == afkChannelIdentifier)
                        .Select(x => x as IVoiceChannel)
                        .SingleOrDefault();
-        public IUser Owner 
+        public IUser Owner
             => Users.Where(x => (x as IUser).Identifier == ownerIdentifier)
                                             .SingleOrDefault() as IUser;
-
+        #endregion
+        #region internal fields\properties
         [JsonProperty(PropertyName = "owner")]
         internal bool IsOwner;
         [JsonProperty(PropertyName = "permissions")]
@@ -67,8 +69,6 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         internal DefaultMessageNotificationLevel DefaultMessageNotificationLevel;
         [JsonProperty(PropertyName = "explicit_content_filter")]
         internal ExplicitContentFilterLevel ExplicitContentFilterLevel;
-        [JsonProperty(PropertyName = "roles")]
-        internal Role[] Roles;
         [JsonProperty(PropertyName = "joined_at")]
         internal DateTime JoinedAt;
         [JsonProperty(PropertyName = "large")]
@@ -77,14 +77,11 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         internal int MemberCount;
         [JsonProperty(PropertyName = "voice_states")]
         internal VoiceState[] VoiceStates;
-        [JsonProperty(PropertyName = "members")]
-        internal GuildUser[] Users;
         //[JsonProperty(PropertyName = "presences")]
         //internal Presence[] Presences;
-        internal TimeSpan AfkTimeout;
+        internal TimeSpan? AfkTimeout;
         [JsonProperty(PropertyName = "max_presences")]
-        internal int MaxPresences = 25000; //TODO : при получении null-значения(json), необходимо 
-                                           //устанавливать стандартное значение, на данный момент == 25000
+        internal int? MaxPresences = 25000;
         [JsonProperty(PropertyName = "region")]
         internal string Region;
         [JsonProperty(PropertyName = "max_members")]
@@ -117,10 +114,32 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         private string afkChannelIdentifier;
         [JsonProperty(PropertyName = "system_channel_id")]
         private string systemChannelIdentifier;
+        [JsonProperty(PropertyName = "roles")]
+        internal List<Role> Roles
+        {
+            get => _roles ?? new List<Role>(capacity: 0);
+            set => _roles = value;
+        }
+        private List<Role> _roles;
+        [JsonProperty(PropertyName = "members")]
+        internal List<GuildUser> Users
+        {
+            get => _users ?? new List<GuildUser>(capacity: 0);
+            set => _users = value;
+        }
+        private List<GuildUser> _users;
+        private List<IChannel> channels 
+        {
+            get => _channels ?? new List<IChannel>(capacity: 0);
+            set => _channels = value;
+        }
         [JsonProperty(PropertyName = "channels")]
-        private IChannel[] channels;
+        private List<IChannel> _channels;
         #endregion
-
+        public void UpdateGuild(Guild newGuildInfo)
+        {
+            
+        }
         internal IChannel TryToGetChannel(string id) //TAI : каналы\юзеров\роли запихать в словари для быстрого доступа?
         {                                            //может быть актуально при частом доступе(а он будет, по идее);
             return channels.Where(x => x.Identifier == id).SingleOrDefault();
@@ -133,7 +152,6 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         {
             return Roles.Where(x => x.Identifier == id).SingleOrDefault();
         }
-
         #region Deserialization methods
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
