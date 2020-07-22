@@ -27,11 +27,6 @@ namespace Gateway.Entities.Guilds
         [JsonProperty(PropertyName = "features")]
         public GuildFeatures[] Features { get; private set; }
         [JsonProperty(PropertyName = "available")]
-        public bool Unavailable { get; private set; }
-
-        public void UpdateGuild(IGuild newGuildInfo)
-        {
-
-        }
+        public bool Unavailable { get; internal set; }
     }
 }

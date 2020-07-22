@@ -15,7 +15,6 @@ namespace Gateway.Entities.Guilds
         GuildFeatures[] Features { get; }
         int ApproximatePresenceCount { get; }
         int ApproximateMemberCount { get; }
-        void UpdateGuild(IGuild newGuildInfo);
     }
     public enum GuildFeatures
     {
