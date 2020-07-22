@@ -8,8 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Text.RegularExpressions;
-
 namespace Gateway.Entities.Guilds //TAI : ленивая загрузка всего и вся (ролей\пользователей etc.)
 {
     internal class Guild : GuildPreview
@@ -139,6 +137,18 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         public void UpdateGuild(Guild newGuildInfo)
         {
             
+        }
+        internal void AddChannel(IChannel channel)
+        {
+            channels.Add(channel);
+        }
+        internal void RemoveChannel(string channelId)
+        {
+            IChannel channelToRemove = channels.Where(x => x.Identifier == channelId).SingleOrDefault();
+            if (channelToRemove != null)
+            {
+                channels.Remove(channelToRemove);
+            }
         }
         internal IChannel TryToGetChannel(string id) //TAI : каналы\юзеров\роли запихать в словари для быстрого доступа?
         {                                            //может быть актуально при частом доступе(а он будет, по идее);

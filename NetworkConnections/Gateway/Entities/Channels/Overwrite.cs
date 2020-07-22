@@ -11,13 +11,13 @@ namespace Gateway.Entities.Channels
     internal class Overwrite
     {
         [JsonProperty(PropertyName = "id")]
-        string Identifier;
+        internal string Identifier { get; private set; }
         [JsonProperty(PropertyName = "type")]
-        OverwriteType Type; //Role or member
+        internal OverwriteType Type { get; private set; }
         [JsonProperty(PropertyName = "allow")]
-        int Allow;
+        public int Allow { get; internal set; }
         [JsonProperty(PropertyName = "deny")]
-        int Deny;
+        public int Deny { get; internal set; }
     }
     internal enum OverwriteType : byte
     {

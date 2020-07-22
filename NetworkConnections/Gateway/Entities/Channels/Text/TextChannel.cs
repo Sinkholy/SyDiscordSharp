@@ -16,6 +16,20 @@ namespace Gateway.Entities.Channels.Text
         [JsonProperty(PropertyName = "last_message_id")]
         private string lastMessageIdentifier;
 
+        #region IUpdatableChannel impl
+        public override string UpdateChannel(IChannel newChannelInfo)
+        {
+            StringBuilder result = new StringBuilder();
+            result.Append(base.UpdateChannel(newChannelInfo));
+            TextChannel newChannel = newChannelInfo as TextChannel;
+            if(newChannel is null)
+            {
+                DiscordGatewayClient.RaiseLog("Handling channel updated event. Cannot cast to TextChannel");
+                return "";
+            }
+            return result.ToString();
+        }
+        #endregion
         #region ITextChannel implementation
         public void SendMessage(IMessage message) { }
         public void SendMessage(string message) { }

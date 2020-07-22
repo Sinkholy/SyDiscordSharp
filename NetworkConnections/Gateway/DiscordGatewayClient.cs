@@ -1,4 +1,5 @@
 ﻿using Gateway.DataObjects;
+using Gateway.Entities.Channels;
 using Gateway.Entities.Guilds;
 using Gateway.Entities.Users;
 using Gateway.Payload.DataObjects;
@@ -22,6 +23,7 @@ using System.Net.WebSockets;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -66,6 +68,10 @@ namespace Gateway
         #endregion
         #region Public events
         public delegate void ToLog(string logData);
+        public delegate void StringEvent(string guildId);
+
+        public event StringEvent BotRemovedFromGuild = delegate { };
+        public event StringEvent GuildBecameUnavailable = delegate { };
         public event ToLog Log = delegate { };
         #endregion
         #region Internal fields
@@ -120,10 +126,85 @@ namespace Gateway
         {
             IGuild guild = args.EventData as IGuild;
             if (guilds.ContainsKey(guild.Identifier))
-                guilds[guild.Identifier].UpdateGuild(guild);
+                guilds[guild.Identifier] = guild;
             else
                 guilds.Add(guild.Identifier, guild);
             
+        }
+        private void OnGuildUpdated(object sender, EventHandlerArgs args)
+        {
+            Guild guild = args.EventData as Guild;
+            (guilds[guild.Identifier] as Guild).UpdateGuild(guild);
+        }
+        private void OnGuildDeleted(object sender, EventHandlerArgs args)
+        {
+            GuildPreview guild = args.EventData as GuildPreview;
+            if (guild.Unavailable)
+            {
+                (guilds[guild.Identifier] as Guild).Unavailable = true;
+                GuildBecameUnavailable(guild.Identifier); //TODO : проверка была ли удалена гильдия при помощи отправки GET запроса
+            }
+            else
+            {
+                BotRemovedFromGuild(guild.Identifier);
+            }
+        }
+        private void OnChannelCreated(object sender, EventHandlerArgs args)
+        {
+            IGuildChannel newChannel = args.EventData as IGuildChannel;
+            if (!guilds.ContainsKey(newChannel.GuildIdentifier))
+                Log("New channel was created but no guild stored for this channel");
+            else
+            {
+                if(guilds[newChannel.GuildIdentifier] is Guild guild)
+                {
+                    guild.AddChannel(newChannel);
+                }
+                else
+                {
+                    Log("Cannot cast target IGuild to Guild");
+                }
+            }
+        }
+        private void OnChannelUpdated(object sender, EventHandlerArgs args)
+        {
+            IGuildChannel newChannelInfo = args.EventData as IGuildChannel;
+            if (!guilds.ContainsKey(newChannelInfo.GuildIdentifier))
+                Log("Handling ChannelUpdate event. Cannot find target guild");
+            else
+            {
+                if (guilds[newChannelInfo.GuildIdentifier] is Guild guild)
+                {
+                    IChannel targetChannel = guild.TryToGetChannel(newChannelInfo.Identifier);
+                    if(targetChannel is null)
+                    {
+                        Log("Handling ChannelUpdate event. Cannot find target channel");
+                        return;
+                    }
+                    Console.WriteLine((targetChannel as IUpdatableChannel).UpdateChannel(newChannelInfo));
+                }
+                else
+                {
+                    Log("Handling ChannelUpdate event. Cannot cast target IGuild to Guild");
+                }
+            }
+        }
+        private void OnChannelDeleted(object sender, EventHandlerArgs args)
+        {
+            IGuildChannel channelToDelete = args.EventData as IGuildChannel;
+            if (!guilds.ContainsKey(channelToDelete.GuildIdentifier))
+                Log("Handling ChannelDeleted event. Cannot find target guild");
+            else
+            {
+                if (guilds[channelToDelete.GuildIdentifier] is Guild guild)
+                {
+                    guild.RemoveChannel(channelToDelete.Identifier);
+                }
+                else
+                {
+                    Log("Handling ChannelUpdate event. Cannot cast target IGuild to Guild");
+                }
+            }
         }
         #endregion
         #region Public methods
@@ -142,6 +223,11 @@ namespace Gateway
             systemEventHandler.HeartbeatACK += gateway.OnHeartbeatAck;
 
             dispatchEventHandler.GuildCreated += OnGuildCreated;
+            dispatchEventHandler.GuildUpdated += OnGuildUpdated;
+            dispatchEventHandler.GuildDeleted += OnGuildDeleted;
+            dispatchEventHandler.ChannelCreated += OnChannelCreated;
+            dispatchEventHandler.ChannelUpdated += OnChannelUpdated;
+            dispatchEventHandler.ChannelDeleted += OnChannelDeleted;
             dispatchEventHandler.Ready += OnReady;
             dispatchEventHandler.Ready += gateway.OnReady;
 

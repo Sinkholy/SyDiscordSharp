@@ -1,4 +1,5 @@
-﻿using Gateway.Entities.Guilds;
+﻿using Gateway.Entities.Channels.Text;
+using Gateway.Entities.Guilds;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -8,16 +9,21 @@ using System.Text;
 namespace Gateway.Entities.Channels
 {
     [JsonObject(MemberSerialization.OptIn)]
-    internal class ChannelCategory : Channel, IGuildChannel
+    internal class ChannelCategory : GuildTextChannelBase
     {
-        [JsonProperty(PropertyName = "guild_id")]
-        public string GuildIdentifier { get; private set; }
-
-        public void UpdateChannelGuildId(IGuild guild) => GuildIdentifier = guild.Identifier;
-
         #region Ctor's
-        internal ChannelCategory(string id, ChannelType type)
-            : base(id, type) { }
+        internal ChannelCategory(string id,
+                                  ChannelType type,
+                                  string lastMsgId,
+                                  string guildId,
+                                  string name,
+                                  int position,
+                                  List<Overwrite> permissionsOverwrite,
+                                  bool nsfw,
+                                  string parentId)
+            : base(id, type, lastMsgId, guildId, name, position, permissionsOverwrite, nsfw, parentId)
+        {
+        }
         internal ChannelCategory(ChannelType type)
             : base(type) { }
         #endregion

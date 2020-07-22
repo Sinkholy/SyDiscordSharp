@@ -17,7 +17,7 @@ namespace Gateway.Entities.Channels.Text
                                   string guildId,
                                   string name,
                                   int position,
-                                  Overwrite[] permissionsOverwrite,
+                                  List<Overwrite> permissionsOverwrite,
                                   bool nsfw,
                                   string parentId,
                                   string topic)

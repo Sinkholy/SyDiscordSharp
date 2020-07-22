@@ -18,6 +18,36 @@ namespace Gateway.Entities.Channels.Text
         [JsonProperty(PropertyName = "name")]
         internal string Name;
 
+        public override string UpdateChannel(IChannel channelNewInfo)
+        {
+            StringBuilder result = new StringBuilder();
+            result.Append(base.UpdateChannel(channelNewInfo));
+            GroupDMTextChannel newChannel = channelNewInfo as GroupDMTextChannel;
+            if (newChannel is null)
+            {
+                DiscordGatewayClient.RaiseLog("Handling channel updated event. Cannot cast to DMTextChannel");
+                return "";
+            }
+            else
+            {
+                if(IconHash != newChannel.IconHash)
+                {
+                    IconHash = newChannel.IconHash;
+                    result.Append("Icon |");
+                }
+                if(Name != newChannel.Name)
+                {
+                    Name = newChannel.Name;
+                    result.Append("Name |");
+                }
+                if(OwnerIdentifier != newChannel.OwnerIdentifier)
+                {
+                    OwnerIdentifier = newChannel.OwnerIdentifier;
+                    result.Append("Owner |");
+                }
+            }
+            return result.ToString();
+        }
         #region Ctor's
         internal GroupDMTextChannel(string id,
                                     ChannelType type,

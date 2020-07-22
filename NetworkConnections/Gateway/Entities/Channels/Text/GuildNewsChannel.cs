@@ -13,6 +13,26 @@ namespace Gateway.Entities.Channels.Text
         [JsonProperty(PropertyName = "topic")]
         internal string Topic;
 
+        public override string UpdateChannel(IChannel newChannelInfo)
+        {
+            StringBuilder result = new StringBuilder();
+            result.Append(base.UpdateChannel(newChannelInfo));
+            GuildNewsChannel newChannel = newChannelInfo as GuildNewsChannel;
+            if(newChannel is null)
+            {
+                DiscordGatewayClient.RaiseLog("Handling channel updated event. Cannot cast to GuildNewsChannel");
+                return "";
+            }
+            else
+            {
+                if(Topic != newChannel.Topic)
+                {
+                    Topic = newChannel.Topic;
+                    result.Append("Topic |");
+                }
+            }
+            return result.ToString();
+        }
         #region Ctor's
         internal GuildNewsChannel(string id,
                                   ChannelType type,
@@ -20,7 +40,7 @@ namespace Gateway.Entities.Channels.Text
                                   string guildId,
                                   string name,
                                   int position,
-                                  Overwrite[] permissionsOverwrite,
+                                  List<Overwrite> permissionsOverwrite,
                                   bool nsfw,
                                   string parentId,
                                   string topic)

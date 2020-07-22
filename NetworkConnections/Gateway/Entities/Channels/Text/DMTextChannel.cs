@@ -14,7 +14,22 @@ namespace Gateway.Entities.Channels.Text
     {
         [JsonProperty(PropertyName = "recipients")]
         internal IUser[] Recipients;
-
+        public override string UpdateChannel(IChannel channelNewInfo)
+        {
+            StringBuilder result = new StringBuilder();
+            result.Append(base.UpdateChannel(channelNewInfo));
+            DMTextChannel newChannel = channelNewInfo as DMTextChannel;
+            if (newChannel is null)
+            {
+                DiscordGatewayClient.RaiseLog("Handling channel updated event. Cannot cast to DMTextChannel");
+                return "";
+            }
+            else
+            {
+                //TODO : Recipients
+            }
+            return result.ToString();
+        }
         #region Ctor's
         internal DMTextChannel(string id,
                                ChannelType type,

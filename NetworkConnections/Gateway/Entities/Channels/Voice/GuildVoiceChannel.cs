@@ -27,7 +27,62 @@ namespace Gateway.Entities.Channels.Voice
         internal Overwrite[] PermissionsOverwrite;
         [JsonProperty(PropertyName = "parent_id")]
         internal string ParentIdentifier;
-
+        public override string UpdateChannel(IChannel channelNewInfo)
+        {
+            StringBuilder result = new StringBuilder();
+            result.Append(base.UpdateChannel(channelNewInfo));
+            GuildVoiceChannel newChannel = channelNewInfo as GuildVoiceChannel;
+            if (newChannel is null)
+            {
+                DiscordGatewayClient.RaiseLog("Handling channel updated event. Cannot cast to GuildVoiceChannel");
+                return "";
+            }
+            else
+            {
+                if (Bitrate != newChannel.Bitrate)
+                {
+                    Bitrate = newChannel.Bitrate;
+                    result.Append("Bitrate |");
+                }
+                if (Name != newChannel.Name)
+                {
+                    Name = newChannel.Name;
+                    result.Append("Name |");
+                }
+                if (NSFW != newChannel.NSFW)
+                {
+                    NSFW = newChannel.NSFW;
+                    result.Append("NSFW |");
+                }
+                if (ParentIdentifier != newChannel.ParentIdentifier)
+                {
+                    ParentIdentifier = newChannel.ParentIdentifier;
+                    result.Append("ParrentIdentifier |");
+                }
+                if (Position != newChannel.Position)
+                {
+                    Position = newChannel.Position;
+                    result.Append("Position |");
+                }
+                if (UserLimit != newChannel.UserLimit)
+                {
+                    UserLimit = newChannel.UserLimit;
+                    result.Append("Position |");
+                }
+                if (UserLimit != newChannel.UserLimit)
+                {
+                    UserLimit = newChannel.UserLimit;
+                    result.Append("UserLimit |");
+                }
+                if (GuildIdentifier != newChannel.GuildIdentifier)
+                {
+                    GuildIdentifier = newChannel.GuildIdentifier;
+                    result.Append("GuildId |");
+                }
+                //TODO : PermissionOverwrites
+            }
+            return result.ToString();
+        }
         #region IGuildChannel implementation
         public void UpdateChannelGuildId(IGuild guild) => GuildIdentifier = guild.Identifier;
         #endregion

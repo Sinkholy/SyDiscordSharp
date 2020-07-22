@@ -13,7 +13,7 @@ using System.Xml.XPath;
 namespace Gateway.Entities.Channels
 {
     [JsonObject(MemberSerialization.OptIn)]
-    internal abstract class Channel : IChannel
+    internal abstract class Channel : IChannel, IUpdatableChannel
     {
         [JsonProperty(PropertyName = "id")]
         public string Identifier { get; private set; }
@@ -21,6 +21,23 @@ namespace Gateway.Entities.Channels
 
         internal static ChannelType GetChannelType(string type) 
             => (ChannelType) Enum.Parse(typeof(ChannelType), type);
+        #region IUpdatableChannel impl
+        public virtual string UpdateChannel(IChannel channelNewInfo)
+        {
+            StringBuilder result = new StringBuilder();
+            if(Identifier != channelNewInfo.Identifier)
+            {
+                Identifier = channelNewInfo.Identifier;
+                result.Append("Identifier | ");
+            }
+            if(Type != channelNewInfo.Type)
+            {
+                Type = channelNewInfo.Type;
+                result.Append("Type | ");
+            }
+            return result.ToString();
+        }
+        #endregion
 
         #region Ctor's
         internal Channel(string id, ChannelType type)
