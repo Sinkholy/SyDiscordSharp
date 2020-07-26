@@ -11,23 +11,83 @@ using System.Threading.Tasks;
 
 namespace Gateway.Entities.Users
 {
-    internal class GuildUser : IUser
+    internal class GuildUser : User
     {
+        #region IUpdatableUser impl
+        public override string Update(IUser newUserInfo)
+        {
+            StringBuilder result = new StringBuilder();
+            result.Append(base.Update(newUserInfo));
+            GuildUser newUser = newUserInfo as GuildUser;
+            if(PremiumSince != newUser.PremiumSince)
+            {
+                PremiumSince = newUser.PremiumSince;
+                result.Append("PremiumSince | ");
+            }
+            if(Nickname != newUser.Nickname)
+            {
+                Nickname = newUser.Nickname;
+                result.Append("Nickname | ");
+            }
+            if(Deafeaned != newUser.Deafeaned)
+            {
+                Deafeaned = newUser.Deafeaned;
+                result.Append("Deafened | ");
+            }
+            if (Muted != newUser.Muted)
+            {
+                Muted = newUser.Muted;
+                result.Append("Muted | ");
+            }
+            if (Deafeaned != newUser.Deafeaned)
+            {
+                Deafeaned = newUser.Deafeaned;
+                result.Append("Deafened ");
+            }
+            if (RolesIdentifiers.Count != newUser.RolesIdentifiers.Count)
+            {
+                if (RolesIdentifiers.Count > newUser.RolesIdentifiers.Count)
+                {
+                    int count = RolesIdentifiers.Count - newUser.RolesIdentifiers.Count;
+                    result.Append($"{count} Role(s) removed | ");
+                    RolesIdentifiers.RemoveRange(RolesIdentifiers.Count - count, count);
+                }
+                else
+                {
+                    int count = newUser.RolesIdentifiers.Count - RolesIdentifiers.Count;
+                    result.Append($"{count} Role(s) added | ");
+                    RolesIdentifiers.AddRange(newUser.RolesIdentifiers.GetRange(RolesIdentifiers.Count, count));
+                }
+            }
+            else
+            {
+                for (int i = 0; i < RolesIdentifiers.Count; i++)
+                {
+                    if (RolesIdentifiers[i] != newUser.RolesIdentifiers[i])
+                    {
+                        result.Append("Role replaced | ");
+                        RolesIdentifiers[i] = newUser.RolesIdentifiers[i];
+                    }
+                }
+            }
+            return result.ToString();
+        }
+        #endregion
         #region IUser implementation
-        public bool Verified => User.Verified;
-        public bool MFA => User.MFA;
-        public string Identifier => User.Identifier;
-        public string eMail => User.eMail;
-        public string Username => User.Username;
-        public string Discriminator => User.Discriminator;
-        public string FullName => User.FullName;
-        public bool IsBot => User.IsBot;
-        public string AvatarIdentifier => User.AvatarIdentifier;
-        public string Locale => User.Locale;
-        public bool System => User.System;
-        public PremiumType PremiumType => User.PremiumType;
-        public UserFlags Flags => User.Flags;
-        public UserFlags PublicFlags => User.PublicFlags;
+        public override bool Verified => User.Verified;
+        public override bool MFA => User.MFA;
+        public override string Identifier => User.Identifier;
+        public override string eMail => User.eMail;
+        public override string Username => User.Username;
+        public override string Discriminator => User.Discriminator;
+        public override string FullName => User.FullName;
+        public override bool IsBot => User.IsBot;
+        public override string AvatarIdentifier => User.AvatarIdentifier;
+        public override string Locale => User.Locale;
+        public override bool System => User.System;
+        public override PremiumType PremiumType => User.PremiumType;
+        public override UserFlags Flags => User.Flags;
+        public override UserFlags PublicFlags => User.PublicFlags;
         #endregion
         #region Public props\fields
         public IReadOnlyCollection<Role> Roles => roles as IReadOnlyCollection<Role>;
@@ -47,7 +107,7 @@ namespace Gateway.Entities.Users
         #region Private props\fields
         internal List<Role> roles { get; private set; }
         [JsonProperty(PropertyName = "roles")]
-        internal string[] RolesIdentifiers { get; private set; }
+        internal List<string> RolesIdentifiers { get; private set; }
         [JsonProperty(PropertyName = "user")]
         internal User User { get; private set; }
         [JsonProperty(PropertyName = "guild_id")]
@@ -59,7 +119,7 @@ namespace Gateway.Entities.Users
         {
             if(GuildIdentifier != null)
                 Guild = DiscordGatewayClient.TryToGetGuild(GuildIdentifier);
-            roles = new List<Role>(capacity: RolesIdentifiers.Length);
+            roles = new List<Role>(capacity: RolesIdentifiers.Count);
         }
     }
 }

@@ -266,6 +266,63 @@ namespace Gateway
                 }
             }
         }
+        private void OnGuildUserAdded(object sender, EventHandlerArgs args)
+        {
+            GuildUser newUser = args.EventData as GuildUser;
+            if (guilds.ContainsKey(newUser.GuildIdentifier))
+            {
+                if (guilds[newUser.GuildIdentifier] is Guild guild)
+                {
+                    guild.AddUser(newUser);
+                }
+                else
+                {
+                    Log("Handling GuildUserAdded event. Cannot cast target IGuild to Guild");
+                }
+            }
+            else
+            {
+                Log("Handling GuildUserAdded event. Cannot cast target IGuild to Guild");
+            }
+        }
+        private void OnGuildUserUpdated(object sender, EventHandlerArgs args)
+        {
+            GuildUser newUserInfo = args.EventData as GuildUser;
+            if (guilds.ContainsKey(newUserInfo.GuildIdentifier))
+            {
+                if (guilds[newUserInfo.GuildIdentifier] is Guild guild)
+                {
+                    Console.WriteLine((guild.TryToGetUser(newUserInfo.Identifier) as GuildUser).Update(newUserInfo));
+                }
+                else
+                {
+                    Log("Handling GuildUserUpdated event. Cannot cast target IGuild to Guild");
+                }
+            }
+            else
+            {
+                Log("Handling RoleDeleted event. Cannot find target guild");
+            }
+        }
+        private void OnGuildUserRemoved(object sender, EventHandlerArgs args)
+        {
+            GuildMember deletedUser = args.EventData as GuildMember;
+            if (guilds.ContainsKey(deletedUser.GuildIdentifier))
+            {
+                if (guilds[deletedUser.GuildIdentifier] is Guild guild)
+                {
+                    guild.RemoveUser(deletedUser.User.Identifier);
+                }
+                else
+                {
+                    Log("Handling GuildUserUpdated event. Cannot cast target IGuild to Guild");
+                }
+            }
+            else
+            {
+                Log("Handling UserDeleted event. Cannot cast target IGuild to Guild");
+            }
+        }
         #endregion
         #region Public methods
         public async Task StartAsync(Uri gatewayUri) //TAI : подписать этот метод на некое событие в HTTP-клиенте сигнализирующее о получении /gateway ответа 
@@ -291,10 +348,13 @@ namespace Gateway
             dispatchEventHandler.GuildRoleCreated += OnRoleCreated;
             dispatchEventHandler.GuildRoleUpdated += OnRoleUpdated;
             dispatchEventHandler.GuildRoleDeleted += OnRoleDeleted;
+            dispatchEventHandler.GuildMemberAdded += OnGuildUserAdded;
+            dispatchEventHandler.GuildMemberUpdated += OnGuildUserUpdated;
+            dispatchEventHandler.GuildMemberRemoved += OnGuildUserRemoved;
             dispatchEventHandler.Ready += OnReady;
             dispatchEventHandler.Ready += gateway.OnReady;
 
-            this.Log += (x) => Console.WriteLine(x);
+            Log += (x) => Console.WriteLine(x);
 
             gateway.NewPayloadReceived += OnNewPayloadReceivedAsync;
             #endregion

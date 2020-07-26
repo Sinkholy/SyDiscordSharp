@@ -26,6 +26,7 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
             => channels.Where(x => x is ITextChannel)
                        .Select(x => x as ITextChannel)
                        .ToList() as IReadOnlyCollection<ITextChannel>;
+        public IReadOnlyCollection<IUser> Users => UsersList as IReadOnlyCollection<IUser>;
         #endregion
         #region Public fields\properties
         public IChannel PublicUpdatesChannel  //Смотри на канал виджетов
@@ -45,7 +46,7 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
                        .Select(x => x as IVoiceChannel)
                        .SingleOrDefault();
         public IUser Owner
-            => Users.Where(x => (x as IUser).Identifier == ownerIdentifier)
+            => UsersList.Where(x => (x as IUser).Identifier == ownerIdentifier)
                                             .SingleOrDefault() as IUser;
         #endregion
         #region internal fields\properties
@@ -119,12 +120,12 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         }
         [JsonProperty(PropertyName = "roles")]
         private List<Role> _roles;
-        [JsonProperty(PropertyName = "members")]
-        internal List<GuildUser> Users
+        internal List<GuildUser> UsersList // TODO : Потокобезопасность коллекции пользователей
         {
             get => _users ?? new List<GuildUser>(capacity: 0);
             set => _users = value;
         }
+        [JsonProperty(PropertyName = "members")]
         private List<GuildUser> _users;
         private List<IChannel> channels 
         {
@@ -162,14 +163,32 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
                 Roles.Remove(roleToRemove);
             }
         }
+        internal void AddUser(IUser user)
+        {
+            if(user is GuildUser guildUser)
+            {
+                UsersList.Add(guildUser);
+            }
+            else
+            {
+                DiscordGatewayClient.RaiseLog("Cannot add new user to guild, flase to cast to GuildUser");
+            }
+        }
+        internal void RemoveUser(string id)
+        {
+            if (TryToGetUser(id) is GuildUser userToDelete)
+            {
+                UsersList.Remove(userToDelete);
+            }
+        }
         internal IChannel TryToGetChannel(string id) //TAI : каналы\юзеров\роли запихать в словари для быстрого доступа?
         {                                            //может быть актуально при частом доступе(а он будет, по идее);
             return channels.Where(x => x.Identifier == id).SingleOrDefault();
         }
         internal IUser TryToGetUser(string id)
         {
-            return Users.Where(x => (x as IUser).Identifier == id).SingleOrDefault() as IUser;
-        }
+            return UsersList.Where(x => x.Identifier == id).SingleOrDefault() as IUser;
+        } 
         internal Role TryToGetRole(string id)
         {
             return Roles.Where(x => x.Identifier == id).SingleOrDefault();
@@ -189,7 +208,7 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         }
         private void UpdateUsers()
         {
-            foreach (GuildUser user in Users)
+            foreach (GuildUser user in UsersList)
             {
                 foreach (string roleId in user.RolesIdentifiers)
                 {
