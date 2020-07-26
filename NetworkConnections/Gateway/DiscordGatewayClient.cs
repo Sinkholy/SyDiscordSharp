@@ -30,6 +30,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using static Gateway.DispatchEventHandler;
+using static Gateway.Payload.DataObjects.Dispatch.DispatchEvents.PresenceUpdatedEvent;
 
 namespace Gateway
 {
@@ -338,6 +339,7 @@ namespace Gateway
             systemEventHandler.Connected += gateway.OnConnection;
             systemEventHandler.Connected += OnConnection;
             systemEventHandler.HeartbeatACK += gateway.OnHeartbeatAck;
+            systemEventHandler.ReconnectRequested += gateway.OnReconnectRequested;
 
             dispatchEventHandler.GuildCreated += OnGuildCreated;
             dispatchEventHandler.GuildUpdated += OnGuildUpdated;
@@ -397,7 +399,7 @@ namespace Gateway
         {
             return JsonConvert.DeserializeObject<TObject>(value); // TAI: он тут вообще нужен?
         }
-        private async Task AuthorizeAsync() // TODO : предоставить возможность конечному пользователю настраивать это всё
+        private async Task AuthorizeAsync()
         {
             IdentifyProperties properties = new IdentifyProperties("SinkholesImpl", "SinkholesDevice");
             Activity presencesActivity = Activity.CreateGameActivity();

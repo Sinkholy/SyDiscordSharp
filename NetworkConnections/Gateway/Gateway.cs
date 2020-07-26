@@ -65,7 +65,7 @@ namespace Gateway
                         break;
                     }
                 }
-                payloadSentLastMinute = 0;
+                payloadSentLastMinute = 0; //Потокобезопасное зануление
                 stopwatch.Restart();
             }
         }
@@ -81,7 +81,6 @@ namespace Gateway
                 jsonResultBuilder.Capacity = CalculateJsonBuilderCapacity(jsonResultBuilder.Length);
                 WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None).ConfigureAwait(false); // TAI : CTS
                 socketSemaphore.Wait();
-                Console.WriteLine("Gateway thread ID: " + Thread.CurrentThread.ManagedThreadId);
                 jsonResultBuilder.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
                 while (!result.EndOfMessage)
                 {
@@ -142,6 +141,10 @@ namespace Gateway
             Ready ready = args.EventData as Ready;
             sessionIdentifier = ready.SessionIdentifier;
         }
+        internal void OnReconnectRequested(IGatewayDataObject payload)
+        {
+            Reconnect();
+        }
         #endregion
         #region Private method's
         private async void Reconnect()
@@ -150,9 +153,7 @@ namespace Gateway
             socketSemaphore.Wait();
             socket.Abort();
             await socket.ConnectAsync(gatewayUri, CancellationToken.None);
-            Resume resumeObj = new Resume(botToken, sessionIdentifier, lastSequence);
-            GatewayPayload payload = new GatewayPayload(Opcode.Resume, resumeObj);
-            await SendAsync(payload, WebSocketMessageType.Text, CancellationToken.None);
+            await SendResume();
             socketSemaphore.Release();
             ImplantNewHeart();
         }
@@ -167,6 +168,12 @@ namespace Gateway
             messageCount++;
             messageTotalLength += builderLenth;
             return 200;
+        }
+        private async Task SendResume()
+        {
+            Resume resumeObj = new Resume(botToken, sessionIdentifier, lastSequence);
+            GatewayPayload payload = new GatewayPayload(Opcode.Resume, resumeObj);
+            await SendAsync(payload, WebSocketMessageType.Text, CancellationToken.None);
         }
         #endregion
         #region Internal method's
