@@ -119,7 +119,7 @@ namespace Gateway
         {
             Ready ready = args.EventData as Ready;
             BotUser = ready.User;
-            foreach(var guild in ready.Guilds)
+            foreach (var guild in ready.Guilds)
                 guilds.Add(guild.Identifier, guild as IGuild);
             readyReceived = DateTime.Now;
         }
@@ -157,7 +157,7 @@ namespace Gateway
                 Log("New channel was created but no guild stored for this channel");
             else
             {
-                if(guilds[newChannel.GuildIdentifier] is Guild guild)
+                if (guilds[newChannel.GuildIdentifier] is Guild guild)
                 {
                     guild.AddChannel(newChannel);
                 }
@@ -177,7 +177,7 @@ namespace Gateway
                 if (guilds[newChannelInfo.GuildIdentifier] is Guild guild)
                 {
                     IChannel targetChannel = guild.TryToGetChannel(newChannelInfo.Identifier);
-                    if(targetChannel is null)
+                    if (targetChannel is null)
                     {
                         Log("Handling ChannelUpdate event. Cannot find target channel");
                         return;
@@ -234,7 +234,7 @@ namespace Gateway
                 if (guilds[updatedRole.GuildIdentifier] is Guild guild)
                 {
                     Role roleToUpdate = guild.TryToGetRole(updatedRole.Role.Identifier);
-                    if(roleToUpdate is null)
+                    if (roleToUpdate is null)
                     {
                         Log("Handling RoleUpdated event. Cannot find target role");
                     }
@@ -397,16 +397,18 @@ namespace Gateway
         {
             return JsonConvert.DeserializeObject<TObject>(value); // TAI: он тут вообще нужен?
         }
-        private async Task AuthorizeAsync()
+        private async Task AuthorizeAsync() // TODO : предоставить возможность конечному пользователю настраивать это всё
         {
             IdentifyProperties properties = new IdentifyProperties("SinkholesImpl", "SinkholesDevice");
-            Identify identityObj = new Identify(botToken, properties, IdentifyIntents.None);
+            Activity presencesActivity = Activity.CreateGameActivity();
+            IdentifyPresence presences = new IdentifyPresence(UserStatus.Online, false, null, presencesActivity);
+            Identify identityObj = new Identify(botToken, properties, IdentifyIntents.None, presences);
             GatewayPayload payload = new GatewayPayload(Opcode.Identify, identityObj);
             await gateway.SendAsync(payload, WebSocketMessageType.Text, CancellationToken.None);
         }
         #endregion
         #region Ctor's
-        private DiscordGatewayClient() 
+        private DiscordGatewayClient()
         {
             guilds = new Dictionary<string, IGuild>();
             jsonSerializer = new JsonSerializer();

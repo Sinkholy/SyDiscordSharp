@@ -1,68 +1,61 @@
-﻿using Newtonsoft.Json;
+﻿using Gateway.Payload.DataObjects.Enums;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static Gateway.Payload.DataObjects.Dispatch.DispatchEvents.PresenceUpdatedEvent;
 
 namespace Gateway.Payload.DataObjects
 {
     [JsonObject(MemberSerialization.OptIn)]
     internal class Identify : IGatewayDataObject
     {
-        [JsonProperty(propertyName: "token", Order = 0)]
-        public string Token;
-        //[JsonProperty(propertyName: "compress", Order = 2)]
-        //public bool Compress;
-        //[JsonProperty(propertyName: "largeThreshold", Order = 3)]
-        //public int LargeThreshold;
-        //[JsonProperty(propertyName: "guildSubscriptions", Order = 4)]
-        //public bool GuildSubscriptions;
-        //[JsonProperty(propertyName: "shard", Order = 5)]
-        //public Array Shard;
-        //[JsonProperty(propertyName: "presence", Order = 6)]
-        //public Presences Presences;
-        [JsonProperty(propertyName: "properties", Order = 1)]
-        public IdentifyProperties Properties;
-        [JsonProperty(propertyName: "intents", Order = 555)] //TODO : order, они вообще нужны?
-        public string Intents;
+        [JsonProperty(propertyName: "token")]
+        public string Token { get; private set; }
+        [JsonProperty(propertyName: "compress")]
+        public bool Compress { get; private set; }
+        [JsonProperty(propertyName: "largeThreshold")]
+        public int LargeThreshold { get; private set; }
+        [JsonProperty(propertyName: "guildSubscriptions")]
+        public bool GuildSubscriptions { get; private set; }
+        [JsonProperty(propertyName: "shard")]
+        public int[] Shard { get; private set; }
+        [JsonProperty(propertyName: "presence", Order = 6)]
+        public IdentifyPresence Presences { get; private set; }
+        [JsonProperty(propertyName: "properties")]
+        public IdentifyProperties Properties { get; private set; }
+        [JsonProperty(propertyName: "intents")]
+        public string Intents { get; private set; }
         public Identify(string token,
                         IdentifyProperties properties,
                         IdentifyIntents intents = null,
+                        IdentifyPresence presences = null,
+                        int[] shards = null,
                         bool compress = false,
                         int largeThreshold = 50,
                         bool guildSubscriptions = true)
         {
-            this.Properties = properties;
-            this.Token = token;
-            this.Intents = intents is null ? null : intents.Intents;
-            //this.Compress = compress;
-            //this.LargeThreshold = largeThreshold;
-            //this.GuildSubscriptions = guildSubscriptions;
+            Presences = presences;
+            Properties = properties;
+            Token = token;
+            Shard = shards ?? new int[2] { 0, 1 };
+            Intents = intents?.Intents;
+            Compress = compress;
+            LargeThreshold = largeThreshold;
+            GuildSubscriptions = guildSubscriptions;
         }
-        //public Identify(string token,
-        //                Presences presences,
-        //                IdentityProperties properties,
-        //                bool compress = false, int largeThreshold = 50,
-        //                bool guildSubscriptions = true)
-        //    : this(token, properties, compress, largeThreshold, guildSubscriptions)
-        //{
-        //    this.Presences = presences;
-        //}
     }
     [JsonObject(MemberSerialization.OptIn)]
     internal class IdentifyProperties
     {
         [JsonProperty(propertyName: "$os", Order = 0)]
-        public string Os = Environment.OSVersion.ToString();
+        public string Os { get; private set; } = Environment.OSVersion.ToString();
         [JsonProperty(propertyName: "$browser", Order = 1)]
-        public string Browser;
+        public string Browser { get; private set; }
         [JsonProperty(propertyName: "$device", Order = 2)]
-        public string Device;
+        public string Device { get; private set; }
         public IdentifyProperties(string browser, string device)
         {
-            this.Browser = browser;
-            this.Device = device;
+            Browser = browser;
+            Device = device;
         }
     }
     internal class IdentifyIntents
@@ -76,9 +69,30 @@ namespace Gateway.Payload.DataObjects
                                                                       1 << 14),
                                         Custom = new IdentifyIntents(GetCustomValue());
         private IdentifyIntents(int intents) => Intents = intents.ToString();
-        private static int GetCustomValue() //TODO :чтение из конфига очвдно
+        private static int GetCustomValue() //TODO : кастомные интенты
         {
             return 0; 
+        }
+    }
+    internal class IdentifyPresence
+    {
+        [JsonProperty(PropertyName = "since")]
+        internal string UnixIdleSince { get; private set; }
+        [JsonProperty(PropertyName = "game")]
+        internal Activity Game { get; private set; }
+        /// <summary>
+        /// As far as I can see only online\invisible\dnd\idle can be passed
+        /// </summary>
+        [JsonProperty(PropertyName = "status")]
+        internal string Status { get; private set; }
+        [JsonProperty(PropertyName = "afk")]
+        internal bool Afk { get; private set; }
+        internal IdentifyPresence(UserStatus status, bool afk, string idleSince, Activity game = null)
+        {
+            Status = status.ToString().ToLower();
+            Game = game;
+            UnixIdleSince = idleSince;
+            Afk = afk;
         }
     }
 }
