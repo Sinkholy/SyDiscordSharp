@@ -1,9 +1,5 @@
-﻿using System;
+﻿using Gateway.Entities.Message;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Remoting.Messaging;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Gateway.Entities.Channels.Text
 {
@@ -11,5 +7,8 @@ namespace Gateway.Entities.Channels.Text
     {
         void SendMessage(IMessage message);
         void SendMessage(string message);
+        void RemoveMessage(string id);
+        IReadOnlyCollection<IMessage> Messages { get; }
+        IMessage TryToGetMessage(string id);
     }
 }

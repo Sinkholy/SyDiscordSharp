@@ -1,21 +1,27 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using Gateway.Entities.Message;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Gateway.Entities.Channels.Text
 {
-    internal abstract class TextChannel : Channel, ITextChannel
+    internal abstract class TextChannel : Channel, ITextChannel, IMessageEditableChannel
     {
-        internal IMessage LastMessage; //TODO : получение сообщения + при наличии обернуть в IMessage
-        internal IMessage[] PinnedMessages; //А ещё лучше обернуть их в гетеры и сетеры через метод для сокрытия
+        internal IMessage LastMessage => TryToGetMessage(lastMessageIdentifier);
+        internal IMessage[] PinnedMessages; 
 
         [JsonProperty(PropertyName = "last_message_id")]
-        private string lastMessageIdentifier;
+        private string lastMessageIdentifier; //TODO : потокобезопасность
+        private List<IMessage> messages = new List<IMessage>(); //TODO : потокобезопасность
 
+        #region IMessageEditableChannel
+        void IMessageEditableChannel.AddMessage(IMessage message)
+        {
+            messages.Add(message);
+            lastMessageIdentifier = message.Identifier;
+        }
+        #endregion
         #region IUpdatableChannel impl
         public override string UpdateChannel(IChannel newChannelInfo)
         {
@@ -33,6 +39,23 @@ namespace Gateway.Entities.Channels.Text
         #region ITextChannel implementation
         public void SendMessage(IMessage message) { }
         public void SendMessage(string message) { }
+        public IReadOnlyCollection<IMessage> Messages => messages as IReadOnlyCollection<IMessage>;
+        public void RemoveMessage(string id)
+        {
+            IMessage messageToDelete = TryToGetMessage(id);
+            if (messageToDelete != null)
+            {
+                messages.Remove(messageToDelete);
+            }
+            if (messageToDelete.Identifier == lastMessageIdentifier)
+            {
+                lastMessageIdentifier = messages.FirstOrDefault().Identifier; //TODO : проверить сортирован ли список
+            }
+        }
+        public IMessage TryToGetMessage(string id)
+        {
+            return messages.Where(x => x.Identifier == id).SingleOrDefault();
+        }
         #endregion
         #region Ctor's
         internal TextChannel(string id, ChannelType type, string lastMsgId)

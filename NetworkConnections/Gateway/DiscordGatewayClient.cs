@@ -1,8 +1,10 @@
 ﻿using Gateway.DataObjects;
 using Gateway.Entities;
 using Gateway.Entities.Channels;
+using Gateway.Entities.Channels.Text;
 using Gateway.Entities.Guilds;
 using Gateway.Entities.Invite;
+using Gateway.Entities.Message;
 using Gateway.Entities.Users;
 using Gateway.Payload.DataObjects;
 using Gateway.Payload.DataObjects.Dispatch;
@@ -357,6 +359,28 @@ namespace Gateway
             else
                 RaiseLog("Error during UserUnbanned event handling. Cannot find target guild or cast it to Guild");
         }
+        private void OnMessageReceived(object sender, EventHandlerArgs args)
+        {
+            IMessage newMessage = args.EventData as IMessage;
+            if (TryToGetGuild((newMessage.Channel as IGuildChannel).GuildIdentifier) is Guild guild)
+                if (guild.TryToGetChannel(newMessage.Channel.Identifier) is IMessageEditableChannel channel)
+                    channel.AddMessage(newMessage);
+                else
+                    RaiseLog("Error during MessageReceived event handling. Cannot find target channel or cast it to IMessageEditableChannel");
+            else
+                RaiseLog("Error during MessageReceived event handling. Cannot find target guild or cast it to Guild");
+        }
+        private void OnMessageDeleted(object sender, EventHandlerArgs args)
+        {
+            IMessage deletedMessage = args.EventData as IMessage;
+            if (TryToGetGuild((deletedMessage.Channel as IGuildChannel).GuildIdentifier) is Guild guild)
+                if (guild.TryToGetChannel(deletedMessage.Channel.Identifier) is ITextChannel channel)
+                    channel.RemoveMessage(deletedMessage.Identifier);
+                else
+                    RaiseLog("Error during MessageDeleted event handling. Cannot find target channel or cast it to ITextChannel");
+            else
+                RaiseLog("Error during MessageReceived event handling. Cannot find target guild or cast it to Guild");
+        }
         #endregion
         #region Public methods
         public async Task StartAsync(Uri gatewayUri) //TAI : подписать этот метод на некое событие в HTTP-клиенте сигнализирующее о получении /gateway ответа 
@@ -390,6 +414,8 @@ namespace Gateway
             dispatchEventHandler.InviteDeleted += OnInviteDeleted;
             dispatchEventHandler.GuildBanAdded += OnUserBanned;
             dispatchEventHandler.GuildBanRemoved += OnUserUnbanned;
+            dispatchEventHandler.MessageCreated += OnMessageReceived;
+            dispatchEventHandler.MessageDeleted += OnMessageDeleted;
             dispatchEventHandler.Ready += OnReady;
             dispatchEventHandler.Ready += gateway.OnReady;
 
