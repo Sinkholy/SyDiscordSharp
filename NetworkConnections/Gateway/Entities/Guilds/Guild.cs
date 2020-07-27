@@ -29,6 +29,7 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
                        .ToList() as IReadOnlyCollection<ITextChannel>;
         public IReadOnlyCollection<IInvite> Invites => InvitesList as IReadOnlyCollection<IInvite>;
         public IReadOnlyCollection<IUser> Users => UsersList as IReadOnlyCollection<IUser>;
+        public IReadOnlyCollection<IUser> BannedUsers => BannedUsersList as IReadOnlyCollection<IUser>;
         #endregion
         #region Public fields\properties
         public IChannel PublicUpdatesChannel  //Смотри на канал виджетов
@@ -115,6 +116,7 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         private string afkChannelIdentifier;
         [JsonProperty(PropertyName = "system_channel_id")]
         private string systemChannelIdentifier;
+        internal List<IUser> BannedUsersList = new List<IUser>(); //Смотри на инвайты
         internal List<IInvite> InvitesList = new List<IInvite>(); //TODO : ленивая загрузка
                                                                   //TODO : подгрузка данных при получении гильдии
         internal List<Role> Roles
@@ -197,6 +199,18 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
                 InvitesList.Remove(inviteToDelete);
             }
         }
+        internal void AddBan(IUser bannedUser)
+        {
+            BannedUsersList.Add(bannedUser);
+        }
+        internal void RemoveBan(string userId)
+        {
+            IUser unbannedUser = TryToGetBannedUser(userId);
+            if(unbannedUser != null)
+            {
+                BannedUsersList.Remove(unbannedUser);
+            }
+        }
         internal IChannel TryToGetChannel(string id) //TAI : каналы\юзеров\роли запихать в словари для быстрого доступа?
         {                                            //может быть актуально при частом доступе(а он будет, по идее);
             return channels.Where(x => x.Identifier == id).SingleOrDefault();
@@ -212,6 +226,10 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         internal IInvite TryToGetInvite(string code)
         {
             return InvitesList.Where(x => x.Code == code).SingleOrDefault();
+        }
+        internal IUser TryToGetBannedUser(string userId)
+        {
+            return BannedUsersList.Where(x => x.Identifier == userId).SingleOrDefault();
         }
         #region Deserialization methods
         [OnDeserialized]

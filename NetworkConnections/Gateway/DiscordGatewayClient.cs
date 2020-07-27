@@ -341,6 +341,22 @@ namespace Gateway
             else
                 RaiseLog("Error during InviteDeleted event handling. Cannot find target guild or cast it to Guild");
         }
+        private void OnUserBanned(object sender, EventHandlerArgs args)
+        {
+            Ban bannedUser = args.EventData as Ban;
+            if (TryToGetGuild(bannedUser.GuildIdentifier) is Guild guild)
+                guild.AddBan(bannedUser.User);
+            else
+                RaiseLog("Error during UserBanned event handling. Cannot find target guild or cast it to Guild");
+        }
+        private void OnUserUnbanned(object sender, EventHandlerArgs args)
+        {
+            Ban bannedUser = args.EventData as Ban;
+            if (TryToGetGuild(bannedUser.GuildIdentifier) is Guild guild)
+                guild.RemoveBan(bannedUser.User.Identifier);
+            else
+                RaiseLog("Error during UserUnbanned event handling. Cannot find target guild or cast it to Guild");
+        }
         #endregion
         #region Public methods
         public async Task StartAsync(Uri gatewayUri) //TAI : подписать этот метод на некое событие в HTTP-клиенте сигнализирующее о получении /gateway ответа 
@@ -372,6 +388,8 @@ namespace Gateway
             dispatchEventHandler.GuildMemberRemoved += OnGuildUserRemoved;
             dispatchEventHandler.InviteCreated += OnInviteCreated;
             dispatchEventHandler.InviteDeleted += OnInviteDeleted;
+            dispatchEventHandler.GuildBanAdded += OnUserBanned;
+            dispatchEventHandler.GuildBanRemoved += OnUserUnbanned;
             dispatchEventHandler.Ready += OnReady;
             dispatchEventHandler.Ready += gateway.OnReady;
 
