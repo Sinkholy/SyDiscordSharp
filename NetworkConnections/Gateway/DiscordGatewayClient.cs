@@ -2,6 +2,7 @@
 using Gateway.Entities;
 using Gateway.Entities.Channels;
 using Gateway.Entities.Guilds;
+using Gateway.Entities.Invite;
 using Gateway.Entities.Users;
 using Gateway.Payload.DataObjects;
 using Gateway.Payload.DataObjects.Dispatch;
@@ -324,6 +325,22 @@ namespace Gateway
                 Log("Handling UserDeleted event. Cannot cast target IGuild to Guild");
             }
         }
+        private void OnInviteCreated(object sender, EventHandlerArgs args)
+        {
+            IInvite newInvite = args.EventData as IInvite;
+            if(TryToGetGuild(newInvite.Guild.Identifier) is Guild guild)
+                guild.AddInvite(newInvite);
+            else
+                RaiseLog("Error during InviteCreated event handling. Cannot find target guild or cast it to Guild");
+        }
+        private void OnInviteDeleted(object sender, EventHandlerArgs args)
+        {
+            IInvite deletedInvite = args.EventData as IInvite;
+            if (TryToGetGuild(deletedInvite.Guild.Identifier) is Guild guild)
+                guild.RemoveInvite(deletedInvite.Code);
+            else
+                RaiseLog("Error during InviteDeleted event handling. Cannot find target guild or cast it to Guild");
+        }
         #endregion
         #region Public methods
         public async Task StartAsync(Uri gatewayUri) //TAI : подписать этот метод на некое событие в HTTP-клиенте сигнализирующее о получении /gateway ответа 
@@ -353,6 +370,8 @@ namespace Gateway
             dispatchEventHandler.GuildMemberAdded += OnGuildUserAdded;
             dispatchEventHandler.GuildMemberUpdated += OnGuildUserUpdated;
             dispatchEventHandler.GuildMemberRemoved += OnGuildUserRemoved;
+            dispatchEventHandler.InviteCreated += OnInviteCreated;
+            dispatchEventHandler.InviteDeleted += OnInviteDeleted;
             dispatchEventHandler.Ready += OnReady;
             dispatchEventHandler.Ready += gateway.OnReady;
 

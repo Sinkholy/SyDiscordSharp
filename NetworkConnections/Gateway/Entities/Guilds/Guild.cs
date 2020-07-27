@@ -2,6 +2,7 @@
 using Gateway.Entities.Channels;
 using Gateway.Entities.Channels.Text;
 using Gateway.Entities.Channels.Voice;
+using Gateway.Entities.Invite;
 using Gateway.Entities.Users;
 using Newtonsoft.Json;
 using System;
@@ -26,6 +27,7 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
             => channels.Where(x => x is ITextChannel)
                        .Select(x => x as ITextChannel)
                        .ToList() as IReadOnlyCollection<ITextChannel>;
+        public IReadOnlyCollection<IInvite> Invites => InvitesList as IReadOnlyCollection<IInvite>;
         public IReadOnlyCollection<IUser> Users => UsersList as IReadOnlyCollection<IUser>;
         #endregion
         #region Public fields\properties
@@ -113,6 +115,8 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         private string afkChannelIdentifier;
         [JsonProperty(PropertyName = "system_channel_id")]
         private string systemChannelIdentifier;
+        internal List<IInvite> InvitesList = new List<IInvite>(); //TODO : ленивая загрузка
+                                                                  //TODO : подгрузка данных при получении гильдии
         internal List<Role> Roles
         {
             get => _roles ?? new List<Role>(capacity: 0);
@@ -181,6 +185,18 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
                 UsersList.Remove(userToDelete);
             }
         }
+        internal void AddInvite(IInvite invite)
+        {
+            InvitesList.Add(invite);
+        }
+        internal void RemoveInvite(string code)
+        {
+            IInvite inviteToDelete = TryToGetInvite(code);
+            if(inviteToDelete != null)
+            {
+                InvitesList.Remove(inviteToDelete);
+            }
+        }
         internal IChannel TryToGetChannel(string id) //TAI : каналы\юзеров\роли запихать в словари для быстрого доступа?
         {                                            //может быть актуально при частом доступе(а он будет, по идее);
             return channels.Where(x => x.Identifier == id).SingleOrDefault();
@@ -192,6 +208,10 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         internal Role TryToGetRole(string id)
         {
             return Roles.Where(x => x.Identifier == id).SingleOrDefault();
+        }
+        internal IInvite TryToGetInvite(string code)
+        {
+            return InvitesList.Where(x => x.Code == code).SingleOrDefault();
         }
         #region Deserialization methods
         [OnDeserialized]
