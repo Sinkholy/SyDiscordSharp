@@ -32,10 +32,10 @@ namespace Gateway
                                 rateLimitListener;
         private Task heart;
         private Uri gatewayUri;
-        private readonly ClientWebSocket socket;
-        private readonly SemaphoreSlim socketSemaphore = new SemaphoreSlim(1);
+        private ClientWebSocket socket;
+        private readonly SocketLocker socketHelper;
         private TimeSpan heartbeatRate;
-        private byte payloadSentLastMinute = 0;
+        private int payloadSentLastMinute = 0;
         private bool heartbeatAckReceived = true;
         private string sessionIdentifier,
                        botToken,
@@ -50,22 +50,41 @@ namespace Gateway
         private async void ListenToRateLimit()
         {
             int oneMinute = 60000; //From ms 
+            int limit = 120;
             Stopwatch stopwatch = new Stopwatch();
             while (true)
             {
+                stopwatch.Start();
                 while (stopwatch.ElapsedMilliseconds < oneMinute)
                 {
-                    if (payloadSentLastMinute > 118)
+                    //Здесь может возникнуть вопрос "А почему мы используем ограничение равное 118?"
+                    //Ответом на этот вопрос будет то, что ограничение отправляемых к Gateway дискорда 
+                    //Равняется 120 запросов\минута. Но некоторые запросы, такие как Hearbeat 
+                    //Необходимо отправлять каждые, в данный момент времени, 41.5 секунд.
+                    //Для решения это проблемы я ввёл ограничение на 118 запросов, чтобы дабы
+                    //2 запроса остаилсь в запасе для приоритетных запросов.
+                    if (payloadSentLastMinute == limit - 2) //TODO : вынести хардлок в конфиг?
                     {
-                        socketSemaphore.Wait();
-                        TimeSpan msToWait = TimeSpan.FromMilliseconds(oneMinute - stopwatch.ElapsedMilliseconds); //Через этот отрезок времени наступит новая минута => можно сбрасывать счётчик;
-                        ReachedRateLimit(msToWait);
-                        await Task.Delay(msToWait);
-                        socketSemaphore.Release();
-                        break;
+                        using (socketHelper.SendingSoftLock())
+                        {
+                            while (stopwatch.ElapsedMilliseconds < oneMinute)
+                            {
+                                if(payloadSentLastMinute == limit)
+                                {
+                                    using (socketHelper.SendingHardLock())
+                                    {
+                                        TimeSpan msToWait = TimeSpan.FromMilliseconds(oneMinute - stopwatch.ElapsedMilliseconds); //Через этот отрезок времени наступит новая минута => можно сбрасывать счётчик;
+                                        ReachedRateLimit(msToWait);
+                                        await Task.Delay(msToWait);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
+                    //TODO : здесь всё же может быть проблема с тем, что количество пакетов будет == 120, даже с HighPriority
                 }
-                payloadSentLastMinute = 0; //Потокобезопасное зануление
+                Interlocked.Exchange(ref payloadSentLastMinute, 0);
                 stopwatch.Restart();
             }
         }
@@ -74,19 +93,23 @@ namespace Gateway
             byte[] buffer = new byte[chunkSize];
             int capacity = 256; // TODO : изначальный размер буффера
             StringBuilder jsonResultBuilder = new StringBuilder(capacity);
+            WebSocketReceiveResult result;
             while (true) //TAI : проверить разность быстродействия при обнулении буффера и без обнуления
             {
                 //buffer = new byte[chunkSize]; //TAI : нужно ли здесь обнуление?
                 jsonResultBuilder.Clear();
                 jsonResultBuilder.Capacity = CalculateJsonBuilderCapacity(jsonResultBuilder.Length);
-                WebSocketReceiveResult result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None).ConfigureAwait(false); // TAI : CTS
-                socketSemaphore.Wait();
-                jsonResultBuilder.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
-                while (!result.EndOfMessage)
+                using (socketHelper.GetReceiveAccess())
                 {
-                    //buffer = new byte[chunkSize]; //TAI : нужно ли здесь обнуление?
-                    result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None).ConfigureAwait(false);
+                    result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None)
+                                         .ConfigureAwait(false); // TAI : CTS
                     jsonResultBuilder.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
+                    while (!result.EndOfMessage)
+                    {
+                        //buffer = new byte[chunkSize]; //TAI : нужно ли здесь обнуление?
+                        result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None).ConfigureAwait(false);
+                        jsonResultBuilder.Append(Encoding.UTF8.GetString(buffer, 0, result.Count));
+                    }
                 }
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
@@ -94,12 +117,10 @@ namespace Gateway
                 }
                 else
                 {
-                    socketSemaphore.Release();
-#pragma warning disable 4014
+                    #pragma warning disable 4014 // Fire and forget
                     string payload = jsonResultBuilder.ToString();
                     Task.Factory.StartNew(() => NewPayloadReceived(payload))
                                 .ConfigureAwait(false);
-#pragma warning disable 4014
                 }
             }
         }
@@ -112,7 +133,7 @@ namespace Gateway
                 if (heartbeatAckReceived)
                 {
                     heartbeatObj.Sequence =  lastSequence;
-                    await SendAsync(payload, WebSocketMessageType.Text, CancellationToken.None);
+                    await SendAsync(payload, true, WebSocketMessageType.Text, CancellationToken.None);
                     heartbeatAckReceived = false;
                 }
                 else
@@ -150,11 +171,14 @@ namespace Gateway
         private async void Reconnect()
         {
             heartCTS.Cancel();
-            socketSemaphore.Wait();
-            socket.Abort();
-            await socket.ConnectAsync(gatewayUri, CancellationToken.None);
-            await SendResume();
-            socketSemaphore.Release();
+            using (socketHelper.ReceivingLock())
+            using (socketHelper.SendingHardLock())
+            {
+                socket.Abort();
+                socket = new ClientWebSocket();
+                await socket.ConnectAsync(gatewayUri, CancellationToken.None);
+                await SendResume();
+            }
             ImplantNewHeart();
         }
         private void ImplantNewHeart()
@@ -173,7 +197,7 @@ namespace Gateway
         {
             Resume resumeObj = new Resume(botToken, sessionIdentifier, lastSequence);
             GatewayPayload payload = new GatewayPayload(Opcode.Resume, resumeObj);
-            await SendAsync(payload, WebSocketMessageType.Text, CancellationToken.None);
+            await SendAsync(payload, true, WebSocketMessageType.Text, CancellationToken.None);
         }
         #endregion
         #region Internal method's
@@ -189,8 +213,9 @@ namespace Gateway
             rateLimitListener.Start();
             socketListener.Start();
         }
-        internal async Task SendAsync(GatewayPayload payload, WebSocketMessageType msgType, CancellationToken cts)
+        internal async Task SendAsync(GatewayPayload payload, bool highPriority, WebSocketMessageType msgType, CancellationToken cts)
         {
+            Console.WriteLine($"Sending: {payload.Opcode}");
             string jsonPayload = JsonConvert.SerializeObject(payload, typeof(GatewayPayload), null); // TODO : сериализацию с помощью внещнего проекта
             byte[] jsonBytes = Encoding.UTF8.GetBytes(jsonPayload);
 
@@ -198,24 +223,24 @@ namespace Gateway
             for (int dataLength = jsonBytes.Length; dataLength > 0; dataLength -= chunkSize)
                 chunksCount++;
 
-            if (chunksCount == 1)
+            using (socketHelper.GetSendAccess(highPriority))
             {
-                socketSemaphore.Wait();
-                await socket.SendAsync(new ArraySegment<byte>(jsonBytes), msgType, true, cts);
-            }
-            else
-            {
-                for (int i = 0; i < chunksCount; i++)
+                if (chunksCount == 1)
                 {
-                    bool isLastMsg = i == chunksCount;
-                    int offset = i * chunkSize,
-                        count = isLastMsg ? (jsonBytes.Length - chunkSize * i) : chunkSize;
-                    socketSemaphore.Wait();
-                    await socket.SendAsync(new ArraySegment<byte>(jsonBytes, offset, count), msgType, isLastMsg, cts);
+                    await socket.SendAsync(new ArraySegment<byte>(jsonBytes), msgType, true, cts);
+                }
+                else
+                {
+                    for (int i = 0; i < chunksCount; i++)
+                    {
+                        bool isLastMsg = i == chunksCount;
+                        int offset = i * chunkSize,
+                            count = isLastMsg ? (jsonBytes.Length - chunkSize * i) : chunkSize;
+                        await socket.SendAsync(new ArraySegment<byte>(jsonBytes, offset, count), msgType, isLastMsg, cts);
+                    }
                 }
             }
-            payloadSentLastMinute++;
-            socketSemaphore.Release();
+            Interlocked.Increment(ref payloadSentLastMinute);
         }
         #endregion
         #region Constructor's
@@ -223,6 +248,7 @@ namespace Gateway
         {//TAI : размер стэков потоков
             this.botToken = botToken;
             this.gatewayUri = gatewayUri;
+            socketHelper = new SocketLocker();
             socket = new ClientWebSocket();
             ReachedRateLimit += OnLimitReached;
             Zombied += Reconnect;
