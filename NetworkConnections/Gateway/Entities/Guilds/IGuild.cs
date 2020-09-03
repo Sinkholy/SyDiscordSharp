@@ -1,4 +1,6 @@
 ﻿using Gateway.Entities.Emojis;
+using Gateway.Entities.VoiceSession;
+using System.Collections.Generic;
 
 namespace Gateway.Entities.Guilds
 {
@@ -15,6 +17,9 @@ namespace Gateway.Entities.Guilds
         GuildFeatures[] Features { get; }
         int ApproximatePresenceCount { get; }
         int ApproximateMemberCount { get; }
+        IReadOnlyCollection<IVoiceSession> ActiveVoiceSessions { get; }
+
+        IVoiceSession TryToGetVoiceSession(string sessionId);
     }
     public enum GuildFeatures
     {

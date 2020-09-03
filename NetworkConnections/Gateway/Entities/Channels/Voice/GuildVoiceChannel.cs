@@ -1,4 +1,5 @@
 ﻿using Gateway.Entities.Guilds;
+using Gateway.Entities.VoiceSession;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,10 @@ namespace Gateway.Entities.Channels.Voice
         internal Overwrite[] PermissionsOverwrite;
         [JsonProperty(PropertyName = "parent_id")]
         internal string ParentIdentifier;
+        public IReadOnlyCollection<IVoiceSession> ActiveVoiceSessions 
+            => activeVoiceSessionsEnumerable.ToList();
+        public IReadOnlyCollection<string> UsersInChannel
+            => activeVoiceSessionsEnumerable.Select(x => x.UserIdentifier).ToList();
         public override string UpdateChannel(IChannel channelNewInfo)
         {
             StringBuilder result = new StringBuilder();
@@ -89,6 +94,7 @@ namespace Gateway.Entities.Channels.Voice
         #region IVoiceChannel implementation
         public void JoinChannel() { }
         #endregion
+        internal IEnumerable<IVoiceSession> activeVoiceSessionsEnumerable { get; set; }
         #region Ctor's
         internal GuildVoiceChannel(string id,
                                    ChannelType type,

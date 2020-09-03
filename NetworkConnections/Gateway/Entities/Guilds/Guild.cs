@@ -1,5 +1,4 @@
-﻿using Gateway.DataObjects.Voice;
-using Gateway.Entities.Channels;
+﻿using Gateway.Entities.Channels;
 using Gateway.Entities.Channels.Text;
 using Gateway.Entities.Channels.Voice;
 using Gateway.Entities.Invite;
@@ -9,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
+using Gateway.Entities.VoiceSession;
+
 namespace Gateway.Entities.Guilds //TAI : ленивая загрузка всего и вся (ролей\пользователей etc.)
 {
     internal class Guild : GuildPreview
@@ -32,6 +33,7 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         public IReadOnlyCollection<IUser> BannedUsers => BannedUsersList as IReadOnlyCollection<IUser>;
         #endregion
         #region Public fields\properties
+        public IReadOnlyCollection<IVoiceSession> ActiveVoiceSessions => VoiceSessionsById.Values;
         public IChannel PublicUpdatesChannel  //Смотри на канал виджетов
             => channels.Where(x => x.Identifier == publicUpdatesChannelIdentifier).SingleOrDefault();
         public IChannel WidgetChannel //TODO : узнать что из себя представляет Widget-канал и изменить тип
@@ -77,8 +79,21 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         internal bool Large;
         [JsonProperty(PropertyName = "member_count")]
         internal int MemberCount;
+        internal Dictionary<string, IVoiceSession> VoiceSessionsById
+        {
+            get
+            {
+                if (_voiceSessionsById is null)
+                {
+                    _voiceSessionsById = new Dictionary<string, IVoiceSession>();
+                }
+                return _voiceSessionsById;
+            }
+            private set => _voiceSessionsById = value;
+        }
+        private Dictionary<string, IVoiceSession> _voiceSessionsById;
         [JsonProperty(PropertyName = "voice_states")]
-        internal VoiceState[] VoiceStates;
+        private IVoiceSession[] voiceSessionsReceived;
         //[JsonProperty(PropertyName = "presences")]
         //internal Presence[] Presences;
         internal TimeSpan? AfkTimeout;
@@ -133,7 +148,7 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         }
         [JsonProperty(PropertyName = "members")]
         private List<GuildUser> _users;
-        private List<IChannel> channels 
+        private List<IChannel> channels
         {
             get => _channels ?? new List<IChannel>(capacity: 0);
             set => _channels = value;
@@ -143,7 +158,7 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         #endregion
         public void UpdateGuild(Guild newGuildInfo)
         {
-            
+
         }
         internal void AddChannel(IChannel channel)
         {
@@ -218,7 +233,7 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         internal IUser TryToGetUser(string id)
         {
             return UsersList.Where(x => x.Identifier == id).SingleOrDefault() as IUser;
-        } 
+        }
         internal Role TryToGetRole(string id)
         {
             return Roles.Where(x => x.Identifier == id).SingleOrDefault();
@@ -285,7 +300,7 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
     [Flags]
     internal enum SystemChannelFlags
     {
-        SuppressJoinNotification     = 1 << 0,
+        SuppressJoinNotification = 1 << 0,
         SuppressPremiumSubscriptions = 1 << 1
     }
 }

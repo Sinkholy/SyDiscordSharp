@@ -1,11 +1,11 @@
 ﻿using Gateway.DataObjects;
-using Gateway.DataObjects.Voice;
 using Gateway.Entities;
 using Gateway.Entities.Channels;
 using Gateway.Entities.Guilds;
 using Gateway.Entities.Invite;
 using Gateway.Entities.Message;
 using Gateway.Entities.Users;
+using Gateway.Entities.VoiceSession;
 using Gateway.Payload.DataObjects.Dispatch.DispatchEvents;
 using Gateway.Payload.DataObjects.Enums;
 using Newtonsoft.Json;
@@ -238,7 +238,7 @@ namespace Gateway
                     UserUpdated(this, eventArgs);
                     break;
                 case Events.VOICE_STATE_UPDATE:
-                    eventArgsData = JsonConvert.DeserializeObject<VoiceState>(eventData);
+                    eventArgsData = JsonConvert.DeserializeObject<IVoiceSession>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     VoiceStateUpdated(this, eventArgs);
                     break;
