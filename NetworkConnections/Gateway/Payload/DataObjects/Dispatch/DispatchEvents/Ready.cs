@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Gateway.Payload.DataObjects.Dispatch.DispatchEvents
 {
-    internal class Ready // TODO : Order's 
+    internal class Ready
     {
         [JsonProperty(PropertyName = "v")]
         internal int GatewayVersion { get; private set; }

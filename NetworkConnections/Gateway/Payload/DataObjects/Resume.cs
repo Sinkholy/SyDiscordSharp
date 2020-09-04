@@ -15,8 +15,8 @@ namespace Gateway.Payload.DataObjects
         [JsonProperty(propertyName: "session_id", Order = 1)]
         public string SessionId;
         [JsonProperty(propertyName: "seq", Order = 2)]
-        public string LastSequence;
-        public Resume(string token, string session_id, string lastSequence)
+        public int LastSequence;
+        public Resume(string token, string session_id, int lastSequence)
         {
             Token = token;
             SessionId = session_id;

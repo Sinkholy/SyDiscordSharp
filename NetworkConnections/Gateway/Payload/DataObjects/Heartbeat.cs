@@ -11,7 +11,7 @@ namespace Gateway.Payload.DataObjects
     class Heartbeat : IGatewayDataObject
     {
         [JsonProperty(PropertyName = "s")]
-        public string Sequence;
+        public int Sequence;
         public Heartbeat() { }
     }
 }

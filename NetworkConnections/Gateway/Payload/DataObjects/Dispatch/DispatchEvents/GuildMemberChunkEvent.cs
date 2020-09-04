@@ -1,4 +1,6 @@
-﻿using Gateway.Entities.Users;
+﻿using Gateway.Entities;
+using Gateway.Entities.Presences;
+using Gateway.Entities.Users;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -21,7 +23,7 @@ namespace Gateway.Payload.DataObjects.Dispatch.DispatchEvents
         [JsonProperty(PropertyName = "not_found")]
         internal bool NotFound { get; private set; }
         [JsonProperty(PropertyName = "presences")]
-        internal PresenceUpdatedEvent Presences { get; private set; }
+        internal IPresence Presences { get; private set; }
         [JsonProperty(PropertyName = "nonce")]
         internal string Nonce { get; private set; }
     }

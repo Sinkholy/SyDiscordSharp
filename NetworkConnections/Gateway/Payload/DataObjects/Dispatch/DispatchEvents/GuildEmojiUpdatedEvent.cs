@@ -12,15 +12,9 @@ namespace Gateway.Payload.DataObjects.Dispatch.DispatchEvents
 {
     internal class GuildEmojiUpdatedEvent
     {
-        internal IGuild Guild { get; private set; }
         [JsonProperty(PropertyName = "guild_id")]
         internal string GuildIdentifier { get; private set; }
-        [JsonProperty(PropertyName = "emoji")]
-        internal Emoji Emoji { get; private set; }
-        [OnDeserialized]
-        private void CompleteDeserialization(StreamingContext context)
-        {
-            Guild = DiscordGatewayClient.TryToGetGuild(GuildIdentifier);
-        }
+        [JsonProperty(PropertyName = "emojis")]
+        internal IGuildEmoji[] Emojis { get; private set; }
     }
 }

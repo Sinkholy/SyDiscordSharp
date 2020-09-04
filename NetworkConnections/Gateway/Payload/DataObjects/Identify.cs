@@ -1,7 +1,8 @@
-﻿using Gateway.Payload.DataObjects.Enums;
+﻿using Gateway.Entities;
+using Gateway.Entities.Activities;
+using Gateway.Payload.DataObjects.Enums;
 using Newtonsoft.Json;
 using System;
-using static Gateway.Payload.DataObjects.Dispatch.DispatchEvents.PresenceUpdatedEvent;
 
 namespace Gateway.Payload.DataObjects
 {
@@ -16,8 +17,8 @@ namespace Gateway.Payload.DataObjects
         public int LargeThreshold { get; private set; }
         [JsonProperty(propertyName: "guildSubscriptions")]
         public bool GuildSubscriptions { get; private set; }
-        [JsonProperty(propertyName: "shard")]
-        public int[] Shard { get; private set; }
+        //[JsonProperty(propertyName: "shard")] // TODO: shard
+        //public int[] Shard { get; private set; }
         [JsonProperty(propertyName: "presence", Order = 6)]
         public IdentifyPresence Presences { get; private set; }
         [JsonProperty(propertyName: "properties")]
@@ -36,7 +37,7 @@ namespace Gateway.Payload.DataObjects
             Presences = presences;
             Properties = properties;
             Token = token;
-            Shard = shards ?? new int[2] { 0, 1 };
+            //Shard = shards ?? new int[2] { 0, 1 };
             Intents = intents?.Intents;
             Compress = compress;
             LargeThreshold = largeThreshold;
@@ -79,7 +80,7 @@ namespace Gateway.Payload.DataObjects
         [JsonProperty(PropertyName = "since")]
         internal string UnixIdleSince { get; private set; }
         [JsonProperty(PropertyName = "game")]
-        internal Activity Game { get; private set; }
+        internal IActivity Game { get; private set; }
         /// <summary>
         /// As far as I can see only online\invisible\dnd\idle can be passed
         /// </summary>
@@ -87,7 +88,7 @@ namespace Gateway.Payload.DataObjects
         internal string Status { get; private set; }
         [JsonProperty(PropertyName = "afk")]
         internal bool Afk { get; private set; }
-        internal IdentifyPresence(UserStatus status, bool afk, string idleSince, Activity game = null)
+        internal IdentifyPresence(UserStatus status, bool afk, string idleSince, IActivity game = null)
         {
             Status = status.ToString().ToLower();
             Game = game;
