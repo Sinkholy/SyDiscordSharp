@@ -7,14 +7,17 @@ using System.Threading.Tasks;
 
 namespace Gateway.Entities.Emojis
 {
-    [JsonObject(MemberSerialization.OptIn)]
     public class Emoji : IEmoji
     {
-        [JsonProperty(PropertyName = "id")]
-        public string Identifier { get; private set; }
+        public virtual string Identifier 
+        {
+            get => Name;
+            private protected set => Identifier = value;
+        }
         [JsonProperty(PropertyName = "name")]
         public string Name { get; private set; }
         [JsonProperty(PropertyName = "animated")]
         public bool Animated { get; private set; }
+        public virtual bool IsUnicodeEmoji => true;
     }
 }
