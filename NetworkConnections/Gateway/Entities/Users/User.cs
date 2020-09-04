@@ -100,7 +100,7 @@ namespace Gateway.Entities.Users
         public virtual string Discriminator { get; private set; }
         [JsonProperty(PropertyName = "avatar")]
         public virtual string AvatarIdentifier { get; private set; }
-        public virtual string FullName => Username + "#" + Discriminator;        
+        public virtual string FullName => Username + "#" + Discriminator;
         [JsonProperty(PropertyName = "premium_type")]
         public virtual PremiumType PremiumType { get; private set; }
         [JsonProperty(PropertyName = "system")]
@@ -111,6 +111,7 @@ namespace Gateway.Entities.Users
         public virtual UserFlags Flags { get; private set; }
         [JsonProperty(PropertyName = "public_flags")]
         public virtual UserFlags PublicFlags { get; private set; }
+        public string Mention => $"<@!{Identifier}>";
         #endregion
         #region Ctor's
         internal User() { }

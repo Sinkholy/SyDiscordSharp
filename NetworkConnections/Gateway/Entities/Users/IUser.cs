@@ -18,6 +18,7 @@ namespace Gateway.Entities.Users
         bool IsBot { get; }
         string AvatarIdentifier { get; }
         string Locale { get; }
+        string Mention { get; }
         bool System { get; }
         PremiumType PremiumType { get; }
         UserFlags Flags { get; }
