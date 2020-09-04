@@ -1,226 +1,175 @@
 ﻿using Gateway.Entities.Channels;
+using Gateway.Entities.Channels.Text;
 using Gateway.Entities.Emojis;
-using Gateway.Entities.Guilds;
 using Gateway.Entities.Users;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using System.Runtime.Serialization;
-using System.Security.Cryptography.X509Certificates;
-using System.Security.Policy;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Gateway.Entities.Message
 {
     [JsonObject(MemberSerialization.OptIn)]
-    internal class Message : MessageBase
+    internal class Message : MessageBase, IMessage, IUpdatableMessage
     {
+        #region IMessage implementation
         [JsonProperty(PropertyName = "type")]
-        internal MessageType Type;
+        public MessageType Type { get; private set; }
         [JsonProperty(PropertyName = "flags")]
-        internal MessageFlags Flags;
+        public MessageFlags Flags { get; private set; }
         [JsonProperty(PropertyName = "content")]
-        internal string Content;
+        public string Content { get; private set; } // TODO: приватный сеттер
         [JsonProperty(PropertyName = "timestamp")]
-        internal DateTime SentTime;
+        public DateTime SentTime { get; private set; }
         [JsonProperty(PropertyName = "edited_timestamp")]
-        internal DateTime? EditTime;
-        [JsonProperty(PropertyName = "activity")]
-        internal MessageActivity Activity;
+        public DateTime? EditTime { get; private set; }
         [JsonProperty(PropertyName = "tts")]
-        internal bool TTS;
+        public bool TTS { get; private set; }
         [JsonProperty(PropertyName = "mention_everyone")]
-        internal bool MentionEveryone;
+        public bool MentionEveryone { get; private set; }
         [JsonProperty(PropertyName = "attachments")]
-        internal MessageAttachment[] Attachment;
-        [JsonProperty(PropertyName = "reactions")]
-        internal Reaction[] Reactions;
+        public MessageAttachment[] Attachments { get; private set; } //TODO : Проверить реакции и аттачменты можно ли их вообще впихнуть
         [JsonProperty(PropertyName = "nonce")]
-        internal string Nonce;
+        public string Nonce { get; private set; }
         [JsonProperty(PropertyName = "pinned")]
-        internal bool Pinned;
+        public bool Pinned { get; private set; }
         [JsonProperty(PropertyName = "webhook_id")] //TODO : если будет вебхук объект - вставить сюда
-        internal string WebhookIdentifier;
-        [JsonProperty(PropertyName = "application")]
-        internal MessageApplication Application;
-        [JsonProperty(PropertyName = "message_reference")]
-        internal MessageReference MessageReference;
-
-        internal IReadOnlyCollection<IChannel> MentionedChannels { get; private set; }
-        internal IReadOnlyCollection<Role> MentionedRoles { get; private set; }
-        internal IReadOnlyCollection<IUser> MentionedUsers { get; private set; }
-        internal IUser Author { get; private set; } //TODO : все поля завершить
-        internal bool IsWebhook => WebhookIdentifier != null;
-
+        public string WebhookIdentifier { get; private set; }
+        public IReadOnlyCollection<Reaction> Reactions => ReactionsById.Values.ToList();
+        public IReadOnlyCollection<ChannelMention> MentionedChannels 
+        {
+            get
+            {
+                if (mentionedChannelsReceived is null)
+                {
+                    mentionedChannelsReceived = new List<ChannelMention>();
+                }
+                return mentionedChannelsReceived;
+            }
+        }
+        public IReadOnlyCollection<string> MentionedRoles 
+        {
+            get
+            {
+                if (mentionedRolesReceived is null)
+                {
+                    mentionedRolesReceived = new List<string>();
+                }
+                return mentionedRolesReceived;
+            }
+        }
+        public IReadOnlyCollection<IUser> MentionedUsers 
+        {
+            get
+            {
+                if (mentionedUsersReceived is null)
+                {
+                    mentionedUsersReceived = new List<User>();
+                }
+                return mentionedUsersReceived;
+            }
+        }
+        public IUser Author => author;
+        public bool IsWebhook => WebhookIdentifier != null;
+        #endregion
+        #region IUpdatableMessage impl
+        void IUpdatableMessage.AddReaction(IEmoji emoji)
+        {
+            if (ReactionsById.TryGetValue(emoji.Identifier, out Reaction react))
+            {
+                react.IncrementCount();
+            }
+            else
+            {
+                Reaction reaction = new Reaction(1, false, emoji); // TODO : Не понимаю как определить поле ME без запроса к HTTP 
+                ReactionsById.Add(emoji.Identifier, reaction);
+            }
+        }
+        void IUpdatableMessage.RemoveReaction(IEmoji emoji) 
+        {
+            if (ReactionsById.TryGetValue(emoji.Identifier, out Reaction react))
+            {
+                if(react.DecrementCount() == 0)
+                {
+                    ReactionsById.Remove(emoji.Identifier);
+                }
+            }
+        }
+        void IUpdatableMessage.RemoveAllReactions()
+        {
+            ReactionsById.Clear();
+        }
+        void IUpdatableMessage.RemoveAllEmojiReactions(IEmoji emoji)
+        {
+            if (ReactionsById.ContainsKey(emoji.Identifier))
+            {
+                ReactionsById.Remove(emoji.Identifier);
+            }
+        }
+        #endregion
         [JsonProperty(PropertyName = "mention_channels")]
-        private ChannelMention[] mentionedChannels = new ChannelMention[0]; //Inicializate this fields with stub
-        [JsonProperty(PropertyName = "mention_roles")]                      //(empty array) is needed for proper
-        private string[] mentionedRoles = new string[0];                    //foreach loop in CompleteDeserialization
+        private List<ChannelMention> mentionedChannelsReceived;
+        [JsonProperty(PropertyName = "mention_roles")]
+        private List<string> mentionedRolesReceived;
         [JsonProperty(PropertyName = "mentions")]
-        private User[] mentionedUsers = new User[0];
+        private List<User> mentionedUsersReceived;
         [JsonProperty(PropertyName = "author")]
         private User author;
+        private Dictionary<string, Reaction> ReactionsById
+        {
+            get
+            {
+                if (_reactionsById is null)
+                {
+                    _reactionsById = new Dictionary<string, Reaction>();
+                }
+                return _reactionsById;
+            }
+            set => _reactionsById = value;
+        }
+        private Dictionary<string, Reaction> _reactionsById;
+        [JsonProperty(PropertyName = "reactions")]
+        private Reaction[] reactions;
 
         [OnDeserialized]
         private void CompleteDeserialization(StreamingContext context)
         {
-            List<Role> targetRoles = new List<Role>(capacity: mentionedRoles.Length);
-            List<IUser> targetUsers = new List<IUser>(capacity: mentionedUsers.Length);
-            List<IChannel> targetChannels = new List<IChannel>(capacity: mentionedChannels.Length);
-            Guild targetGuild = DiscordGatewayClient.TryToGetGuild(guildIdentifier) as Guild;
-            IUser targetAuthor = null;
-            IChannel targetChannel = null;
-
-            if (targetGuild != null)
+            if (reactions != null)
             {
-                targetAuthor = targetGuild.TryToGetUser(author.Identifier);
-                targetChannel = targetGuild.TryToGetChannel(channelIdentifier);
-                foreach (string roleId in mentionedRoles)
+                ReactionsById = new Dictionary<string, Reaction>(capacity: reactions.Length);
+                foreach (Reaction react in reactions)
                 {
-                    Role role = targetGuild.TryToGetRole(roleId);
-                    if (role != null)
-                        targetRoles.Add(role);
-                }
-                foreach (User user in mentionedUsers)
-                {
-                    targetUsers.Add(targetGuild.TryToGetUser(user.Identifier));
-                }
-                foreach (ChannelMention channelMention in mentionedChannels)
-                {
-                    IChannel channel = targetGuild.TryToGetChannel(channelMention.Identifier);
-                    if (channel != null)
-                        targetChannels.Add(channel);
+                    ReactionsById.Add(react.Emoji.Identifier, react);
                 }
             }
-            Guild = targetGuild;
-            Channel = targetChannel;
-            MentionedRoles = targetRoles;
-            MentionedUsers = targetUsers;
-            MentionedChannels = targetChannels;
-            Author = targetAuthor;
-            if(MessageReference != null)
-                UpdateMessageReferences();
-        }
-        private void UpdateMessageReferences()
-        {
-            MessageReference.Channel = Channel;
-            MessageReference.Guild = Guild;
-            MessageReference.Message = this;
         }
 
-        [JsonObject(MemberSerialization.OptIn)]
-        private class ChannelMention
+        #region Ctor's
+        public Message(string content,
+                       string nonce,
+                       bool tts = false,
+                       MessageAttachment[] attachements = null)
         {
-            [JsonProperty(PropertyName = "id")]
-            internal string Identifier;
-            [JsonProperty(PropertyName = "guild_id")]
-            internal string GuildId;
-            [JsonProperty(PropertyName = "type")]
-            internal ChannelType Type;
-            [JsonProperty(PropertyName = "name")]
-            internal string Name;
+            Content = content;
+            Nonce = nonce;
+            TTS = tts;
+            Attachments = attachements;
         }
+        public Message() { }
+        #endregion
     }
 
-    internal class MessageActivity
-    {
-        [JsonProperty(PropertyName = "type")]
-        internal MessageActivityType Type;
-        [JsonProperty(PropertyName = "party_id")]
-        internal string PartyId;
-    }
-
-    internal class MessageAttachment //TAI : хранить адресс как Uri, а не как строку
+    [JsonObject(MemberSerialization.OptIn)]
+    public class ChannelMention
     {
         [JsonProperty(PropertyName = "id")]
-        internal string Identifier;
-        [JsonProperty(PropertyName = "filename")]
-        internal string FileName;
-        [JsonProperty(PropertyName = "size")]
-        internal int Size;
-        [JsonProperty(PropertyName = "url")]
-        internal string Url;
-        [JsonProperty(PropertyName = "proxy_url")]
-        internal string ProxyUrl;
-        [JsonProperty(PropertyName = "height")]
-        internal int Height; //Only if file == image
-        [JsonProperty(PropertyName = "width")]
-        internal int Width;
-    }
-
-    internal class MessageApplication
-    {
-        [JsonProperty(PropertyName = "id")]
-        internal string Identifier;
-        [JsonProperty(PropertyName = "cover_image")]
-        internal string CoverImage;
-        [JsonProperty(PropertyName = "description")]
-        internal string Description;
-        [JsonProperty(PropertyName = "icon")]
-        internal string Icon;
-        [JsonProperty(PropertyName = "name")]
-        internal string Name;
-    }
-
-    internal class MessageReference
-    {
-        internal Message Message;
-        internal IChannel Channel;
-        internal IGuild Guild;
-
-        [JsonProperty(PropertyName = "message_id")]
-        private string messageIdentifier;
-        [JsonProperty(PropertyName = "channel_id")]
-        private string channelIdentifier;
+        public string Identifier;
         [JsonProperty(PropertyName = "guild_id")]
-        private string guildIdentifier;
-    }
-
-    internal class Reaction
-    {
-        [JsonProperty(PropertyName = "count")]
-        internal int Count;
-        [JsonProperty(PropertyName = "me")]
-        internal bool Me;
-        [JsonProperty(PropertyName = "emoji")]
-        internal Emoji Emoji; // TODO : необходимо понять, что есть partiel-emoji и мб созлдать новый класс
-    }
-
-    [Flags]
-    internal enum MessageFlags : int
-    {
-        Crossposted          = 1<<0,
-        IsCrossposted        = 1<<1,
-        SuppressEmbeds       = 1<<2,
-        SourceMessageDeleted = 1<<3,
-        Urgent               = 1<<4
-    }
-    internal enum MessageType : byte
-    {
-        Default,
-        RecipientAdd,
-        RecipientRemove,
-        Call,
-        ChannelNameChange,
-        ChannelIconChange,
-        ChannelPinnedMessage,
-        GuildMemberJoin,
-        UserPremiumGuildSubscription,
-        UserPremiumGuildSubscriptionTier1,
-        UserPremiumGuildSubscriptionTier2,
-        UserPremiumGuildSubscriptionTier3,
-        ChannelFollowAdd,
-        GuildDiscoveryDisqualified = 14,
-        GuildDiscoveryRequalified = 15
-    }
-    internal enum MessageActivityType : byte
-    {
-        Join,
-        Spectrate,
-        Listen,
-        JoinRequest = 5
+        public string GuildId;
+        [JsonProperty(PropertyName = "type")]
+        public ChannelType Type;
+        [JsonProperty(PropertyName = "name")]
+        public string Name;
     }
 }
