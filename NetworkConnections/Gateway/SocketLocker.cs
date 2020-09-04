@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Threading;
 
 namespace Gateway
@@ -11,111 +9,151 @@ namespace Gateway
         private bool socketSendSoftLocked,
                      socketSendHardLocked,
                      socketReceiveLocked;
-        private readonly ManualResetEventSlim sendMRES,
-                                              receiveMRES;
-        private int sendersKernelWaitingsCount,
-                    receiverKernelWaitings;
+        private int sendingLockersCount,
+                    sendingHardLockersCount,
+                    receivingLockersCount;
+
         #endregion
         #region Method's
-        internal SocketAccessToken GetSendAccess(bool highPriority)
+        internal override SocketAccessToken GetSendAccess()
         {
-            if (socketSendSoftLocked)
+            SpinWait spin = new SpinWait();
+            while (sendState == 0 || socketSendSoftLocked)
             {
-                if (highPriority)
-                {
-                    if (!socketSendHardLocked)
-                    {
-                        return base.GetSend();
-                    }
-                    else
-                    {
-                        Wait();
-                    }
-                }
-                else
-                {
-                    Wait();
-                }
+                WaitForSendAccess(spin);
             }
-            return base.GetSend();
-
-            void Wait()
+            return new SocketAccessToken(this, AccessType.Send, sendCTS.Token);
+        }
+        internal SocketAccessToken GetHighPrioritySendAccess()
+        {
+            SpinWait spin = new SpinWait();
+            while (sendState == 0 || socketSendHardLocked)
             {
-                SpinWait spin = new SpinWait();
-                while (socketSendSoftLocked)
-                {
-                    if (!spin.NextSpinWillYield)
+                WaitForSendAccess(spin);
+            }
+            Interlocked.Exchange(ref sendState, 0);
+            return new SocketAccessToken(this, AccessType.Send, sendCTS.Token);
+        }
+        internal override SocketAccessToken GetReceiveAccess()
+        {
+            SpinWait spin = new SpinWait();
+            while (receiveState == 0 || socketReceiveLocked)
+            {
+                WaitForReceiveAccess(spin); 
+            }
+            Interlocked.Exchange(ref receiveState, 0);
+            return new SocketAccessToken(this, AccessType.Receive, receiveCTS.Token);
+        }
+        internal SocketSendLockToken GetSendingLock()
+        {
+            if(Interlocked.Increment(ref sendingLockersCount) == 1)
+            {
+                socketSendSoftLocked = true;
+            }
+            return new SocketSendLockToken(this);
+        }
+        internal void HardLockSocket()
+        {
+            if(Interlocked.Increment(ref sendingHardLockersCount) == 1)
+            {
+                socketSendHardLocked = true;
+            }
+        }
+        internal SocketLockToken GetReceivingLock()
+        {
+            if(Interlocked.Increment(ref receivingLockersCount) == 1)
+            {
+                socketReceiveLocked = true;
+            }
+            return new SocketLockToken(this, LockType.Receive);
+        }
+        internal SocketLockToken GetSuspendingLock(bool abortCurrentOperations)
+        {
+            SocketLockToken result = SuspendLock();
+            if (abortCurrentOperations)
+            {
+                AbortReceiving();
+                AbortSending();
+            }
+            return result;
+        }
+        internal SocketLockToken GetSuspendingLock(Action onReceivingAborted, Action onSendingAborted)
+        {
+            SocketLockToken result = SuspendLock();
+            AbortReceiving(onReceivingAborted);
+            AbortSending(onSendingAborted);
+            return result;
+        }
+        private SocketLockToken SuspendLock()
+        {
+            if (Interlocked.Increment(ref receivingLockersCount) == 1)
+            {
+                socketReceiveLocked = true;
+            }
+            if (Interlocked.Increment(ref sendingLockersCount) == 1)
+            {
+                socketSendSoftLocked = true;
+            }
+            if (Interlocked.Increment(ref sendingHardLockersCount) == 1)
+            {
+                socketSendHardLocked = true;
+            }
+            return new SocketLockToken(this, LockType.Suspend);
+        }
+        internal void UnlockSocket(SocketLockToken token) // TODO : доделать
+        {
+            switch (token.type)
+            {
+                case LockType.Receive:
+                    if (Interlocked.Decrement(ref receivingLockersCount) == 0)
                     {
-                        spin.SpinOnce();
-                    }
-                    else
-                    {
-                        Interlocked.Increment(ref sendersKernelWaitingsCount);
-                        sendMRES.Wait();
-                        if(Interlocked.Decrement(ref sendersKernelWaitingsCount) == 0)
+                        socketReceiveLocked = false;
+                        if (receiveKernelWaitingsCount != 0)
                         {
-                            sendMRES.Reset();
+                            receiveARE.Set();
                         }
                     }
-                }
-            }
-        }
-        internal SocketAccessToken GetReceiveAccess()
-        {
-            if (socketReceiveLocked)
-            {
-                SpinWait spin = new SpinWait();
-                while (socketReceiveLocked)
-                {
-                    if (!spin.NextSpinWillYield)
+                    break;
+                case LockType.Send:
+                    SocketSendLockToken sendToken = token as SocketSendLockToken;
+                    if (sendToken.IsHardLocked)
                     {
-                        spin.SpinOnce();
+                        if (Interlocked.Decrement(ref sendingHardLockersCount) == 0)
+                        {
+                            socketSendHardLocked = false;
+                        }
                     }
-                    else
+                    if (Interlocked.Decrement(ref sendingLockersCount) == 0)
                     {
-                        Interlocked.Increment(ref receiverKernelWaitings);
-                        receiveMRES.Wait();
-                        Interlocked.Decrement(ref receiverKernelWaitings);
-                        receiveMRES.Reset();
+                        socketSendSoftLocked = false;
+                        if (sendKernelWaitingsCount != 0)
+                        {
+                            sendARE.Set();
+                        }
                     }
-                }
-            }
-            return base.GetReceive();
-        }
-        internal SocketLockToken SendingSoftLock()
-        {
-            socketSendSoftLocked = true;
-            return new SocketLockToken(this, AccessType.Send);
-        }
-        internal SocketLockToken SendingHardLock()
-        {
-            socketSendSoftLocked = true;
-            socketSendHardLocked = true;
-            return new SocketLockToken(this, AccessType.Send);
-        }
-        internal SocketLockToken ReceivingLock()
-        {
-            socketReceiveLocked = true;
-            return new SocketLockToken(this, AccessType.Receive);
-        }
-        private void UnlockSocket(SocketLockToken token)
-        {
-            if(token.type == AccessType.Send)
-            {
-                socketSendSoftLocked = false;
-                socketSendHardLocked = false;
-                if(sendersKernelWaitingsCount != 0)
-                {
-                    sendMRES.Set();
-                }
-            }
-            else
-            {
-                socketReceiveLocked = false;
-                if(receiverKernelWaitings != 0)
-                {
-                    receiveMRES.Set();
-                }
+                    break;
+                case LockType.Suspend:
+                    if (Interlocked.Decrement(ref receivingLockersCount) == 0)
+                    {
+                        socketReceiveLocked = false;
+                        if (receiveKernelWaitingsCount != 0)
+                        {
+                            receiveARE.Set();
+                        }
+                    }
+                    if (Interlocked.Decrement(ref sendingHardLockersCount) == 0)
+                    {
+                        socketSendHardLocked = false;
+                    }
+                    if (Interlocked.Decrement(ref sendingLockersCount) == 0)
+                    {
+                        socketSendSoftLocked = false;
+                        if (sendKernelWaitingsCount != 0)
+                        {
+                            sendARE.Set();
+                        }
+                    }
+                    break;
             }
         }
         #endregion
@@ -124,79 +162,129 @@ namespace Gateway
         {
             socketSendSoftLocked = false;
             socketSendHardLocked = false;
-            receiveMRES = new ManualResetEventSlim(false, 0);
-            sendMRES = new ManualResetEventSlim(false, 0);
-            receiverKernelWaitings = 0;
-            sendersKernelWaitingsCount = 0;
         }
         #endregion
-
-
-
-        internal class SocketLockToken : IDisposable
+    }
+    internal class SocketLockToken : IDisposable
+    {
+        private protected readonly SocketLocker locker;
+        internal LockType type;
+        public void Dispose()
         {
-            private readonly SocketLocker locker;
-            internal AccessType type;
-            public void Dispose()
-            {
-                locker.UnlockSocket(this);
-            }
-            internal SocketLockToken(SocketLocker locker, AccessType type)
-            {
-                this.type = type;
-                this.locker = locker;
-            }
+            locker.UnlockSocket(this);
+        }
+        internal SocketLockToken(SocketLocker locker, LockType type)
+        {
+            this.type = type;
+            this.locker = locker;
         }
     }
+    internal class SocketSendLockToken : SocketLockToken
+    {
+        internal bool IsHardLocked { get; private set; }
+        internal void HardLockSocket()
+        {
+            IsHardLocked = true;
+            locker.HardLockSocket();
+        }
+        internal SocketSendLockToken(SocketLocker locker) : base(locker, LockType.Send) { }
+    }
+    internal enum LockType : byte
+    {
+        Receive,
+        Send,
+        Suspend
+    }
+
+
 
     internal class SocketSynchronizer
     {
-        private int sendState,
-                    receiveState,
-                    sendKernelWaitingsCount,
-                    receiveKernelWaitingsCount;
-        private readonly AutoResetEvent sendARE,
-                                        receiveARE;
+        // State: 1 - available, 0 - non
+        private protected int sendState,
+                              receiveState,
+                              sendKernelWaitingsCount,
+                              receiveKernelWaitingsCount;
+        private protected readonly AutoResetEvent sendARE,
+                                                  receiveARE;
+        private protected CancellationTokenSource receiveCTS,
+                                                  sendCTS;
 
-        internal SocketAccessToken GetSend()
+        internal void AbortReceiving()
+        {
+            receiveCTS.Token.Register(ResetReceiveCTS);
+            receiveCTS.Cancel();
+        }
+        internal void AbortReceiving(Action onAbortationCompleted)
+        {
+            receiveCTS.Token.Register(onAbortationCompleted);
+            AbortReceiving();
+        }
+        internal void AbortSending()
+        {
+            sendCTS.Token.Register(ResetSendCTS);
+            //sendCTS.Cancel(); // TODO: кладёт поток на лопатки при вызове, не создавая никаких исключений.
+        }
+        internal void AbortSending(Action onAbortationCompleted)
+        {
+            sendCTS.Token.Register(onAbortationCompleted);
+            AbortSending();
+        }
+        private void ResetReceiveCTS()
+        {
+            receiveCTS = new CancellationTokenSource();
+        }
+        private void ResetSendCTS()
+        {
+            sendCTS = new CancellationTokenSource();
+        }
+        internal virtual SocketAccessToken GetSendAccess()
         {
             SpinWait spin = new SpinWait();
             while (sendState == 0)
             {
-                if (!spin.NextSpinWillYield)
-                {
-                    spin.SpinOnce();
-                }
-                else
-                {
-                    Interlocked.Increment(ref sendKernelWaitingsCount);
-                    sendARE.WaitOne();
-                    Interlocked.Decrement(ref sendKernelWaitingsCount);
-                }
+                WaitForSendAccess(spin);
             }
             Interlocked.Exchange(ref sendState, 0);
-            return new SocketAccessToken(this, AccessType.Send);
+            return new SocketAccessToken(this, AccessType.Send, sendCTS.Token);
         }
-        internal SocketAccessToken GetReceive()
+        internal virtual SocketAccessToken GetReceiveAccess()
         {
             SpinWait spin = new SpinWait();
             while (receiveState == 0)
             {
-                if (!spin.NextSpinWillYield)
-                {
-                    spin.SpinOnce();
-                }
-                else
-                {
-                    Interlocked.Increment(ref receiveKernelWaitingsCount);
-                    receiveARE.WaitOne();
-                    Interlocked.Decrement(ref receiveKernelWaitingsCount);
-                }
+                WaitForReceiveAccess(spin);
             }
             Interlocked.Exchange(ref receiveState, 0);
-            return new SocketAccessToken(this, AccessType.Receive);
+            return new SocketAccessToken(this, AccessType.Receive, receiveCTS.Token);
         }
-        internal void Release(SocketAccessToken token)
+        private protected void WaitForSendAccess(SpinWait spin)
+        {
+            if (!spin.NextSpinWillYield)
+            {
+                spin.SpinOnce();
+            }
+            else
+            {
+                Interlocked.Increment(ref sendKernelWaitingsCount);
+                sendARE.WaitOne();
+                Interlocked.Decrement(ref sendKernelWaitingsCount);
+            }
+        }
+        private protected void WaitForReceiveAccess(SpinWait spin)
+        {
+            if (!spin.NextSpinWillYield)
+            {
+                spin.SpinOnce();
+            }
+            else
+            {
+                Interlocked.Increment(ref receiveKernelWaitingsCount);
+                receiveARE.WaitOne();
+                Interlocked.Decrement(ref receiveKernelWaitingsCount);
+            }
+        }
+        internal virtual void Release(SocketAccessToken token)
         {
             if (token.type == AccessType.Send)
             {
@@ -220,30 +308,32 @@ namespace Gateway
         {
             sendARE = new AutoResetEvent(false);
             receiveARE = new AutoResetEvent(false);
+            receiveCTS = new CancellationTokenSource();
+            sendCTS = new CancellationTokenSource();
             sendState = 1;
             receiveState = 1;
         }
-
-
-
-        internal class SocketAccessToken : IDisposable
+    }
+    internal class SocketAccessToken : IDisposable
+    {
+        private readonly SocketSynchronizer synchronizer;
+        internal CancellationToken CancellationToken { get; }
+        internal readonly AccessType type;
+        internal void OnCancellation(Action<object> action, object state)
         {
-            private readonly SocketSynchronizer synchronizer;
-            internal readonly AccessType type;
-            public void Dispose()
-            {
-                synchronizer.Release(this);
-            }
-            internal SocketAccessToken(SocketSynchronizer synchronizer, AccessType type)
-            {
-                this.type = type;
-                this.synchronizer = synchronizer;
-            }
+            CancellationToken.Register(action, state);
+        }
+        public void Dispose()
+        {
+            synchronizer.Release(this);
+        }
+        internal SocketAccessToken(SocketSynchronizer synchronizer, AccessType type, CancellationToken cancellationToken)
+        {
+            this.type = type;
+            this.synchronizer = synchronizer;
+            CancellationToken = cancellationToken;
         }
     }
-
-
-
     internal enum AccessType : byte
     {
         Send,
