@@ -11,7 +11,8 @@ using System.Threading.Tasks;
 
 namespace Gateway.Entities.Invite
 {
-    internal class Invite : InviteBase
+    [JsonObject(MemberSerialization.OptIn)]
+    public class Invite : InviteBase
     {
         [JsonProperty(PropertyName = "created_at")]
         public DateTime CreatedAt { get; private set; }
@@ -39,20 +40,9 @@ namespace Gateway.Entities.Invite
         [OnDeserialized]
         private void CompleteDeserialization(StreamingContext context)
         {
-            Guild targetGuild = DiscordGatewayClient.TryToGetGuild(GuildIdentifier) as Guild;
-            IChannel targetChannel = null;
-            IUser targetInviter = null;
-            if (targetGuild != null)
-            {
-                targetChannel = targetGuild.TryToGetChannel(ChannelIdentifier);
-                targetInviter = targetGuild.TryToGetUser(inviter.Identifier);
-            }
             ValidFor = validFor > 0 
                      ? TimeSpan.FromSeconds(validFor) 
                      : TimeSpan.Zero;
-            Inviter = targetInviter;
-            Guild = targetGuild;
-            Channel = targetChannel;
         }
     }
 }

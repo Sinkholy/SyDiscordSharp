@@ -8,10 +8,9 @@ using System.Threading.Tasks;
 
 namespace Gateway.Entities.Invite
 {
-    internal interface IInvite
+    public interface IInvite
     {
         string Code { get; }
-        IGuild Guild { get; }
-        IChannel Channel { get; }
+        string GuildIdentifier { get; }
     }
 }
