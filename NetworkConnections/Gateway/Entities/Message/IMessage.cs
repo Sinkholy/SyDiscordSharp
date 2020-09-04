@@ -11,7 +11,6 @@ namespace Gateway.Entities.Message
     internal interface IMessage
     {
         string Identifier { get; }
-        IGuild Guild { get; }
-        IChannel Channel { get; }
+        string GuildIdentifier { get; }
     }
 }
