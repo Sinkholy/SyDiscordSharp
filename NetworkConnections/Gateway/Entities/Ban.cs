@@ -3,12 +3,15 @@ using Newtonsoft.Json;
 
 namespace Gateway.Entities
 {
-    internal class Ban
+    public class Ban
     {
         [JsonProperty(PropertyName = "user")]
         internal User User { get; private set; }
 
         [JsonProperty(PropertyName = "guild_id")]
         internal string GuildIdentifier { get; private set; }
+
+        [JsonProperty(PropertyName = "reason")]
+        internal string Reason { get; private set; }
     }
 }
