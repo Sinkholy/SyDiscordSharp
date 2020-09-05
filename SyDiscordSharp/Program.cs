@@ -168,6 +168,7 @@ namespace SyDiscordSharp
                 gatewayClient.DispatchEventHandler.MessageReactionAdded += OnMessageReactionAdded;
                 gatewayClient.DispatchEventHandler.MessageReactionRemoved += OnMessageReactionRemoved;
                 gatewayClient.DispatchEventHandler.MessageReactionRemovedAll += OnMessageAllReactionsRemoved;
+                gatewayClient.DispatchEventHandler.MessageReactionEmojiRemoved += OnMessageEmojiRemoved;
 
                 gatewayClient.DispatchEventHandler.Ready += OnReady;
                 gatewayClient.SystemEventHandler.Connected += OnConnection;
@@ -449,6 +450,17 @@ namespace SyDiscordSharp
                 }
             }
             private void OnMessageAllReactionsRemoved(object sender, EventHandlerArgs args)
+            {
+                if (args.EventData is MessageReactionEvent newReaction)
+                {
+                    // TODO: пробрасывать
+                }
+                else
+                {
+                    RaiseLog("Error during MessageReactionAdded event handling. Cannot cast received data to MessageReactionEvent");
+                }
+            }
+            private void OnMessageEmojiRemoved(object sender, EventHandlerArgs args)
             {
                 if (args.EventData is MessageReactionEvent newReaction)
                 {
