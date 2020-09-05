@@ -15,22 +15,21 @@ namespace Gateway
 {
     [JsonObject(MemberSerialization.OptIn)]
     [JsonConverter(typeof(IGatewayPayloadConverter))]
-    public class GatewayPayload
+    internal class GatewayPayload
     {
         [JsonProperty(propertyName: "op", Order = 2)]
-        public Opcode Opcode;
+        internal Opcode Opcode { get; private set; }
         [JsonProperty(propertyName: "d", Order = 3)]
-        public IGatewayDataObject Data;
+        internal IGatewayDataObject Data { get; private set; }
         [JsonProperty(propertyName: "s", Order = 1)]
-        public string Sequence = null;
+        internal int? Sequence { get; set; }
         [JsonProperty(propertyName: "t", Order = 0)]
-        public string EventName = null;
-        public GatewayPayload(Opcode opcode, IGatewayDataObject data, string eventName = null, string sequence = null)
+        internal string EventName { get; private set; }
+        internal GatewayPayload(Opcode opcode, IGatewayDataObject data, string eventName = null)
         {
-            this.Opcode = opcode;
-            this.Data = data;
-            this.Sequence = sequence == "" ? null : sequence;
-            this.EventName = eventName == "" ? null : eventName;
+            Opcode = opcode;
+            Data = data;
+            EventName = eventName;
         }
 
         private class IGatewayPayloadConverter : JsonConverter
@@ -49,7 +48,12 @@ namespace Gateway
                 Opcode opcode = ParseOpcode(opcodeJson);
                 if(opcode == Opcode.Dispatch)
                 {
-                    dataTypeFullName = $"{objectType.Namespace}.Payload.DataObjects.Dispatch.{opcode}";
+                    dataTypeFullName = $"{objectType.Namespace}.Payload.DataObjects.Dispatch.{opcode}"; // TODO : откровенная писька
+                }
+                else if(opcode == Opcode.InvalidSession)
+                {
+                    IGatewayDataObject data = new InvalidSession(bool.Parse(dataJson));
+                    return new GatewayPayload(opcode, data, eventNameJson) { Sequence = 0 };
                 }
                 else
                 {
@@ -57,8 +61,8 @@ namespace Gateway
                 }
                 Type dataType = objectType.Assembly.GetType(dataTypeFullName);
                 IGatewayDataObject dataObject = JsonConvert.DeserializeObject(dataJson, dataType) as IGatewayDataObject;
-
-                return new GatewayPayload(opcode, dataObject, eventNameJson, sequenceJson);
+                int.TryParse(sequenceJson, out int sequence);
+                return new GatewayPayload(opcode, dataObject, eventNameJson) { Sequence = sequence };
             }
             private Opcode ParseOpcode(string opcodeJson)
             {
@@ -69,7 +73,8 @@ namespace Gateway
                 }
                 catch
                 {
-                    throw new Exception("cannot parse opcode"); // TODO : исключение
+                    // TODO : интрумент логирования ("Cannot parse opcode in received payload.");
+                    return Opcode.UnknownOpcode;
                 }
 
                 byte[] enumValues = (byte[])Enum.GetValues(typeof(Opcode));

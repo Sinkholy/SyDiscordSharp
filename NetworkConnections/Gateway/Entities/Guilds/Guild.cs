@@ -1,84 +1,281 @@
 ﻿using Gateway.Entities.Channels;
 using Gateway.Entities.Channels.Text;
 using Gateway.Entities.Channels.Voice;
+using Gateway.Entities.Emojis;
 using Gateway.Entities.Invite;
+using Gateway.Entities.Presences;
 using Gateway.Entities.Users;
+using Gateway.Entities.VoiceSession;
+using Gateway.Payload.DataObjects.Dispatch.DispatchEvents;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using Gateway.Entities.VoiceSession;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
 
 namespace Gateway.Entities.Guilds //TAI : ленивая загрузка всего и вся (ролей\пользователей etc.)
 {
-    internal class Guild : GuildPreview
+    internal class Guild : GuildPreview, IGuild, IUpdatableGuild
     {
-        #region RO collections
-        public IReadOnlyCollection<IChannel> Channels => channels;
-        public IReadOnlyCollection<ChannelCategory> ChannelCategories
-            => channels.Where(x => x is ChannelCategory)
-                       .Select(x => x as ChannelCategory)
-                       .ToList() as IReadOnlyCollection<ChannelCategory>;
-        public IReadOnlyCollection<IVoiceChannel> VoiceChannels
-            => channels.Where(x => x is IVoiceChannel)
-                       .Select(x => x as IVoiceChannel)
-                       .ToList() as IReadOnlyCollection<IVoiceChannel>;
-        public IReadOnlyCollection<ITextChannel> TextChannels
-            => channels.Where(x => x is ITextChannel)
-                       .Select(x => x as ITextChannel)
-                       .ToList() as IReadOnlyCollection<ITextChannel>;
-        public IReadOnlyCollection<IInvite> Invites => InvitesList as IReadOnlyCollection<IInvite>;
-        public IReadOnlyCollection<IUser> Users => UsersList as IReadOnlyCollection<IUser>;
-        public IReadOnlyCollection<IUser> BannedUsers => BannedUsersList as IReadOnlyCollection<IUser>;
+        #region Private fields\properties
+        [JsonProperty(PropertyName = "afk_timeout")]
+        private int afkTimeout;
+        [JsonProperty(PropertyName = "public_updates_channel_id")]
+        private string publicUpdatesChannelIdentifier;
+        [JsonProperty(PropertyName = "widget_channel_id")]
+        private string widgetChannelIdentifier;
+        [JsonProperty(PropertyName = "rules_channel_id")]
+        private string rulesChannelIdentifier;
+        [JsonProperty(PropertyName = "owner_id")]
+        private string ownerIdentifier;
+        [JsonProperty(PropertyName = "afk_channel_id")]
+        private string afkChannelIdentifier;
+        [JsonProperty(PropertyName = "system_channel_id")]
+        private string systemChannelIdentifier;
+        internal List<Ban> BannedUsersList = new List<Ban>(); //Смотри на инвайты
+        internal List<IInvite> InvitesList = new List<IInvite>(); //TODO : ленивая загрузка
+                                                                  //TODO : подгрузка данных при получении гильдии
+        private Dictionary<string, Role> RolesById
+        {
+            get
+            {
+                if (_rolesById is null)
+                {
+                    _rolesById = new Dictionary<string, Role>();
+                }
+                return _rolesById;
+            }
+            set => _rolesById = value;
+        }
+        private Dictionary<string, Role> _rolesById;
+        [JsonProperty(PropertyName = "roles")]
+        private List<Role> _rolesReceived;
+        internal Dictionary<string, GuildUser> UsersById // TODO : Потокобезопасность коллекций
+        {
+            get
+            {
+                if (_users is null)
+                {
+                    _users = new Dictionary<string, GuildUser>();
+                }
+                return _users;
+            }
+            set => _users = value;
+        }
+        private Dictionary<string, GuildUser> _users;
+        [JsonProperty(PropertyName = "members")]
+        private GuildUser[] usersReceived;
+        internal Dictionary<string, IChannel> ChannelsById // TODO : Потокобезопасность коллекций
+        {
+            get
+            {
+                if (_channels is null)
+                {
+                    _channels = new Dictionary<string, IChannel>();
+                }
+                return _channels;
+            }
+            set => _channels = value;
+        }
+        private Dictionary<string, IChannel> _channels;
+        [JsonProperty(PropertyName = "channels")]
+        private List<IChannel> channelsReceived;
         #endregion
-        #region Public fields\properties
-        public IReadOnlyCollection<IVoiceSession> ActiveVoiceSessions => VoiceSessionsById.Values;
-        public IChannel PublicUpdatesChannel  //Смотри на канал виджетов
-            => channels.Where(x => x.Identifier == publicUpdatesChannelIdentifier).SingleOrDefault();
+        #region IUpdatableGuild implementation
+        Guild IUpdatableGuild.LoadInfoFromOldGuild(Guild oldGuildInfo)
+        {
+            Guild prevGuildInfo = this;
+            JoinedAt = oldGuildInfo.JoinedAt;
+            Large = oldGuildInfo.Large;
+            Unavailable = oldGuildInfo.Unavailable;
+            MemberCount = oldGuildInfo.MemberCount;
+            _voiceSessionsById = oldGuildInfo.VoiceSessionsById;
+            UsersById = oldGuildInfo.UsersById;
+            //ChannelsList = oldGuildInfo.Channels as List<IChannel>; //TODO: писька
+            PresencesByUserId = oldGuildInfo.PresencesByUserId;
+            return prevGuildInfo;
+        }
+        void IUpdatableGuild.AddChannel(IChannel channel) => ChannelsById.Add(channel.Identifier, channel);
+        void IUpdatableGuild.RemoveChannel(string channelId)
+        {
+            if (ChannelsById.ContainsKey(channelId))
+            {
+                ChannelsById.Remove(channelId);
+            }
+        }
+        IChannel IUpdatableGuild.OverrideChannel(IChannel newChannelInfo)
+        {
+            IChannel oldChannelInfo = TryToGetChannel(newChannelInfo.Identifier);
+            ChannelsById[newChannelInfo.Identifier] = newChannelInfo;
+            return oldChannelInfo;
+        }
+        void IUpdatableGuild.AddRole(Role role) => RolesById.Add(role.Identifier, role);
+        void IUpdatableGuild.RemoveRole(string roleId)
+        {
+            if (RolesById.ContainsKey(roleId))
+            {
+                RolesById.Remove(roleId);
+            }
+        }
+        Role IUpdatableGuild.OverrideRole(Role newRoleInfo)
+        {
+            Role oldRoleInfo = TryToGetRole(newRoleInfo.Identifier);
+            RolesById[newRoleInfo.Identifier] = newRoleInfo;
+            return oldRoleInfo;
+        }
+        void IUpdatableGuild.AddUser(GuildUser user) => UsersById.Add(user.Identifier, user);
+        void IUpdatableGuild.RemoveUser(string id)
+        {
+            if (UsersById.ContainsKey(id))
+            {
+                UsersById.Remove(id);
+            }
+        }
+        void IUpdatableGuild.AddInvite(IInvite invite) => InvitesList.Add(invite);
+        void IUpdatableGuild.RemoveInvite(string code)
+        {
+            IInvite inviteToDelete = TryToGetInvite(code);
+            if (inviteToDelete != null)
+            {
+                InvitesList.Remove(inviteToDelete);
+            }
+        }
+        void IUpdatableGuild.AddBan(Ban bannedUser) => BannedUsersList.Add(bannedUser);
+        void IUpdatableGuild.RemoveBan(string userId)
+        {
+            Ban unbannedUser = TryToGetBannedUser(userId);
+            if (unbannedUser != null)
+            {
+                BannedUsersList.Remove(unbannedUser);
+            }
+        }
+        void IUpdatableGuild.AddVoiceSession(IVoiceSession session)
+        {
+            VoiceSessionsById.Add(session.SessionIdentifier, session);
+        }
+        IVoiceSession IUpdatableGuild.RemoveVoiceSession(string sessionId)
+        {
+            IVoiceSession deletedVoiceSession = VoiceSessionsById[sessionId];
+            VoiceSessionsById.Remove(sessionId);
+            return deletedVoiceSession;
+        }
+        GuildEmoji[] IUpdatableGuild.SetNewGuildEmojis(GuildEmoji[] emojis)
+        {
+            GuildEmoji[] prevEmojisInfo = _emojis;
+            _emojis = emojis;
+            return prevEmojisInfo;
+        }
+        GuildUser IUpdatableGuild.OverrideGuildUser(GuildUser newUser)
+        {
+            if (UsersById.TryGetValue(newUser.Identifier, out GuildUser user))
+            {
+                if (user is IUpdatableGuildUser updatableUser) // TODO: там ли я данные меняю?
+                {
+                    updatableUser.UpdateDeafenedState(user.Deafeaned);
+                    updatableUser.UpdateMutedState(user.Muted);
+                    updatableUser.UpdateRolesEnumerable(GetUserRoles(newUser.RolesIdentifiers));
+                    updatableUser.UpdatePresencesEnumerable(GetUserPresence(newUser.Identifier));
+                }
+                UsersById[newUser.Identifier] = newUser;
+                return user;
+            }
+            else
+            {
+                // TODO: логирование
+                return null;
+            }
+        }
+        IVoiceSession IUpdatableGuild.OverrideVoiceSession(IVoiceSession newStateInfo)
+        {
+            IVoiceSession prevSessionInfo = TryToGetVoiceSession(newStateInfo.SessionIdentifier);
+            VoiceSessionsById[newStateInfo.SessionIdentifier] = newStateInfo;
+            return prevSessionInfo;
+        }
+        IPresence IUpdatableGuild.OverridePresence(IPresence newPresenceInfo)
+        {
+            IPresence prevPresenceInfo = TryToGetPresence(newPresenceInfo.UserIdentifier);
+            PresencesByUserId[newPresenceInfo.UserIdentifier] = newPresenceInfo;
+            return prevPresenceInfo;
+        }
+        void IUpdatableGuild.AddPresence(IPresence newPresence)
+        {
+            PresencesByUserId.Add(newPresence.UserIdentifier, newPresence);
+        }
+        void IUpdatableGuild.RemovePresence(string userId)
+        {
+            if (PresencesByUserId.ContainsKey(userId))
+            {
+                PresencesByUserId.Remove(userId);
+            }
+        }
+        #endregion
+        #region IGuild implementation
+        public IChannel PublicUpdatesChannel //Смотри на канал виджетов
+            => ChannelsById.Values.Where(x => x.Identifier == publicUpdatesChannelIdentifier).SingleOrDefault();
         public IChannel WidgetChannel //TODO : узнать что из себя представляет Widget-канал и изменить тип
-            => channels.Where(x => x.Identifier == widgetChannelIdentifier).SingleOrDefault();
+            => ChannelsById.Values.Where(x => x.Identifier == widgetChannelIdentifier).SingleOrDefault();
         public ITextChannel RulesChannel
-            => channels.Where(x => x.Identifier == rulesChannelIdentifier)
+            => ChannelsById.Values.Where(x => x.Identifier == rulesChannelIdentifier)
                        .Select(x => x as ITextChannel)
                        .SingleOrDefault();
         public ITextChannel SystemChannel
-            => channels.Where(x => x.Identifier == systemChannelIdentifier)
+            => ChannelsById.Values.Where(x => x.Identifier == systemChannelIdentifier)
                        .Select(x => x as ITextChannel)
                        .SingleOrDefault();
         public IVoiceChannel AfkChannel //Например в этом поле можно впихнуть ленивую загрузку
-            => channels.Where(x => x.Identifier == afkChannelIdentifier)
+            => ChannelsById.Values.Where(x => x.Identifier == afkChannelIdentifier)
                        .Select(x => x as IVoiceChannel)
                        .SingleOrDefault();
         public IUser Owner
-            => UsersList.Where(x => (x as IUser).Identifier == ownerIdentifier)
-                                            .SingleOrDefault() as IUser;
-        #endregion
-        #region internal fields\properties
+            => UsersById[ownerIdentifier];
+        public IReadOnlyCollection<IChannel> Channels => ChannelsById.Values.ToList();
+        public IReadOnlyCollection<IChannelCategory> ChannelCategories
+            => ChannelsById.Values.Where(x => x is IChannelCategory)
+                       .Select(x => x as ChannelCategory)
+                       .ToList() as IReadOnlyCollection<ChannelCategory>;
+        public IReadOnlyCollection<IVoiceChannel> VoiceChannels
+            => ChannelsById.Values.Where(x => x is IVoiceChannel)
+                       .Select(x => x as IVoiceChannel)
+                       .ToList() as IReadOnlyCollection<IVoiceChannel>;
+        public IReadOnlyCollection<ITextChannel> TextChannels
+            => ChannelsById.Values.Where(x => x is ITextChannel)
+                       .Select(x => x as ITextChannel)
+                       .ToList() as IReadOnlyCollection<ITextChannel>;
+        public IReadOnlyCollection<Role> Roles => RolesById.Values;
+        public IReadOnlyCollection<IInvite> Invites => InvitesList as IReadOnlyCollection<IInvite>;
+        public IReadOnlyCollection<IUser> Users => UsersById.Values;
+        public IReadOnlyCollection<IUser> BannedUsers => BannedUsersList as IReadOnlyCollection<IUser>;
+        public IReadOnlyCollection<GuildEmoji> Emojis => _emojis;
+        public IReadOnlyCollection<IVoiceSession> ActiveVoiceSessions => VoiceSessionsById.Values;
+        public IReadOnlyCollection<IPresence> Presences => PresencesByUserId.Values;
         [JsonProperty(PropertyName = "owner")]
-        internal bool IsOwner;
+        public bool IsOwner { get; private set; }
         [JsonProperty(PropertyName = "permissions")]
-        internal int Permissions;
+        public int? Permissions { get; private set; }
         [JsonProperty(PropertyName = "mfa_level")]
-        internal MFA MultifactorAuth;
+        public MFA MultifactorAuth { get; private set; }
         [JsonProperty(PropertyName = "application_id")]
-        internal string ApplicationIdentifier;
+        public string ApplicationIdentifier { get; private set; }
         [JsonProperty(PropertyName = "widget_enabled")]
-        internal bool WigdetEnabled;
+        public bool WigdetEnabled { get; private set; }
         [JsonProperty(PropertyName = "system_channel_flags")]
-        internal SystemChannelFlags SysChnlFlags;
+        public SystemChannelFlags SysChnlFlags { get; private set; }
         [JsonProperty(PropertyName = "verification_level")]
-        internal VerificationLevel VerificationLevel;
+        public VerificationLevel VerificationLevel { get; private set; }
         [JsonProperty(PropertyName = "default_message_notification")]
-        internal DefaultMessageNotificationLevel DefaultMessageNotificationLevel;
+        public DefaultMessageNotificationLevel DefaultMessageNotificationLevel { get; private set; }
         [JsonProperty(PropertyName = "explicit_content_filter")]
-        internal ExplicitContentFilterLevel ExplicitContentFilterLevel;
+        public ExplicitContentFilterLevel ExplicitContentFilterLevel { get; private set; }
         [JsonProperty(PropertyName = "joined_at")]
-        internal DateTime JoinedAt;
+        public DateTime JoinedAt { get; private set; }
         [JsonProperty(PropertyName = "large")]
-        internal bool Large;
+        public bool Large { get; private set; }
         [JsonProperty(PropertyName = "member_count")]
-        internal int MemberCount;
+        public int MemberCount { get; private set; }
+
         internal Dictionary<string, IVoiceSession> VoiceSessionsById
         {
             get
@@ -94,213 +291,187 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         private Dictionary<string, IVoiceSession> _voiceSessionsById;
         [JsonProperty(PropertyName = "voice_states")]
         private IVoiceSession[] voiceSessionsReceived;
-        //[JsonProperty(PropertyName = "presences")]
-        //internal Presence[] Presences;
-        internal TimeSpan? AfkTimeout;
-        [JsonProperty(PropertyName = "max_presences")]
-        internal int? MaxPresences = 25000;
-        [JsonProperty(PropertyName = "region")]
-        internal string Region;
-        [JsonProperty(PropertyName = "max_members")]
-        internal int MaxMembers;
-        [JsonProperty(PropertyName = "vanity_url_code")]
-        internal string VanityUrlCode;
-        [JsonProperty(PropertyName = "banner")]
-        internal string Banner;
-        [JsonProperty(PropertyName = "premium_tier")]
-        internal PremiumTier PremTier;
-        [JsonProperty(PropertyName = "premium_subscriptions_count")]
-        internal int PremiumSubscriptionsCount;
-        [JsonProperty(PropertyName = "preferred_locale")]
-        internal string PreferredLocale; //TAI : может локали запихнуть в перечисление?
-        [JsonProperty(PropertyName = "max_video_channel_users")]
-        internal int MaxVideoChannelUsers;
-        #endregion
-        #region private fields\properties
-        [JsonProperty(PropertyName = "afk_timeout")]
-        private int afkTimeout;
-        [JsonProperty(PropertyName = "public_updates_channel_id")]
-        private string publicUpdatesChannelIdentifier;
-        [JsonProperty(PropertyName = "widget_channel_id")]
-        private string widgetChannelIdentifier;
-        [JsonProperty(PropertyName = "rules_channel_id")]
-        private string rulesChannelIdentifier;
-        [JsonProperty(PropertyName = "owner_id")]
-        private string ownerIdentifier;
-        [JsonProperty(PropertyName = "afk_channel_id")]
-        private string afkChannelIdentifier;
-        [JsonProperty(PropertyName = "system_channel_id")]
-        private string systemChannelIdentifier;
-        internal List<IUser> BannedUsersList = new List<IUser>(); //Смотри на инвайты
-        internal List<IInvite> InvitesList = new List<IInvite>(); //TODO : ленивая загрузка
-                                                                  //TODO : подгрузка данных при получении гильдии
-        internal List<Role> Roles
-        {
-            get => _roles ?? new List<Role>(capacity: 0);
-            set => _roles = value;
-        }
-        [JsonProperty(PropertyName = "roles")]
-        private List<Role> _roles;
-        internal List<GuildUser> UsersList // TODO : Потокобезопасность коллекции пользователей
-        {
-            get => _users ?? new List<GuildUser>(capacity: 0);
-            set => _users = value;
-        }
-        [JsonProperty(PropertyName = "members")]
-        private List<GuildUser> _users;
-        private List<IChannel> channels
-        {
-            get => _channels ?? new List<IChannel>(capacity: 0);
-            set => _channels = value;
-        }
-        [JsonProperty(PropertyName = "channels")]
-        private List<IChannel> _channels;
-        #endregion
-        public void UpdateGuild(Guild newGuildInfo)
-        {
 
-        }
-        internal void AddChannel(IChannel channel)
+        internal Dictionary<string, IPresence> PresencesByUserId
         {
-            channels.Add(channel);
-        }
-        internal void RemoveChannel(string channelId)
-        {
-            IChannel channelToRemove = channels.Where(x => x.Identifier == channelId).SingleOrDefault();
-            if (channelToRemove != null)
+            get
             {
-                channels.Remove(channelToRemove);
+                if (_presencesByUserId is null)
+                {
+                    _presencesByUserId = new Dictionary<string, IPresence>();
+                }
+                return _presencesByUserId;
             }
+            set => _presencesByUserId = value;
         }
-        internal void AddRole(Role role)
-        {
-            Roles.Add(role);
-        }
-        internal void RemoveRole(string roleId)
-        {
-            Role roleToRemove = Roles.Where(x => x.Identifier == roleId).SingleOrDefault();
-            if(roleToRemove != null)
+        private Dictionary<string, IPresence> _presencesByUserId;
+        [JsonProperty(PropertyName = "presences")]
+        internal IPresence[] presencesReceived;
+        public TimeSpan? AfkTimeout => TimeSpan.FromSeconds(afkTimeout);
+        [JsonProperty(PropertyName = "max_presences")]
+        public int? MaxPresences { get; private set; } = 25000;
+        [JsonProperty(PropertyName = "region")]
+        public string Region { get; private set; }
+        [JsonProperty(PropertyName = "max_members")]
+        public int MaxMembers { get; private set; }
+        [JsonProperty(PropertyName = "vanity_url_code")]
+        public string VanityUrlCode { get; private set; }
+        [JsonProperty(PropertyName = "banner")]
+        public string Banner { get; private set; }
+        [JsonProperty(PropertyName = "premium_tier")]
+        public PremiumTier PremTier { get; private set; }
+        [JsonProperty(PropertyName = "premium_subscriptions_count")]
+        public int PremiumSubscriptionsCount { get; private set; }
+        [JsonProperty(PropertyName = "preferred_locale")]
+        public string PreferredLocale { get; private set; } //TAI : может локали запихнуть в перечисление?
+        [JsonProperty(PropertyName = "max_video_channel_users")]
+        public int MaxVideoChannelUsers { get; private set; }
+        public IChannel TryToGetChannel(string id) //TAI : каналы\юзеров\роли запихать в словари для быстрого доступа?
+        {                                          //может быть актуально при частом доступе(а он будет, по идее);
+            if (ChannelsById.TryGetValue(id, out IChannel channel))
             {
-                Roles.Remove(roleToRemove);
+                return channel;
             }
+            return null;
         }
-        internal void AddUser(IUser user)
+        public IUser TryToGetUser(string id)
         {
-            if(user is GuildUser guildUser)
+            if (UsersById.TryGetValue(id, out GuildUser user))
             {
-                UsersList.Add(guildUser);
+                return user;
             }
-            else
+            return null;
+        }
+        public Role TryToGetRole(string id)
+        {
+            if (RolesById.TryGetValue(id, out Role role))
             {
-                DiscordGatewayClient.RaiseLog("Cannot add new user to guild, flase to cast to GuildUser");
+                return role;
             }
+            return null;
         }
-        internal void RemoveUser(string id)
-        {
-            if (TryToGetUser(id) is GuildUser userToDelete)
-            {
-                UsersList.Remove(userToDelete);
-            }
-        }
-        internal void AddInvite(IInvite invite)
-        {
-            InvitesList.Add(invite);
-        }
-        internal void RemoveInvite(string code)
-        {
-            IInvite inviteToDelete = TryToGetInvite(code);
-            if(inviteToDelete != null)
-            {
-                InvitesList.Remove(inviteToDelete);
-            }
-        }
-        internal void AddBan(IUser bannedUser)
-        {
-            BannedUsersList.Add(bannedUser);
-        }
-        internal void RemoveBan(string userId)
-        {
-            IUser unbannedUser = TryToGetBannedUser(userId);
-            if(unbannedUser != null)
-            {
-                BannedUsersList.Remove(unbannedUser);
-            }
-        }
-        internal IChannel TryToGetChannel(string id) //TAI : каналы\юзеров\роли запихать в словари для быстрого доступа?
-        {                                            //может быть актуально при частом доступе(а он будет, по идее);
-            return channels.Where(x => x.Identifier == id).SingleOrDefault();
-        }
-        internal IUser TryToGetUser(string id)
-        {
-            return UsersList.Where(x => x.Identifier == id).SingleOrDefault() as IUser;
-        }
-        internal Role TryToGetRole(string id)
-        {
-            return Roles.Where(x => x.Identifier == id).SingleOrDefault();
-        }
-        internal IInvite TryToGetInvite(string code)
+        public IInvite TryToGetInvite(string code)
         {
             return InvitesList.Where(x => x.Code == code).SingleOrDefault();
         }
-        internal IUser TryToGetBannedUser(string userId)
+        public Ban TryToGetBannedUser(string userId)
         {
-            return BannedUsersList.Where(x => x.Identifier == userId).SingleOrDefault();
+            return BannedUsersList.Where(x => x.User.Identifier == userId).SingleOrDefault();
         }
+        public IVoiceSession TryToGetVoiceSession(string sessionId)
+        {
+            if (VoiceSessionsById.TryGetValue(sessionId, out IVoiceSession session))
+            {
+                return session;
+            }
+            return null;
+        }
+        public GuildEmoji TryToGetEmoji(string id)
+        {
+            return _emojis.Where(x => x.Identifier == id).SingleOrDefault();
+        }
+        public IPresence TryToGetPresence(string userId)
+        {
+            if (PresencesByUserId.TryGetValue(userId, out IPresence presence))
+            {
+                return presence;
+            }
+            return null;
+        }
+        #endregion
         #region Deserialization methods
         [OnDeserialized]
         private void OnDeserialized(StreamingContext context)
         {
-            AfkTimeout = TimeSpan.FromSeconds(afkTimeout);
-            UpdateChennelsGuildId();
-            UpdateUsers();
-        }
-        private void UpdateChennelsGuildId()
-        {
-            foreach(IGuildChannel channel in channels)
-                channel.UpdateChannelGuildId(this as IGuild);
-        }
-        private void UpdateUsers()
-        {
-            foreach (GuildUser user in UsersList)
+            if (usersReceived != null)
             {
-                foreach (string roleId in user.RolesIdentifiers)
+                foreach (GuildUser user in usersReceived)
                 {
-                    Role role = Roles.Where(x => x.Identifier == roleId).SingleOrDefault();
-                    user.roles.Add(role);
+                    if (user is IUpdatableGuildUser updatableUser)
+                    {
+                        updatableUser.UpdateRolesEnumerable(GetUserRoles(user.RolesIdentifiers));
+                        updatableUser.UpdatePresencesEnumerable(GetUserPresence(user.Identifier));
+                        updatableUser.UpdateGuildIdentifier(this.Identifier);
+                    }
+                    if (UsersById.ContainsKey(user.Identifier))
+                    {
+                        // логировать получение дубликата
+                        Console.WriteLine($"ПОЙМАЛ ДУБЛИКАТ В ЮЗЕРАХ АХТУНГ: {user.FullName}");
+                    }
+                    else
+                    {
+                        UsersById.Add(user.Identifier, user);
+                    }
                 }
-                if (user.Guild == null)
-                    user.Guild = this;
+                usersReceived = null;
+            }
+            if (channelsReceived != null)
+            {
+                foreach (IGuildChannel channel in channelsReceived)
+                {
+                    channel.UpdateChannelGuildId(this.Identifier);
+                    if (channel.Type == ChannelType.GuildVoice)
+                    {
+                        (channel as GuildVoiceChannel).activeVoiceSessionsEnumerable = GetActiveSessionsForChannel(channel.Identifier);
+                    }
+                    ChannelsById.Add(channel.Identifier, channel);
+                }
+                channelsReceived = null;
+            }
+            if (voiceSessionsReceived != null)
+            {
+                foreach (IVoiceSession session in voiceSessionsReceived)
+                {
+                    if (session is IUpdatableVoiceSession updatableSession)
+                    {
+                        updatableSession.SetGuildId(this.Identifier);
+                    }
+                    if (this is IUpdatableGuild updatableGuild)
+                    {
+                        updatableGuild.AddVoiceSession(session);
+                    }
+                }
+                voiceSessionsReceived = null;
+            }
+            if (presencesReceived != null)
+            {
+                foreach (IPresence presence in presencesReceived)
+                {
+                    PresencesByUserId.Add(presence.UserIdentifier, presence);
+                }
+                presencesReceived = null;
+            }
+            if (_rolesReceived != null)
+            {
+                foreach (Role role in _rolesReceived)
+                {
+                    RolesById.Add(role.Identifier, role);
+                }
+                _rolesReceived = null;
             }
         }
+
+        private IEnumerable<Role> GetUserRoles(string[] rolesId)
+        {
+            foreach (string roleId in rolesId)
+            {
+                yield return TryToGetRole(roleId);
+            }
+        }
+        private IEnumerable<IVoiceSession> GetActiveSessionsForChannel(string channelId)
+        {
+            foreach (IVoiceSession session in ActiveVoiceSessions.Where(x => x.ChannelIdentifier == channelId))
+            {
+                yield return session;
+            }
+        }
+        private IEnumerable<IPresence> GetUserPresence(string userId)
+        {
+            yield return TryToGetPresence(userId);
+        }
         #endregion
-    }
-    internal enum PremiumTier : byte
-    {
-        None,
-        FirstTier,
-        SecondTier,
-        ThirdTier
-    }
-    internal enum MFA : byte { None, Elevated }
-    internal enum DefaultMessageNotificationLevel : byte { AllMessages, OnlyMentions }
-    internal enum ExplicitContentFilterLevel : byte
-    {
-        Disabled,
-        MembersWithoutRoles,
-        AllMembers
-    }
-    internal enum VerificationLevel : byte
-    {
-        None,
-        Low,
-        Medium,
-        High,
-        VeryHigh
-    }
-    [Flags]
-    internal enum SystemChannelFlags
-    {
-        SuppressJoinNotification = 1 << 0,
-        SuppressPremiumSubscriptions = 1 << 1
+        #region Ctor's
+        internal Guild() { }
+        #endregion
     }
 }

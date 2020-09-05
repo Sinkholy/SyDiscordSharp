@@ -21,12 +21,12 @@ namespace Gateway.Entities.Channels.Text
             DMTextChannel newChannel = channelNewInfo as DMTextChannel;
             if (newChannel is null)
             {
-                DiscordGatewayClient.RaiseLog("Handling channel updated event. Cannot cast to DMTextChannel");
+                // TODO : интрумент логирования ("Handling channel updated event. Cannot cast to DMTextChannel");
                 return "";
             }
             else
             {
-                //TODO : Recipients
+                // TODO : Recipients
             }
             return result.ToString();
         }

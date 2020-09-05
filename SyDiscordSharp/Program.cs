@@ -170,6 +170,7 @@ namespace SyDiscordSharp
                 gatewayClient.DispatchEventHandler.MessageReactionRemovedAll += OnMessageAllReactionsRemoved;
                 gatewayClient.DispatchEventHandler.MessageReactionEmojiRemoved += OnMessageEmojiRemoved;
                 gatewayClient.DispatchEventHandler.VoiceStateUpdated += OnVoiceStateUpdated;
+                gatewayClient.DispatchEventHandler.VoiceServerUpdated += OnVoiceServerUpdated;
 
                 gatewayClient.DispatchEventHandler.Ready += OnReady;
                 gatewayClient.SystemEventHandler.Connected += OnConnection;
@@ -472,7 +473,7 @@ namespace SyDiscordSharp
                     RaiseLog("Error during MessageReactionAdded event handling. Cannot cast received data to MessageReactionEvent");
                 }
             }
-            private void OnVoiceStateUpdated(object sender, EventHandlerArgs args)
+                        private void OnVoiceStateUpdated(object sender, EventHandlerArgs args)
             {
                 if (args.EventData is IVoiceSession newVoiceState)
                 {
@@ -583,6 +584,17 @@ namespace SyDiscordSharp
                 else
                 {
                     RaiseLog("Error during MessageReactionAdded event handling. Cannot cast received data to MessageReactionEvent");
+                }
+            }
+            private void OnVoiceServerUpdated(object sender, EventHandlerArgs args) // TODO: не смог получить данное событие
+            {
+                if (args.EventData is VoiceServerUpdate newServerInfo)
+                {
+
+                }
+                else
+                {
+                    RaiseLog("Error during MessageReactionAdded event handling. Cannot cast received data to VoiceServerUpdate");
                 }
             }
             private async void OnGuildCreated(object sender, EventHandlerArgs args)

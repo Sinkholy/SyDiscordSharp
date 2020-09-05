@@ -9,22 +9,23 @@ using System.Threading.Tasks;
 namespace Gateway.Entities.Channels.Text
 {
     [JsonObject(MemberSerialization.OptIn)]
-    internal abstract class GuildTextChannelBase : TextChannel, IGuildChannel
+    internal abstract class GuildTextChannelBase : TextChannel, IGuildChannel//, IUpdatableGuildTextChannel
     {
         [JsonProperty(PropertyName = "guild_id")]
         public string GuildIdentifier { get; private set; }
         [JsonProperty(PropertyName = "name")]
-        internal string Name { get; private set; }
+        public string Name { get; private set; }
         [JsonProperty(PropertyName = "position")]
-        internal int Position { get; private set; }
+        public int Position { get; private set; }
+        public IReadOnlyCollection<Overwrite> PermissionsOverwrite => permissionsOverwrite;
         [JsonProperty(PropertyName = "permission_overwrites")]
-        internal List<Overwrite> PermissionsOverwrite { get; private set; }
+        internal List<Overwrite> permissionsOverwrite { get; private set; }
         [JsonProperty(PropertyName = "nsfw")]
-        internal bool NSFW { get; private set; }
+        public bool NSFW { get; private set; }
         [JsonProperty(PropertyName = "parent_id")]
-        internal string ParentIdentifier { get; private set; }
+        public string CategoryIdentifier { get; private set; }
 
-        public void UpdateChannelGuildId(IGuild guild) => GuildIdentifier = guild.Identifier;
+        public void UpdateChannelGuildId(string guildId) => GuildIdentifier = guildId;
         public override string UpdateChannel(IChannel newChannelInfo) 
         {
             StringBuilder result = new StringBuilder();
@@ -32,7 +33,7 @@ namespace Gateway.Entities.Channels.Text
             GuildTextChannelBase newChannel = newChannelInfo as GuildTextChannelBase;
             if (newChannel is null)
             {
-                DiscordGatewayClient.RaiseLog("Handling channel updated event. Cannot cast to GuildTextChannelBase");
+                // TODO : инструмент логирования ("Handling channel updated event. Cannot cast to GuildTextChannelBase");
                 return string.Empty;
             }
             else
@@ -47,9 +48,9 @@ namespace Gateway.Entities.Channels.Text
                     NSFW = newChannel.NSFW;
                     result.Append("NSFW | ");
                 }
-                if(ParentIdentifier != newChannel.ParentIdentifier)
+                if(CategoryIdentifier != newChannel.CategoryIdentifier)
                 {
-                    ParentIdentifier = newChannel.ParentIdentifier;
+                    CategoryIdentifier = newChannel.CategoryIdentifier;
                     result.Append("ParentIdentifier | ");
                 }
                 if(Position != newChannel.Position)
@@ -59,34 +60,34 @@ namespace Gateway.Entities.Channels.Text
                 }
                 if(PermissionsOverwrite.Count != newChannel.PermissionsOverwrite.Count)
                 {
-                    if (PermissionsOverwrite.Count > newChannel.PermissionsOverwrite.Count)
-                    {
-                        int count = PermissionsOverwrite.Count - newChannel.PermissionsOverwrite.Count;
-                        result.Append($"{count} permission(s) removed | ");
-                        PermissionsOverwrite.RemoveRange(PermissionsOverwrite.Count - count, count);
-                    }
-                    else
-                    {
-                        int count = newChannel.PermissionsOverwrite.Count - PermissionsOverwrite.Count;
-                        result.Append($"{count} permission(s) added | ");
-                        PermissionsOverwrite.AddRange(newChannel.PermissionsOverwrite.GetRange(PermissionsOverwrite.Count, count));
-                    }
+                    //if (PermissionsOverwrite.Count > newChannel.PermissionsOverwrite.Count)
+                    //{
+                    //    int count = PermissionsOverwrite.Count - newChannel.PermissionsOverwrite.Count;
+                    //    result.Append($"{count} permission(s) removed | ");
+                    //    PermissionsOverwrite.RemoveRange(PermissionsOverwrite.Count - count, count);
+                    //}
+                    //else
+                    //{
+                    //    int count = newChannel.PermissionsOverwrite.Count - PermissionsOverwrite.Count;
+                    //    result.Append($"{count} permission(s) added | ");
+                    //    PermissionsOverwrite.AddRange(newChannel.PermissionsOverwrite.GetRange(PermissionsOverwrite.Count, count));
+                    //}
                 }
                 else
                 {
-                    for (int i = 0; i < PermissionsOverwrite.Count; i++)
-                    {
-                        if(PermissionsOverwrite[i].Allow != newChannel.PermissionsOverwrite[i].Allow)
-                        {
-                            result.Append("Permission changed | ");
-                            PermissionsOverwrite[i].Allow = newChannel.PermissionsOverwrite[i].Allow;
-                        }
-                        if(PermissionsOverwrite[i].Deny != newChannel.PermissionsOverwrite[i].Deny)
-                        {
-                            result.Append("Permission changed | ");
-                            PermissionsOverwrite[i].Deny = newChannel.PermissionsOverwrite[i].Deny;
-                        }
-                    }
+                    //for (int i = 0; i < PermissionsOverwrite.Count; i++)
+                    //{
+                    //    if(PermissionsOverwrite[i].Allow != newChannel.PermissionsOverwrite[i].Allow)
+                    //    {
+                    //        result.Append("Permission changed | ");
+                    //        PermissionsOverwrite[i].Allow = newChannel.PermissionsOverwrite[i].Allow;
+                    //    }
+                    //    if(PermissionsOverwrite[i].Deny != newChannel.PermissionsOverwrite[i].Deny)
+                    //    {
+                    //        result.Append("Permission changed | ");
+                    //        PermissionsOverwrite[i].Deny = newChannel.PermissionsOverwrite[i].Deny;
+                    //    }
+                    //}
                 }
             }
             return result.ToString();
@@ -105,9 +106,9 @@ namespace Gateway.Entities.Channels.Text
         {
             GuildIdentifier = guildId;
             Name = name;
-            PermissionsOverwrite = permissionsOverwrite;
+            this.permissionsOverwrite = permissionsOverwrite;
             NSFW = nsfw;
-            ParentIdentifier = parentId;
+            CategoryIdentifier = parentId;
             Position = position;
         }
         internal GuildTextChannelBase(ChannelType type)

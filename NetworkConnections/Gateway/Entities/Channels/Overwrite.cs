@@ -8,7 +8,7 @@ using Newtonsoft.Json;
 namespace Gateway.Entities.Channels
 {
     [JsonObject(MemberSerialization.OptIn)]
-    internal class Overwrite
+    public class Overwrite // TODO: интерфейс?
     {
         [JsonProperty(PropertyName = "id")]
         internal string Identifier { get; private set; }

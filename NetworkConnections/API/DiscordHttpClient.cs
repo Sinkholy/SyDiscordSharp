@@ -16,6 +16,8 @@ namespace API
 {
     public class DiscordHttpClient
     {
+        internal delegate void ToLog(string logData);
+        internal event ToLog Log = delegate { };
         private readonly HttpClient httpClient;
         public DiscordHttpClient()
         {
@@ -27,15 +29,25 @@ namespace API
             httpClient.BaseAddress = baseApiUri;
             //TODO : таймаут для запроса
         }
-        public async Task StartAsync()//TODO : нормальные исключения
+        /// Summary: 
+        ///     Inicializate connection to discord HTTP server
+        ///
+        /// Exceptions:
+        ///     AuthorizeException:
+        ///         Throw when HTTP-client unable to connect to HTTP-server
+        public async Task StartAsync()
         {
             bool connected = await TryToConnect();
             if (!connected)
-                throw new Exception("Connect");
-
+            {
+                Log("Cannot connect to HTTP-server. Retrying in 5s");
+                await StartAsync();
+                return; // TODO : пахнет неладным
+            }
+                
             bool authorized = await TryToAuthorize();
             if (!authorized)
-                throw new Exception("Auth");
+                throw new Exception("Unable to Authorize"); //TODO : Собственное исключение
         }
         public async Task<GatewayInfo> GetGatewayInfoAsync()
         {
@@ -45,6 +57,22 @@ namespace API
                 string content = new StreamReader(stream).ReadToEnd();
                 return JsonConvert.DeserializeObject<GatewayInfo>(content);
             }
+        }
+        public async Task<HttpResponseMessage> Get(string endPoint)
+        {
+            return await SendAsync(HttpMethods.Get, endPoint, null);
+        }
+        public async Task<HttpResponseMessage> Put(string endPoint)
+        {
+            return await SendAsync(HttpMethods.Put, endPoint, null);
+        }
+        public async Task<HttpResponseMessage> Post(string endPoint, HttpContent content = null)
+        {
+            return await SendAsync(HttpMethods.Post, endPoint, content);
+        }
+        public async Task<HttpResponseMessage> Patch(string endPoint, HttpContent content = null)
+         {
+            return await SendAsync(HttpMethods.Patch, endPoint, content);
         }
         private async Task<bool> TryToConnect() //TODO : реализовать проверку подключения к дискорду
         {
@@ -61,19 +89,15 @@ namespace API
             else
             {
                 if (response.ReasonPhrase == "Unauthorized")
-                {
                     return false;
-                }
-                else // TODO : исключение?
-                {
-                    return false; //Заглушка
-                }
+                else //TODO : выяснить какие ещё причины могут быть
+                    return false;
             }
         }
         private (TokenType Type, string Token) GetTokenAndType() //TODO : подтягивать из конфига
         {
             TokenType type = TokenType.Bot;
-            string token = "NTU5MDkwMTUzOTM1NjAxNjY1.XtKPog.7epgH4xS8QxLqGgiGyBLCladnyI";
+            string token = "NTU5MDkwMTUzOTM1NjAxNjY1.XJaDSA.IX8ZHPTebYrgzYPJsXyezjA40EQ";
             return (Type: type, Token: token);
         }
         private Uri GetBaseApiUri()
@@ -83,19 +107,12 @@ namespace API
         private async Task<HttpResponseMessage> SendAsync(HttpMethods method, string endPoint, HttpContent content = null) //TODO : Проверить что-либо кроме GET запроса
         {
             Uri requestUri = new Uri(httpClient.BaseAddress, endPoint);
-            HttpRequestMessage message = new HttpRequestMessage 
+            HttpRequestMessage message = new HttpRequestMessage
             {
                 RequestUri = requestUri,
                 Method = GetMethod(method)
             };
-            if (content is ByteArrayContent)
-                message.Content = new ByteArrayContent(content.ReadAsByteArrayAsync().Result);
-            else if (content is StreamContent)
-                message.Content = new StreamContent(content.ReadAsStreamAsync().Result);
-            else if (content is StringContent)
-                message.Content = new StringContent(content.ReadAsStringAsync().Result);
-            else if (content != null)
-                throw new ArgumentOutOfRangeException($"Unknown content type {content}");
+            message.Content = content;
             return await this.httpClient.SendAsync(message);
         }
         private static HttpMethod GetMethod(HttpMethods method)
@@ -110,7 +127,7 @@ namespace API
                 default: throw new ArgumentOutOfRangeException($"Unknown HttpMethod {method}");
             }
         }
-        public async Task<bool> ValidateToken() //TODO : валидацию
+        private async Task<bool> ValidateToken() //TODO : валидацию
         {
             return false;
         }

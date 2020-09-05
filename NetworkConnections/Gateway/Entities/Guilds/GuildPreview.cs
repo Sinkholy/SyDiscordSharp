@@ -1,10 +1,11 @@
 ﻿using Gateway.Entities.Emojis;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 
 namespace Gateway.Entities.Guilds
 {
-    internal class GuildPreview : IGuild
+    internal class GuildPreview
     {
         [JsonProperty(PropertyName = "id")]
         public string Identifier { get; private set; }
@@ -23,7 +24,7 @@ namespace Gateway.Entities.Guilds
         [JsonProperty(PropertyName = "description")]
         public string Description { get; private set; }
         [JsonProperty(PropertyName = "emojis")]
-        public GuildEmoji[] Emojis { get; private set; }
+        private protected GuildEmoji[] _emojis;
         [JsonProperty(PropertyName = "features")]
         public GuildFeatures[] Features { get; private set; }
         [JsonProperty(PropertyName = "available")]

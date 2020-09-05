@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Gateway.Entities.Channels.Text
 {
-    internal abstract class TextChannel : Channel, ITextChannel, IMessageEditableChannel
+    internal abstract class TextChannel : Channel, ITextChannel, IUpdatableTextChannel
     {
         internal IMessage LastMessage => TryToGetMessage(lastMessageIdentifier);
         internal IMessage[] PinnedMessages; 
@@ -15,11 +15,22 @@ namespace Gateway.Entities.Channels.Text
         private string lastMessageIdentifier; //TODO : потокобезопасность
         private List<IMessage> messages = new List<IMessage>(); //TODO : потокобезопасность
 
-        #region IMessageEditableChannel
-        void IMessageEditableChannel.AddMessage(IMessage message)
+        #region IUpdatableTextChannel
+        public void AddMessage(IMessage message)
         {
             messages.Add(message);
             lastMessageIdentifier = message.Identifier;
+        }
+        public void RemoveMessage(string messageId)
+        {
+            if(TryToGetMessage(messageId) is IMessage messageToDelete)
+            {
+                if (messageToDelete.Identifier == lastMessageIdentifier)
+                {
+                    lastMessageIdentifier = messages.FirstOrDefault().Identifier; //TODO : проверить сортирован ли список
+                }
+                messages.Remove(messageToDelete);
+            }
         }
         #endregion
         #region IUpdatableChannel impl
@@ -30,7 +41,7 @@ namespace Gateway.Entities.Channels.Text
             TextChannel newChannel = newChannelInfo as TextChannel;
             if(newChannel is null)
             {
-                DiscordGatewayClient.RaiseLog("Handling channel updated event. Cannot cast to TextChannel");
+                // TODO : инструмент логирования ("Handling channel updated event. Cannot cast to TextChannel");
                 return "";
             }
             return result.ToString();
@@ -40,18 +51,6 @@ namespace Gateway.Entities.Channels.Text
         public void SendMessage(IMessage message) { }
         public void SendMessage(string message) { }
         public IReadOnlyCollection<IMessage> Messages => messages as IReadOnlyCollection<IMessage>;
-        public void RemoveMessage(string id)
-        {
-            IMessage messageToDelete = TryToGetMessage(id);
-            if (messageToDelete != null)
-            {
-                messages.Remove(messageToDelete);
-            }
-            if (messageToDelete.Identifier == lastMessageIdentifier)
-            {
-                lastMessageIdentifier = messages.FirstOrDefault().Identifier; //TODO : проверить сортирован ли список
-            }
-        }
         public IMessage TryToGetMessage(string id)
         {
             return messages.Where(x => x.Identifier == id).SingleOrDefault();

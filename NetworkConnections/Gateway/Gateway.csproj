@@ -44,10 +44,32 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entities\Activities\Activity.cs" />
+    <Compile Include="Entities\Activities\Custom\CustomStatusActivity.cs" />
+    <Compile Include="Entities\Activities\Custom\ICustomStatusActivity.cs" />
+    <Compile Include="Entities\Activities\Gaming\GamingActivity.cs" />
+    <Compile Include="Entities\Activities\Gaming\IGamingActivity.cs" />
+    <Compile Include="Entities\Activities\Gaming\IRichPresenceGamingActivity.cs" />
+    <Compile Include="Entities\Activities\Gaming\RichPresenceGamingActivity.cs" />
+    <Compile Include="Entities\Activities\IActivity.cs" />
+    <Compile Include="Entities\Activities\Listening\IListeningActivity.cs" />
+    <Compile Include="Entities\Activities\Listening\ListeningActivity.cs" />
+    <Compile Include="Entities\Activities\RichPresenceActivityAssets.cs" />
+    <Compile Include="Entities\Activities\RichPresenceActivityParty.cs" />
+    <Compile Include="Entities\Activities\RichPresenceActivitySecrets.cs" />
+    <Compile Include="Entities\Activities\Streaming\StreamingPlatform.cs" />
+    <Compile Include="Entities\Activities\Streaming\IStreamingActivity.cs" />
+    <Compile Include="Entities\Activities\Streaming\StreamingActivity.cs" />
     <Compile Include="Entities\Ban.cs" />
     <Compile Include="Entities\Channels\ChannelCategory.cs" />
     <Compile Include="Entities\Channels\Channel.cs" />
+    <Compile Include="Entities\Channels\IChannelCategory.cs" />
     <Compile Include="Entities\Channels\IGuildChannel.cs" />
+    <Compile Include="Entities\Channels\IUpdatableChannel.cs" />
+    <Compile Include="Entities\Channels\IUpdatableGuildCategory.cs" />
+    <Compile Include="Entities\Channels\Text\IUpdatableGuildTextChannel.cs" />
+    <Compile Include="Entities\Channels\Voice\IUpdatableVoiceChannel.cs" />
+    <Compile Include="Entities\Channels\Text\IUpdatableTextChannel.cs" />
     <Compile Include="Entities\Channels\Voice\GuildVoiceChannel.cs" />
     <Compile Include="Entities\Channels\IChannel.cs" />
     <Compile Include="Entities\Channels\Overwrite.cs" />
@@ -60,12 +82,38 @@
     <Compile Include="Entities\Channels\Text\ITextChannel.cs" />
     <Compile Include="Entities\Channels\Text\TextChannel.cs" />
     <Compile Include="Entities\Channels\Voice\IVoiceChannel.cs" />
+    <Compile Include="Entities\Embed\EmbedData.cs" />
+    <Compile Include="Entities\Embed\EmbedAuthor.cs" />
+    <Compile Include="Entities\Embed\EmbedField.cs" />
+    <Compile Include="Entities\Embed\EmbedFooter.cs" />
+    <Compile Include="Entities\Embed\EmbedImage.cs" />
+    <Compile Include="Entities\Embed\EmbedProvider.cs" />
+    <Compile Include="Entities\Embed\EmbedVideo.cs" />
+    <Compile Include="Entities\Emojis\IGuildEmoji.cs" />
+    <Compile Include="Entities\Guilds\IUpdatableGuild.cs" />
+    <Compile Include="Entities\Message\ActivityMessage.cs" />
+    <Compile Include="Entities\Message\CrossPostedMessage.cs" />
+    <Compile Include="Entities\Message\EmbeddedMessage.cs" />
+    <Compile Include="Entities\Message\IActivityMessage.cs" />
+    <Compile Include="Entities\Message\ICrossPostedMessage.cs" />
+    <Compile Include="Entities\Message\IEmbeddedMessage.cs" />
+    <Compile Include="Entities\Message\Reaction.cs" />
+    <Compile Include="Entities\Presences\ClientPlatformStatuses.cs" />
+    <Compile Include="Entities\Presences\IPresence.cs" />
+    <Compile Include="Entities\Message\IUpdatableMessage.cs" />
+    <Compile Include="Entities\Users\IGuildUser.cs" />
+    <Compile Include="Entities\Users\IUpdatableUser.cs" />
+    <Compile Include="Entities\VoiceSession\IUpdatableVoiceSession.cs" />
+    <Compile Include="Entities\VoiceSession\IVoiceSession.cs" />
+    <Compile Include="Entities\Channels\IUpdatableGuildChannel.cs" />
     <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\ChannelPinsUpdatedEvent.cs" />
     <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\GuildEmojiUpdatedEvent.cs" />
     <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\GuildMemberChunkEvent.cs" />
     <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\GuildMember.cs" />
+    <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\MessageDeletedBulk.cs" />
     <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\MessageReactionEvent.cs" />
-    <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\PresenceUpdatedEvent.cs" />
+    <Compile Include="Entities\Presences\Presence.cs" />
+    <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\RoleDeletedEvent.cs" />
     <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\VoiceServerUpdate.cs" />
     <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\WebhookUpdatedEvent.cs" />
     <Compile Include="Entities\Invites\IInvite.cs" />
@@ -85,11 +133,13 @@
     <Compile Include="Entities\Users\GuildUser.cs" />
     <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\UserTypingEvent.cs" />
     <Compile Include="DataObjects\Voice\VoiceRegion.cs" />
-    <Compile Include="DataObjects\Voice\VoiceState.cs" />
+    <Compile Include="Entities\VoiceSession\VoiceSession.cs" />
     <Compile Include="DiscordGatewayClient.cs" />
     <Compile Include="DispatchEventHandler.cs" />
     <Compile Include="Gateway.cs" />
     <Compile Include="Entities\Users\IUser.cs" />
+    <Compile Include="Payload\DataObjects\InvalidSession.cs" />
+    <Compile Include="SocketLocker.cs" />
     <Compile Include="SystemEventHandler.cs" />
     <Compile Include="Payload\DataObjects\Dispatch\Dispatch.cs" />
     <Compile Include="Payload\DataObjects\Enums\Events.cs" />
@@ -107,8 +157,10 @@
     <Compile Include="Entities\Users\User.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Entities\Activities\ActivitiesDiagram.cd" />
     <None Include="Entities\Channels\ChannelClassDiagram.cd" />
     <None Include="Entities\Guilds\GuildsClassDiagram.cd" />
+    <None Include="Entities\Message\MessagesDiagram.cd" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

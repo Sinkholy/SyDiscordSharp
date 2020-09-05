@@ -9,6 +9,6 @@ namespace Gateway.Entities.Channels
 {
     interface IUpdatableChannel
     {
-        string UpdateChannel(IChannel channelNewInfo);
+        string UpdateChannel(IChannel channelNewInfo); // TODO : нужен какой-то способ передавать что было изменено. 
     }
 }

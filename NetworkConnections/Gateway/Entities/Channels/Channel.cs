@@ -13,7 +13,7 @@ using System.Xml.XPath;
 namespace Gateway.Entities.Channels
 {
     [JsonObject(MemberSerialization.OptIn)]
-    internal abstract class Channel : IChannel, IUpdatableChannel
+    internal abstract class Channel : IChannel, IUpdatableChannel 
     {
         [JsonProperty(PropertyName = "id")]
         public string Identifier { get; private set; }

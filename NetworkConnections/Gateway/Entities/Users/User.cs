@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Gateway.Entities.Presences;
+using Gateway.Payload.DataObjects.Dispatch.DispatchEvents;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,74 +10,16 @@ using System.Threading.Tasks;
 namespace Gateway.Entities.Users
 {
     [JsonObject(MemberSerialization.OptIn)]
-    internal class User : IUser, IUpdatableUser
+    internal class User : IUser
     {
-        #region IUpdatableUser impl
-        public virtual string Update(IUser newUserInfo)
+        #region IUpdatableUser impl 
+        public void UpdateAvatar(string avatarHash)// TODO: ннада?
         {
-            StringBuilder result = new StringBuilder();
-            User newUser = newUserInfo as User;
-            if (Username != newUser.Username)
-            {
-                Username = newUser.Username;
-                result.Append("Username | ");
-            }
-            if(Verified != newUser.Verified)
-            {
-                Verified = newUser.Verified;
-                result.Append("Verified | ");
-            }
-            if(MFA != newUser.MFA)
-            {
-                MFA = newUser.MFA;
-                result.Append("MFA | ");
-            }
-            if (IsBot != newUser.IsBot) //TODO : нужна ли обработка IsBot?
-            {
-                IsBot = newUser.IsBot;
-                result.Append("IsBot | ");
-            }
-            if (eMail != newUser.eMail)
-            {
-                eMail = newUser.eMail;
-                result.Append("eMail | ");
-            }
-            if (Discriminator != newUser.Discriminator)
-            {
-                Discriminator = newUser.Discriminator;
-                result.Append("Discriminator | ");
-            }
-            if (AvatarIdentifier != newUser.AvatarIdentifier)
-            {
-                AvatarIdentifier = newUser.AvatarIdentifier;
-                result.Append("Avatar | ");
-            }
-            if (PremiumType != newUser.PremiumType)
-            {
-                eMail = newUser.eMail;
-                result.Append("Premium type | ");
-            }
-            if (System != newUser.System)
-            {
-                System = newUser.System;
-                result.Append("Systen | ");
-            }
-            if (Locale != newUser.Locale)
-            {
-                Locale = newUser.Locale;
-                result.Append("Locale | ");
-            }
-            if (Flags != newUser.Flags)
-            {
-                Flags = newUser.Flags;
-                result.Append("Flags | ");
-            }
-            if (PublicFlags != newUser.PublicFlags)
-            {
-                PublicFlags = newUser.PublicFlags;
-                result.Append("Public flags | ");
-            }
-            return result.ToString();
+            AvatarIdentifier = avatarHash;
+        }
+        public void UpdateUsername(string username)
+        {
+            Username = username;
         }
         #endregion
         // If you wanna ask me "hey dude why this fields marked as virtual?"
@@ -115,9 +59,9 @@ namespace Gateway.Entities.Users
         #endregion
         #region Ctor's
         internal User() { }
-        internal User(string id)
+        internal User(string username)
         {
-            Identifier = id;
+
         }
         internal User(bool verified,
                     string username,

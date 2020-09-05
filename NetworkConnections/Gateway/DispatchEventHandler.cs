@@ -1,9 +1,11 @@
 ﻿using Gateway.DataObjects;
+using Gateway.DataObjects.Voice;
 using Gateway.Entities;
 using Gateway.Entities.Channels;
 using Gateway.Entities.Guilds;
 using Gateway.Entities.Invite;
 using Gateway.Entities.Message;
+using Gateway.Entities.Presences;
 using Gateway.Entities.Users;
 using Gateway.Entities.VoiceSession;
 using Gateway.Payload.DataObjects.Dispatch.DispatchEvents;
@@ -54,7 +56,7 @@ namespace Gateway
         internal event EventHandler<EventHandlerArgs> MessageReactionAdded = delegate { };
         internal event EventHandler<EventHandlerArgs> MessageReactionRemoved = delegate { };
         internal event EventHandler<EventHandlerArgs> MessageReactionRemovedAll = delegate { };
-        internal event EventHandler<EventHandlerArgs> MessageReactionEmoji = delegate { };
+        internal event EventHandler<EventHandlerArgs> MessageReactionEmojiRemoved = delegate { };
         internal event EventHandler<EventHandlerArgs> TypingStarted = delegate { };
         internal event EventHandler<EventHandlerArgs> UserUpdated = delegate { };
         internal event EventHandler<EventHandlerArgs> VoiceServerUpdated = delegate { };
@@ -64,11 +66,12 @@ namespace Gateway
         {
             Enum.TryParse(eventName, out Events eventToRaiseName);
             if (eventToRaiseName == Events.UnknownEvent)
-                DiscordGatewayClient.RaiseLog($"Unknown dispatch event. /n Event name: {eventName} /n Event data: {eventData}");
+            {
+                // TODO : интструмент логирования ($"Unknown dispatch event. /n Event name: {eventName} /n Event data: {eventData}");
+            }
             EventHandlerArgs eventArgs;
             object eventArgsData;
-            //Console.WriteLine(eventName + "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-            //Console.WriteLine(eventData);
+            Console.WriteLine($"Dispatch: {eventName}");
             switch (eventToRaiseName)
             {
                 case Events.READY:
@@ -77,10 +80,12 @@ namespace Gateway
                     Ready(this, eventArgs);
                     break;
                 case Events.RESUMED:
+                    Console.WriteLine("resumed");
                     //TODO
                     break;
                 case Events.RECONNECT:
                     //TODO
+                    Console.WriteLine("reconnected");
                     break;
                 case Events.CHANNEL_CREATE:
                     eventArgsData = JsonConvert.DeserializeObject<IChannel>(eventData);
@@ -198,7 +203,7 @@ namespace Gateway
                     MessageDeleted(this, eventArgs);
                     break;
                 case Events.MESSAGE_DELETE_BULK:
-                    eventArgsData = JsonConvert.DeserializeObject<MessageBase[]>(eventData);
+                    eventArgsData = JsonConvert.DeserializeObject<MessageDeletedBulk>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     MessageDeletedBulk(this, eventArgs);
                     break;
@@ -220,10 +225,10 @@ namespace Gateway
                 case Events.MESSAGE_REACTION_REMOVE_EMOJI:
                     eventArgsData = JsonConvert.DeserializeObject<MessageReactionEvent>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
-                    MessageReactionEmoji(this, eventArgs);
+                    MessageReactionEmojiRemoved(this, eventArgs);
                     break;
                 case Events.PRESENCE_UPDATE:
-                    eventArgsData = JsonConvert.DeserializeObject<PresenceUpdatedEvent>(eventData);
+                    eventArgsData = JsonConvert.DeserializeObject<IPresence>(eventData);
                     eventArgs = new EventHandlerArgs(eventArgsData.GetType(), eventToRaiseName, eventArgsData);
                     PresenceUpdated(this, eventArgs);
                     break;

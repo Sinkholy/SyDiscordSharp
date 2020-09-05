@@ -1,4 +1,6 @@
-﻿using Gateway.Entities.Guilds;
+﻿using Gateway.DataObjects.Voice;
+using Gateway.Entities.Guilds;
+using Gateway.Entities.Users;
 using Gateway.Entities.VoiceSession;
 using Newtonsoft.Json;
 using System;
@@ -13,25 +15,25 @@ namespace Gateway.Entities.Channels.Voice
     internal class GuildVoiceChannel : Channel, IVoiceChannel, IGuildChannel
     {
         [JsonProperty(PropertyName = "bitrate")]
-        internal int Bitrate;
+        public int Bitrate { get; private set; }
         [JsonProperty(PropertyName = "rate_limit_per_user")]
-        internal int UserLimit;
+        public int UserLimit { get; private set; }
         [JsonProperty(PropertyName = "guild_id")]
         public string GuildIdentifier { get; private set; }
         [JsonProperty(PropertyName = "name")]
-        internal string Name;
+        public string Name { get; private set; }
         [JsonProperty(PropertyName = "nsfw")]
-        internal bool NSFW;
+        public bool NSFW { get; private set; }
         [JsonProperty(PropertyName = "position")]
-        internal int Position;
-        [JsonProperty(PropertyName = "permission_overwrites")]
-        internal Overwrite[] PermissionsOverwrite;
+        public int Position { get; private set; }
         [JsonProperty(PropertyName = "parent_id")]
-        internal string ParentIdentifier;
-        public IReadOnlyCollection<IVoiceSession> ActiveVoiceSessions 
+        public string CategoryIdentifier { get; private set; }
+        public IReadOnlyCollection<Overwrite> PermissionsOverwrite => permissionsOverwrite;
+        public IReadOnlyCollection<IVoiceSession> ActiveVoiceSessions
             => activeVoiceSessionsEnumerable.ToList();
         public IReadOnlyCollection<string> UsersInChannel
             => activeVoiceSessionsEnumerable.Select(x => x.UserIdentifier).ToList();
+        #region IUpdatableChannel implementation
         public override string UpdateChannel(IChannel channelNewInfo)
         {
             StringBuilder result = new StringBuilder();
@@ -39,7 +41,7 @@ namespace Gateway.Entities.Channels.Voice
             GuildVoiceChannel newChannel = channelNewInfo as GuildVoiceChannel;
             if (newChannel is null)
             {
-                DiscordGatewayClient.RaiseLog("Handling channel updated event. Cannot cast to GuildVoiceChannel");
+                // TODO : инструмент логирования ("Handling channel updated event. Cannot cast to GuildVoiceChannel");
                 return "";
             }
             else
@@ -59,11 +61,11 @@ namespace Gateway.Entities.Channels.Voice
                     NSFW = newChannel.NSFW;
                     result.Append("NSFW |");
                 }
-                if (ParentIdentifier != newChannel.ParentIdentifier)
-                {
-                    ParentIdentifier = newChannel.ParentIdentifier;
-                    result.Append("ParrentIdentifier |");
-                }
+                //if (ParentIdentifier != newChannel.ParentIdentifier)
+                //{
+                //    ParentIdentifier = newChannel.ParentIdentifier;
+                //    result.Append("ParrentIdentifier |");
+                //}
                 if (Position != newChannel.Position)
                 {
                     Position = newChannel.Position;
@@ -88,12 +90,14 @@ namespace Gateway.Entities.Channels.Voice
             }
             return result.ToString();
         }
+        #endregion
         #region IGuildChannel implementation
-        public void UpdateChannelGuildId(IGuild guild) => GuildIdentifier = guild.Identifier;
+        public void UpdateChannelGuildId(string guildId) => GuildIdentifier = guildId;
         #endregion
         #region IVoiceChannel implementation
-        public void JoinChannel() { }
         #endregion
+        [JsonProperty(PropertyName = "permission_overwrites")]
+        private List<Overwrite> permissionsOverwrite;
         internal IEnumerable<IVoiceSession> activeVoiceSessionsEnumerable { get; set; }
         #region Ctor's
         internal GuildVoiceChannel(string id,
@@ -104,7 +108,7 @@ namespace Gateway.Entities.Channels.Voice
                                    string name,
                                    bool nsfw,
                                    int position,
-                                   Overwrite[] permissionsOverwrite,
+                                   List<Overwrite> permissionsOverwrite,
                                    string parentId)
             : base(id, type)
         {
@@ -114,8 +118,8 @@ namespace Gateway.Entities.Channels.Voice
             Name = name;
             NSFW = nsfw;
             Position = position;
-            PermissionsOverwrite = permissionsOverwrite;
-            ParentIdentifier = parentId;
+            this.permissionsOverwrite = permissionsOverwrite;
+            CategoryIdentifier = parentId;
         }
         internal GuildVoiceChannel(ChannelType type)
             : base(type) { }

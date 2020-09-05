@@ -1,13 +1,20 @@
-﻿using System;
+﻿using Gateway.Entities.Presences;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Gateway.Entities.Users
 {
-    interface IUpdatableUser
+    interface IUpdatableGuildUser
     {
-        string Update(IUser newUserInfo);
+        void UpdateGuildIdentifier(string guildId);
+        void UpdateAvatar(string avatarHash);
+        void UpdateUsername(string username);
+        void UpdateSelfMutedState(bool selfMuted); // TAI: может все эти апдейты совместить?
+        void UpdateSelfDeafenedState(bool selfDeafened);
+        void UpdateMutedState(bool muted);
+        void UpdateDeafenedState(bool deafened);
+        void UpdateSelfStreamState(bool selfStream);
+        void UpdateSelfVideoState(bool selfVideo);
+        void UpdateRolesEnumerable(IEnumerable<Role> enumerable);
+        void UpdatePresencesEnumerable(IEnumerable<IPresence> enumerable);
     }
 }

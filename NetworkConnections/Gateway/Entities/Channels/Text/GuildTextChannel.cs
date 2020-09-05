@@ -23,7 +23,7 @@ namespace Gateway.Entities.Channels.Text
             GuildTextChannel newChannel = newChannelInfo as GuildTextChannel;
             if (newChannel is null)
             {
-                DiscordGatewayClient.RaiseLog("Handling channel updated event. Cannot cast to GuildTextChannel");
+                // TODO : инструмент логирования ("Handling channel updated event. Cannot cast to GuildTextChannel");
                 return string.Empty;
             }
             else

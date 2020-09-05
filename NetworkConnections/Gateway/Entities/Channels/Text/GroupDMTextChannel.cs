@@ -25,7 +25,7 @@ namespace Gateway.Entities.Channels.Text
             GroupDMTextChannel newChannel = channelNewInfo as GroupDMTextChannel;
             if (newChannel is null)
             {
-                DiscordGatewayClient.RaiseLog("Handling channel updated event. Cannot cast to DMTextChannel");
+                // TODO : инструмент логирования ("Handling channel updated event. Cannot cast to DMTextChannel");
                 return "";
             }
             else
