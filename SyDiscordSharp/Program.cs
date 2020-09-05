@@ -1,4 +1,4 @@
-﻿using System;   
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -166,6 +166,8 @@ namespace SyDiscordSharp
                 gatewayClient.DispatchEventHandler.MessageCreated += OnMessageReceived;
                 gatewayClient.DispatchEventHandler.MessageDeleted += OnMessageDeleted;
                 gatewayClient.DispatchEventHandler.MessageReactionAdded += OnMessageReactionAdded;
+                gatewayClient.DispatchEventHandler.MessageReactionRemoved += OnMessageReactionRemoved;
+
                 gatewayClient.DispatchEventHandler.Ready += OnReady;
                 gatewayClient.SystemEventHandler.Connected += OnConnection;
             }
@@ -436,7 +438,14 @@ namespace SyDiscordSharp
             }
             private void OnMessageReactionRemoved(object sender, EventHandlerArgs args)
             {
-
+                if (args.EventData is MessageReactionEvent newReaction)
+                {
+                    // TODO: пробрасывать
+                }
+                else
+                {
+                    RaiseLog("Error during MessageReactionAdded event handling. Cannot cast received data to MessageReactionEvent");
+                }
             }
             private async void OnGuildCreated(object sender, EventHandlerArgs args)
             {
