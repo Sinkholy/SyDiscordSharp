@@ -11,19 +11,20 @@ namespace Gateway
         internal event NewSystemEvent Connected = delegate { };
         internal event NewSystemEvent Heartbeat = delegate { };
         internal event NewSystemEvent HeartbeatACK = delegate { };
-        internal event NewSystemEvent ReconnectRequest = delegate { };
+        internal event NewSystemEvent ReconnectRequested = delegate { };
         internal event NewSystemEvent InvalidSession = delegate { };
         #endregion
 
         internal void OnNewSystemEventReceived(Opcode opcode, IGatewayDataObject data)
         {
+            Console.WriteLine($"System: {opcode}");
             switch (opcode)
             {
                 case Opcode.Heartbeat:
                     Heartbeat(data); 
                     break;
                 case Opcode.Reconnect:
-                    ReconnectRequest(data); 
+                    ReconnectRequested(data); 
                     break;
                 case Opcode.InvalidSession:
                     InvalidSession(data); 
@@ -34,8 +35,9 @@ namespace Gateway
                 case Opcode.HeartbeatACK:
                     HeartbeatACK(data); 
                     break;
-                default: 
-                    throw new Exception("Unhandled system event opcode"); // TODO : исключение
+                default:
+                    // TODO : интрсумент логирования ($"Unhandled system event opcode. /n Event name: {opcode}");
+                    break;
             }
         }
         internal SystemEventHandler() { }
