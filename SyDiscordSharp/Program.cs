@@ -169,6 +169,7 @@ namespace SyDiscordSharp
                 gatewayClient.DispatchEventHandler.MessageReactionRemoved += OnMessageReactionRemoved;
                 gatewayClient.DispatchEventHandler.MessageReactionRemovedAll += OnMessageAllReactionsRemoved;
                 gatewayClient.DispatchEventHandler.MessageReactionEmojiRemoved += OnMessageEmojiRemoved;
+                gatewayClient.DispatchEventHandler.VoiceStateUpdated += OnVoiceStateUpdated;
 
                 gatewayClient.DispatchEventHandler.Ready += OnReady;
                 gatewayClient.SystemEventHandler.Connected += OnConnection;
@@ -465,6 +466,119 @@ namespace SyDiscordSharp
                 if (args.EventData is MessageReactionEvent newReaction)
                 {
                     // TODO: пробрасывать
+                }
+                else
+                {
+                    RaiseLog("Error during MessageReactionAdded event handling. Cannot cast received data to MessageReactionEvent");
+                }
+            }
+            private void OnVoiceStateUpdated(object sender, EventHandlerArgs args)
+            {
+                if (args.EventData is IVoiceSession newVoiceState)
+                {
+                    if (TryToGetGuild(newVoiceState.GuildIdentifier) is IGuild guild) // TODO: GuildIdentifier отмечен как ? 
+                                                                                      // надо продумать механизм получения
+                                                                                      // канала как-то вне гильдии
+                    {
+                        IVoiceSession previousSessionState;
+                        if (newVoiceState.ChannelIdentifier != null)
+                        {
+                            if (guild.TryToGetVoiceSession(newVoiceState.SessionIdentifier) is IVoiceSession)
+                            {
+                                if (guild is IUpdatableGuild updatableGuild)
+                                {
+                                    previousSessionState = updatableGuild.OverrideVoiceSession(newVoiceState);
+                                }
+                                if (guild.TryToGetUser(newVoiceState.UserIdentifier) is IUpdatableGuildUser updatableUser)
+                                {
+                                    updatableUser.UpdateMutedState(newVoiceState.Muted);
+                                    updatableUser.UpdateDeafenedState(newVoiceState.Deafened);
+                                    updatableUser.UpdateSelfDeafenedState(newVoiceState.SelfDeafened);
+                                    updatableUser.UpdateSelfMutedState(newVoiceState.SelfMuted);
+                                    updatableUser.UpdateSelfStreamState(newVoiceState.SelfStream);
+                                    updatableUser.UpdateSelfVideoState(newVoiceState.SelfVideo);
+                                }
+                            }
+                            else
+                            {
+                                if (guild is IUpdatableGuild updatableGuild)
+                                {
+                                    updatableGuild.AddVoiceSession(newVoiceState);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (guild is IUpdatableGuild updatableGuild)
+                            {
+                                previousSessionState = updatableGuild.RemoveVoiceSession(newVoiceState.SessionIdentifier);
+                            }
+                        }
+
+                        // ЭТО НАБРОСКИ ДЛЯ ЛОГЕРА
+                        //IGuild targetGuild = TryToGetGuild(newVoiceState.GuildIdentifier);
+                        //IUser targetUser = targetGuild?.TryToGetUser(newVoiceState.UserIdentifier);
+
+                        //string action = string.Empty;
+                        //IVoiceChannel channel;
+                        //ChannelCategory category;
+                        //if (prevState is null)
+                        //{
+                        //    channel = targetGuild?.TryToGetChannel(newVoiceState.ChannelIdentifier) as IVoiceChannel;
+                        //    category = targetGuild?.TryToGetChannel(channel.ParentIdentifier) as ChannelCategory;
+                        //    action = $"Joined channel: {category.Name}/{channel.Name}";
+                        //}
+                        //else if (newVoiceState.ChannelIdentifier == null)
+                        //{
+                        //    channel = targetGuild?.TryToGetChannel(prevState.ChannelIdentifier) as IVoiceChannel;
+                        //    category = targetGuild?.TryToGetChannel(channel.ParentIdentifier) as ChannelCategory;
+                        //    action = $"Left channel:  {category.Name}/{channel.Name}";
+                        //}
+                        //else
+                        //{
+                        //    if (prevState.ChannelIdentifier != newVoiceState.ChannelIdentifier)
+                        //    {
+                        //        channel = targetGuild?.TryToGetChannel(newVoiceState.ChannelIdentifier) as IVoiceChannel;
+                        //        category = targetGuild?.TryToGetChannel(channel.ParentIdentifier) as ChannelCategory;
+                        //        action = $"Moved to: {category.Name}/{channel.Name}";
+                        //    }
+                        //    else if (prevState.Deafened != newVoiceState.Deafened)
+                        //    {
+                        //        action = newVoiceState.Deafened ? "Server deafened" : "Server undeafened";
+                        //    }
+                        //    else if (prevState.Muted != newVoiceState.Muted)
+                        //    {
+                        //        action = newVoiceState.Muted ? "Server muted" : "Server unmuted";
+                        //    }
+                        //    else if (prevState.SelfDeafened != newVoiceState.SelfDeafened)
+                        //    {
+                        //        action = newVoiceState.SelfDeafened ? "Self deafened" : "Self undeafened";
+                        //    }
+                        //    else if (prevState.SelfMuted != newVoiceState.SelfMuted)
+                        //    {
+                        //        action = newVoiceState.SelfMuted ? "Self muted" : "Self unmuted";
+                        //    }
+                        //    else if (prevState.SelfVideo != newVoiceState.SelfVideo)
+                        //    {
+                        //        action = newVoiceState.SelfVideo ? "Started video" : "Closed video";
+                        //    }
+                        //    else if (prevState.SelfStream != newVoiceState.SelfStream)
+                        //    {
+                        //        action = newVoiceState.SelfStream ? "Started stream" : "Closed stream";
+                        //    }
+                        //}
+                        //string messageContent = $"User: {targetUser.Mention} \n" +
+                        //                        $"{action}";
+
+                        //IMessage messageToLog = new Message(messageContent, string.Empty);
+
+                        //ITextChannel loggingChannel = targetGuild?.TryToGetChannel("543127619936190493") as ITextChannel;
+                        //SendMessage(loggingChannel, messageToLog);
+                    }
+                    else
+                    {
+                        RaiseLog("Error during MessageReactionAdded event handling. Cannot find target guild or cast it to Guild");
+                    }
                 }
                 else
                 {
