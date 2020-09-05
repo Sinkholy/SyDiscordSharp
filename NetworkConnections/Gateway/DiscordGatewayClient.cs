@@ -1,4 +1,5 @@
-﻿using Gateway.Payload.DataObjects;
+﻿using Gateway.Entities.Activities;
+using Gateway.Payload.DataObjects;
 using Gateway.Payload.DataObjects.Dispatch;
 using Gateway.Payload.DataObjects.Enums;
 using Newtonsoft.Json;
@@ -10,7 +11,6 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using static Gateway.Payload.DataObjects.Dispatch.DispatchEvents.PresenceUpdatedEvent;
 
 [assembly: InternalsVisibleTo("SyDiscordSharp")]
 namespace Gateway
@@ -25,7 +25,7 @@ namespace Gateway
         #endregion
         #region Internal events
         internal delegate void VoidEvent();
-        internal delegate void NewSequence(string seq);
+        internal delegate void NewSequence(int seq);
         internal delegate void NewDispatchEvent(string eventName, string eventData);
         internal delegate void NewSystemEvent(Opcode opcode, IGatewayDataObject data);
 
@@ -33,6 +33,10 @@ namespace Gateway
         internal event NewSystemEvent NewSystemEventReceived = delegate { };
         internal event NewSequence NewSequenceReceived = delegate { };
         #endregion
+        internal int SessionsCount => gateway.SessionNumber;
+        internal TimeSpan SessionUptime => DateTime.Now - sessionStarted;
+        private DateTime sessionStarted;
+
         #region Private fields\props
         private string botToken;
         private readonly JsonSerializer jsonSerializer;
@@ -42,10 +46,17 @@ namespace Gateway
                                      // и изначальное записывание значения полученое при первичном запросе к HTTP API
         #endregion
         #region Event handlers
+        private void OnReady(object sender, EventHandlerArgs args)
+        {
+            sessionStarted = DateTime.Now;
+        }
         private void OnNewPayloadReceivedAsync(string payloadStr)
         {
             GatewayPayload payload = JsonConvert.DeserializeObject<GatewayPayload>(payloadStr);
-            //Console.WriteLine(payload.Opcode);
+            if (payload.Sequence != null)
+            {
+                NewSequenceReceived(payload.Sequence.Value);
+            }
             if (payload.Opcode == Opcode.Dispatch)
             {
                 NewClientEventReceived(payload.EventName, (payload.Data as Dispatch).EventData);
@@ -54,6 +65,13 @@ namespace Gateway
             {
                 NewSystemEventReceived(payload.Opcode, payload.Data);
             }
+        }
+        private async void OnInvalidSessionRecieved(IGatewayDataObject data)
+        {
+            // В документации дискорда сказано, что при получении InvaidSession необходимо
+            // подождать 2-5 секунд и отправить Identify.
+            await Task.Delay(5000);
+            await AuthorizeAsync();
         }
         #endregion
         #region Internal methods
@@ -69,7 +87,10 @@ namespace Gateway
             SystemEventHandler.Connected += gateway.OnConnection;
             SystemEventHandler.HeartbeatACK += gateway.OnHeartbeatAck;
             SystemEventHandler.ReconnectRequested += gateway.OnReconnectRequested;
+            SystemEventHandler.InvalidSession += OnInvalidSessionRecieved;
+            SystemEventHandler.InvalidSession += gateway.OnInvalidSessionReceived;
             DispatchEventHandler.Ready += gateway.OnReady;
+            DispatchEventHandler.Ready += OnReady;
             gateway.NewPayloadReceived += OnNewPayloadReceivedAsync;
             Log += (x) => Console.WriteLine(x);
 
@@ -105,7 +126,7 @@ namespace Gateway
         private async Task AuthorizeAsync()
         {
             IdentifyProperties properties = new IdentifyProperties("SinkholesImpl", "SinkholesDevice");
-            Activity presencesActivity = Activity.CreateGameActivity();
+            IActivity presencesActivity = Activity.CreateGamingActivity("SomeShit");
             IdentifyPresence presences = new IdentifyPresence(UserStatus.Online, false, null, presencesActivity);
             Identify identityObj = new Identify(botToken, properties, IdentifyIntents.None, presences);
             GatewayPayload payload = new GatewayPayload(Opcode.Identify, identityObj);
