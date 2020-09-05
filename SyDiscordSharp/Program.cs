@@ -167,6 +167,7 @@ namespace SyDiscordSharp
                 gatewayClient.DispatchEventHandler.MessageDeleted += OnMessageDeleted;
                 gatewayClient.DispatchEventHandler.MessageReactionAdded += OnMessageReactionAdded;
                 gatewayClient.DispatchEventHandler.MessageReactionRemoved += OnMessageReactionRemoved;
+                gatewayClient.DispatchEventHandler.MessageReactionRemovedAll += OnMessageAllReactionsRemoved;
 
                 gatewayClient.DispatchEventHandler.Ready += OnReady;
                 gatewayClient.SystemEventHandler.Connected += OnConnection;
@@ -437,6 +438,17 @@ namespace SyDiscordSharp
                     RaiseLog("Error during MessageReactionAdded event handling. Cannot find target guild or cast it to Guild");
             }
             private void OnMessageReactionRemoved(object sender, EventHandlerArgs args)
+            {
+                if (args.EventData is MessageReactionEvent newReaction)
+                {
+                    // TODO: пробрасывать
+                }
+                else
+                {
+                    RaiseLog("Error during MessageReactionAdded event handling. Cannot cast received data to MessageReactionEvent");
+                }
+            }
+            private void OnMessageAllReactionsRemoved(object sender, EventHandlerArgs args)
             {
                 if (args.EventData is MessageReactionEvent newReaction)
                 {
