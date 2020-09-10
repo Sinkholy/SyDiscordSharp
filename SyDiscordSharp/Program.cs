@@ -320,59 +320,114 @@ namespace SyDiscordSharp
             }
             private void OnGuildUserAdded(object sender, EventHandlerArgs args)
             {
-                GuildUser newUser = args.EventData as GuildUser;
-                if (guilds.ContainsKey(newUser.GuildIdentifier))
+                if (args.EventData is GuildUser newUser) // TODO: IGuildUser.
                 {
-                    if (guilds[newUser.GuildIdentifier] is Guild guild)
+                    if (TryToGetGuild(newUser.GuildIdentifier) is IUpdatableGuild guild)
                     {
                         guild.AddUser(newUser);
                     }
                     else
                     {
-                        RaiseLog("Handling GuildUserAdded event. Cannot cast target IGuild to Guild");
+                        RaiseLog("Handling GuildUserAdded event. Cannot find target guild.");
                     }
                 }
                 else
                 {
-                    RaiseLog("Handling GuildUserAdded event. Cannot cast target IGuild to Guild");
+                    RaiseLog("Handling GuildUserAdded event. Cannot cast received data to GuildUser");
                 }
             }
             private void OnGuildUserUpdated(object sender, EventHandlerArgs args)
             {
-                GuildUser newUserInfo = args.EventData as GuildUser;
-                if (guilds.ContainsKey(newUserInfo.GuildIdentifier))
+                if (args.EventData is GuildUser newUserInfo) // TODO: у юзера пресенсы и роли не могут быть высчитаны
+                                                             // TODO: IGuildUser
                 {
-                    if (guilds[newUserInfo.GuildIdentifier] is Guild guild)
+                    GuildUser prevUserInfo = null;
+                    if (TryToGetGuild(newUserInfo.GuildIdentifier) is IUpdatableGuild guild)
                     {
-                        Console.WriteLine((guild.TryToGetUser(newUserInfo.Identifier) as GuildUser).Update(newUserInfo));
+                        prevUserInfo = guild.OverrideGuildUser(newUserInfo);
                     }
                     else
                     {
-                        RaiseLog("Handling GuildUserUpdated event. Cannot cast target IGuild to Guild");
+                        RaiseLog("Handling GuildMemberUpdated event. Cannot find target guild.");
                     }
+
+                    // НАРАБОТКИ ДЛЯ ЛОГЕРА
+                    //List<EmbedField> fields = new List<EmbedField> 
+                    //{ 
+                    //    new EmbedField(EmbedField.WhiteSpace, EmbedField.WhiteSpace, true), 
+                    //    new EmbedField(EmbedField.WhiteSpace, "> **Old**", true), 
+                    //    new EmbedField(EmbedField.WhiteSpace, "> **New**", true), 
+                    //};
+                    //if(prevUserInfo.Nickname != newUserInfo.Nickname)
+                    //{
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, "\n**Nickname**", true));
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, $"```{(prevUserInfo.Nickname is null ? prevUserInfo.Username : prevUserInfo.Nickname)}```", true));
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, $"```{(newUserInfo.Nickname is null ? newUserInfo.Username : newUserInfo.Nickname)}```", true));
+
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, "\u000d**Username**", true));
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, $"```{prevUserInfo.Username}```", true));
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, $"```{newUserInfo.Username}```", true));
+
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, "**Discriminator**", true));
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, $"```#{prevUserInfo.Discriminator}```", true));
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, $"```#{newUserInfo.Discriminator}```", true));
+
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, "\n**eMail**", true));
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, $"```Sobaka@Sobaka.ru```", true));
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, $"```NewSobaka@Sobaka.ru```", true));
+
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, "\n**Roles**", true));
+                    //     fields.Add(new EmbedField(EmbedField.WhiteSpace, $"```Альфа \nБета \nГамма \nЭпсилон```", true));
+                    //    fields.Add(new EmbedField(EmbedField.WhiteSpace, $"```Альфа \nБета```", true));
+                    //}
+                    //// TODO: вынести генерирование ссылок в метод или даже в самого юзера (гениально)
+                    //EmbedImage embedImage = new EmbedImage("https://"+$"cdn.discordapp.com/avatars/{newUserInfo.Identifier}/{newUserInfo.AvatarIdentifier}.png", null, 128, 128);
+                    //EmbedFooter footer = new EmbedFooter($"User id: {newUserInfo.Identifier}", "https://" + $"cdn.discordapp.com/avatars/{newUserInfo.Identifier}/{newUserInfo.AvatarIdentifier}.png", null);
+                    //EmbedAuthor author = new EmbedAuthor("SyDiscordSharp", "https://vk.com/sinkholy", "https://cdn.discordapp.com/embed/avatars/0.png", null);
+
+                    //EmbedData embedData = new EmbedData(null,
+                    //                                    $"{newUserInfo.Mention} updated",
+                    //                                    null,
+                    //                                    0000000,
+                    //                                    DateTime.Now,
+                    //                                    footer,
+                    //                                    null,
+                    //                                    embedImage,
+                    //                                    null,
+                    //                                    author,
+                    //                                    null,
+                    //                                    fields.ToArray());
+                    //EmbeddedMessage messageToSend = new EmbeddedMessage(null,
+                    //                                                    null,
+                    //                                                    new EmbedData[] { embedData });
+                    //IChannel targetChannel = (TryToGetGuild("540324745367781376")).TryToGetChannel("543127619936190493");
+                    //SendMessage(targetChannel as ITextChannel, messageToSend);
+
+
+
+
                 }
                 else
                 {
-                    RaiseLog("Handling RoleDeleted event. Cannot find target guild");
+                    RaiseLog("Handling GuildMemberUpdated event. Cannot cast received data to GuildUser.");
                 }
             }
             private void OnGuildUserRemoved(object sender, EventHandlerArgs args)
             {
-                GuildMember deletedUser = args.EventData as GuildMember;
-                if (guilds.ContainsKey(deletedUser.GuildIdentifier))
+                if (args.EventData is GuildMember deletedUser) // TODO: IGuildUser
                 {
-                    if (guilds[deletedUser.GuildIdentifier] is Guild guild)
+                    if (TryToGetGuild(deletedUser.GuildIdentifier) is IUpdatableGuild guild)
                     {
                         guild.RemoveUser(deletedUser.User.Identifier);
                     }
                     else
                     {
-                        RaiseLog("Handling GuildUserUpdated event. Cannot cast target IGuild to Guild");
+                        RaiseLog("Handling UserDeleted event. Cannot find target guild.");
                     }
                 }
                 else
                 {
-                    RaiseLog("Handling UserDeleted event. Cannot cast target IGuild to Guild");
+                    RaiseLog("Handling UserDeleted event. Cannot cast received data to GuildMember.");
                 }
             }
             private void OnGuildEmojisUpdated(object sender, EventHandlerArgs args)
