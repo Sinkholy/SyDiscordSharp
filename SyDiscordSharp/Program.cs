@@ -1008,4 +1008,18 @@ namespace SyDiscordSharp
             #endregion
         }
     }
+    internal static class Extensions // TODO: переместить отсюда
+    {
+        internal static string AddQueryParameters(this string input, NameValueCollection parameters)
+        {
+            StringBuilder sb = new StringBuilder(input); // TODO : calc sb capacity
+            string prefix = "?";
+            for (var i = 0; i < parameters.Count; i++)
+            {
+                sb.Append(prefix + parameters.Keys[i] + "=" + parameters[i]);
+                prefix = "&";
+            }
+            return sb.ToString();
+        }
+    }
 }
