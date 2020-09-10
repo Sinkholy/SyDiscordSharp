@@ -176,6 +176,7 @@ namespace SyDiscordSharp
                 gatewayClient.DispatchEventHandler.GuildIntegrationsUpdated += OnGuildIntegrationUpdated;
                 gatewayClient.DispatchEventHandler.WebhooksUpdated += OnWebhookUpdated;
                 gatewayClient.DispatchEventHandler.ChannelPinsUpdated += OnChannelPinsUpdated;
+                gatewayClient.DispatchEventHandler.GuildEmojisUpdated += OnGuildEmojisUpdated;
 
                 gatewayClient.DispatchEventHandler.Ready += OnReady;
                 gatewayClient.SystemEventHandler.Connected += OnConnection;
@@ -371,6 +372,25 @@ namespace SyDiscordSharp
                 else
                 {
                     RaiseLog("Handling UserDeleted event. Cannot cast target IGuild to Guild");
+                }
+            }
+            private void OnGuildEmojisUpdated(object sender, EventHandlerArgs args)
+            {
+                if (args.EventData is GuildEmojiUpdatedEvent emojisData)
+                {
+                    if (TryToGetGuild(emojisData.GuildIdentifier) is IUpdatableGuild guild)
+                    {
+                        guild.SetNewGuildEmojis(emojisData.Emojis);
+                        // TODO: прокидывание события
+                    }
+                    else
+                    {
+                        RaiseLog("Error during GuildEmojisUpdated event handling. Cannot find target guild.");
+                    }
+                }
+                else
+                {
+                    RaiseLog("Error during GuildEmojisUpdated event handling. Cannot cast received data to GuildEmojiUpdatedEvent.");
                 }
             }
             private void OnInviteCreated(object sender, EventHandlerArgs args)
