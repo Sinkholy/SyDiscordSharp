@@ -396,19 +396,39 @@ namespace SyDiscordSharp
             }
             private void OnInviteCreated(object sender, EventHandlerArgs args)
             {
-                IInvite newInvite = args.EventData as IInvite;
-                if (TryToGetGuild(newInvite.GuildIdentifier) is Guild guild)
-                    guild.AddInvite(newInvite);
+                if (args.EventData is IInvite newInvite)
+                {
+                    if (TryToGetGuild(newInvite.GuildIdentifier) is IUpdatableGuild guild)
+                    {
+                        guild.AddInvite(newInvite);
+                    }
+                    else
+                    {
+                        RaiseLog("Error during InviteCreated event handling. Cannot find target guild.");
+                    }
+                }
                 else
-                    RaiseLog("Error during InviteCreated event handling. Cannot find target guild or cast it to Guild");
+                {
+                    RaiseLog("Error during InviteCreated event handling. Cannot cast received data to IInvite.");
+                }
             }
             private void OnInviteDeleted(object sender, EventHandlerArgs args)
             {
-                IInvite deletedInvite = args.EventData as IInvite;
-                if (TryToGetGuild(deletedInvite.Guild.Identifier) is Guild guild)
-                    guild.RemoveInvite(deletedInvite.Code);
+                if (args.EventData is IInvite deletedInvite)
+                {
+                    if (TryToGetGuild(deletedInvite.GuildIdentifier) is IUpdatableGuild guild)
+                    {
+                        guild.RemoveInvite(deletedInvite.Code);
+                    }
+                    else
+                    {
+                        RaiseLog("Error during InviteDeleted event handling. Cannot find target guild.");
+                    }
+                }
                 else
-                    RaiseLog("Error during InviteDeleted event handling. Cannot find target guild or cast it to Guild");
+                {
+                    RaiseLog("Error during InviteDeleted event handling. Cannot cast received data to IInvite.");
+                }
             }
             private void OnUserBanned(object sender, EventHandlerArgs args)
             {
