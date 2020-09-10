@@ -249,59 +249,58 @@ namespace SyDiscordSharp
             }
             private void OnChannelCreated(object sender, EventHandlerArgs args)
             {
-                IGuildChannel newChannel = args.EventData as IGuildChannel;
-                if (!guilds.ContainsKey(newChannel.GuildIdentifier))
-                    RaiseLog("New channel was created but no guild stored for this channel");
-                else
+                if (args.EventData is IGuildChannel newChannel)
                 {
-                    if (guilds[newChannel.GuildIdentifier] is Guild guild)
+                    if (TryToGetGuild(newChannel.GuildIdentifier) is IUpdatableGuild guild)
                     {
                         guild.AddChannel(newChannel);
                     }
                     else
                     {
-                        RaiseLog("Cannot cast target IGuild to Guild");
+                        RaiseLog("Handling ChannelCreated event. Cannot find target guild.");
                     }
                 }
-            }
-            private void OnChannelUpdated(object sender, EventHandlerArgs args)
-            {
-                IGuildChannel newChannelInfo = args.EventData as IGuildChannel;
-                if (!guilds.ContainsKey(newChannelInfo.GuildIdentifier))
-                    RaiseLog("Handling ChannelUpdate event. Cannot find target guild");
                 else
                 {
-                    if (guilds[newChannelInfo.GuildIdentifier] is Guild guild)
+                    RaiseLog("Handling ChannelCreated event. Cannot cast received data to IGuildChannel.");
+                }
+            }
+            private void OnChannelUpdated(object sender, EventHandlerArgs args) // TODO: проверить все IUpdatable интерфейсы и убрать 
+                                                                                // если они неактуальны более.
+            {
+                if (args.EventData is IGuildChannel newChannelInfo)
+                {
+                    IChannel prevChannelInfo;
+                    if (TryToGetGuild(newChannelInfo.GuildIdentifier) is IUpdatableGuild guild)
                     {
-                        IChannel targetChannel = guild.TryToGetChannel(newChannelInfo.Identifier);
-                        if (targetChannel is null)
-                        {
-                            RaiseLog("Handling ChannelUpdate event. Cannot find target channel");
-                            return;
-                        }
-                        Console.WriteLine((targetChannel as IUpdatableChannel).UpdateChannel(newChannelInfo));
+                        prevChannelInfo = guild.OverrideChannel(newChannelInfo);
                     }
                     else
                     {
-                        RaiseLog("Handling ChannelUpdate event. Cannot cast target IGuild to Guild");
+                        RaiseLog("Handling ChannelUpdated event. Cannot find target guild.");
                     }
+                }
+                else
+                {
+                    RaiseLog("Handling ChannelUpdated event. Cannot cast received data to IGuildChannel.");
                 }
             }
             private void OnChannelDeleted(object sender, EventHandlerArgs args)
             {
-                IGuildChannel channelToDelete = args.EventData as IGuildChannel;
-                if (!guilds.ContainsKey(channelToDelete.GuildIdentifier))
-                    RaiseLog("Handling ChannelDeleted event. Cannot find target guild");
-                else
+                if (args.EventData is IGuildChannel channelToDelete)
                 {
-                    if (guilds[channelToDelete.GuildIdentifier] is Guild guild)
+                    if (TryToGetGuild(channelToDelete.GuildIdentifier) is IUpdatableGuild guild)
                     {
                         guild.RemoveChannel(channelToDelete.Identifier);
                     }
                     else
                     {
-                        RaiseLog("Handling ChannelUpdate event. Cannot cast target IGuild to Guild");
+                        RaiseLog("Handling ChannelDeleted event. Cannot find target guild.");
                     }
+                }
+                else
+                {
+                    RaiseLog("Handling ChannelDeleted event. Cannot cast received data to IGuildChannel.");
                 }
             }
             private void OnRoleCreated(object sender, EventHandlerArgs args)
