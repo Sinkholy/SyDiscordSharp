@@ -833,25 +833,179 @@ namespace SyDiscordSharp
                 Console.WriteLine("Connected");//TODO : do smth
             }
             #endregion
+            #region Http methods
+            private async Task ModifyBotUser()
+            {
+                string endPoint = "/api/users/@me";
+                NewBotUserInfo newUserInfo = new NewBotUserInfo { username = "newBotNameTest" };
+                string msgToSend = JsonConvert.SerializeObject(newUserInfo, typeof(NewBotUserInfo), null);
+                StringContent contentToSend = new StringContent(msgToSend, Encoding.UTF8, "application/json");
+                HttpResponseMessage requestResult = await httpClient.Patch(endPoint, contentToSend);
+            }
+            private async Task ModifyChannel(IChannel channel)
+            {
+                string endPoint = $"/api/channels/{channel.Identifier}";
+                //ModifyChanelRequest request = new ModifyChanelRequest { Name = "SomeShit", Type = ChannelType.GuildCategory };
+                StringContent content = new StringContent(JsonConvert.SerializeObject(channel), Encoding.UTF8, "application/json");
+                var response = await httpClient.Patch(endPoint, content);
+                string responseString = await response.Content.ReadAsStringAsync();
+            }
+
+            internal class ModifyChanelRequest
+            {
+                [JsonProperty(PropertyName = "name", NullValueHandling = NullValueHandling.Ignore)]
+                internal string Name;
+                [JsonProperty(PropertyName = "type", NullValueHandling = NullValueHandling.Ignore)]
+                internal ChannelType Type;
+                [JsonProperty(PropertyName = "position", NullValueHandling = NullValueHandling.Ignore)]
+                internal int? Position;
+                [JsonProperty(PropertyName = "topic", NullValueHandling = NullValueHandling.Ignore)]
+                internal string Topic;
+                [JsonProperty(PropertyName = "nsfw", NullValueHandling = NullValueHandling.Ignore)]
+                internal bool? NSFW;
+                [JsonProperty(PropertyName = "user_limit", NullValueHandling = NullValueHandling.Ignore)]
+                internal int? UserLimit;
+                [JsonProperty(PropertyName = "bitrate", NullValueHandling = NullValueHandling.Ignore)]
+                internal int? Bitrate;
+                [JsonProperty(PropertyName = "rate_limit_per_user", NullValueHandling = NullValueHandling.Ignore)]
+                internal int? UserRateLimit;
+                [JsonProperty(PropertyName = "permission_overwrites", NullValueHandling = NullValueHandling.Ignore)]
+                internal List<Overwrite> PermissionOverwrites;
+                [JsonProperty(PropertyName = "parent_id", NullValueHandling = NullValueHandling.Ignore)]
+                internal string CategoryIdentifier;
+            }
+            [JsonObject(MemberSerialization.OptIn)]
+            internal class NewBotUserInfo
+            {
+                [JsonProperty(PropertyName = "username", NullValueHandling = NullValueHandling.Ignore)]
+                internal string username;
+                [JsonProperty(PropertyName = "avatar", NullValueHandling = NullValueHandling.Ignore)]
+                internal string avatar;
+            }
+            private async Task BulkDeleteMessages(string channelId, ICollection<string> identifiers)
+            {
+                string endPoint = $"/api/channels/{channelId}/messages/bulk-delete";
+                MsgesToDelete message = new MsgesToDelete
+                {
+                    messages = identifiers
+                };
+                string msgToSend = JsonConvert.SerializeObject(message, typeof(MsgesToDelete), null);
+                StringContent contentToSend = new StringContent(msgToSend, Encoding.UTF8, "application/json");
+                HttpResponseMessage requestResult = await httpClient.Post(endPoint, contentToSend);
+
+            }
+            [JsonObject(MemberSerialization.OptIn)]
+            internal class MsgesToDelete
+            {
+                [JsonProperty(PropertyName = "messages")]
+                internal ICollection<string> messages; // up to 2000 chars
+            }
+            private async void AddReactionToMessage(IEmoji emoji, string channelId, string messageId)
+            {
+                string endPoint = $"/channels/{channelId}/messages/{messageId}/reactions/{emoji}/@me";
+                HttpResponseMessage requestResult = await httpClient.Get(endPoint);
+            }
+            private async void SendMessage(ITextChannel channel, IMessage message)
+            {
+                string endPoint = $"/api/channels/{channel.Identifier}/messages";
+                string msgToSend = JsonConvert.SerializeObject(new MsgClass
+                {
+                    tts = message.TTS,
+                    nonce = message.Nonce,
+                    content = message.Content,
+                    Embed = (message as EmbeddedMessage)?.Embeds[0], // TAI: пахнет писькой
+                });
+                StringContent content = new StringContent(msgToSend, Encoding.UTF8, "application/json");
+                HttpResponseMessage requestResult = await httpClient.Post(endPoint, content);
+            }
+            private async void SendMessageWithAttachement(ITextChannel channel,
+                                                          IMessage message,
+                                                          byte[] fileData,
+                                                          string fileName)
+            {
+                string endPoint = $"/api/channels/{channel.Identifier}/messages";
+                string msgToSend = JsonConvert.SerializeObject(new MsgClass
+                {
+                    tts = message.TTS,
+                    nonce = message.Nonce,
+                    content = message.Content,
+                    Embed = (message as EmbeddedMessage)?.Embeds[0], // TAI: пахнет писькой
+                });
+                StringContent stringContent = new StringContent(msgToSend);
+                ByteArrayContent fileContent = new ByteArrayContent(fileData);
+                fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+                {
+                    Name = "file",
+                    FileName = fileName
+                };
+                stringContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+                {
+                    Name = "payload_json"
+                };
+                MultipartContent multipartContent = new MultipartContent("form-data")
+                {
+                    stringContent,
+                    fileContent
+                };
+                HttpResponseMessage requestResult = await httpClient.Post(endPoint, multipartContent);
+            }
+            [JsonObject(MemberSerialization.OptIn)]
+            internal class MsgClass
+            {
+                [JsonProperty(PropertyName = "content")]
+                internal object content; // up to 2000 chars
+                [JsonProperty(PropertyName = "tts")]
+                internal bool tts;
+                [JsonProperty(PropertyName = "nonce")]
+                internal string nonce;
+                [JsonProperty(PropertyName = "embed")]
+                internal EmbedData Embed;
+            }
+            private async Task<IMessage> GetMessage(string channelId, string messageId)
+            {
+                string endPoint = $"/api/channels/{channelId}/messages/{messageId}";
+                HttpResponseMessage requestResult = await httpClient.Get(endPoint);
+                string content = await requestResult.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<IMessage>(content);
+            }
+            private async Task<IMessage> GetMessage(ITextChannel channel, string messageId)
+                => await GetMessage(channel.Identifier, messageId);
+            internal async Task<List<IMessage>> GetMessages(string channelId,
+                                                            string messageId,
+                                                            GetMessagesType type,
+                                                            int limit = 50)
+            {
+                var queryParams = new NameValueCollection{
+                                                            { type.ToString().ToLower(), messageId },
+                                                            { "limit", limit.ToString() }
+                                                         };
+                string endPoint = $"/api/channels/{channelId}/messages"
+                    .AddQueryParameters(queryParams);
+                HttpResponseMessage requestResult = await httpClient.Get(endPoint);
+                string content = await requestResult.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<List<Message>>(content).Select(x => x as IMessage).ToList();
+            }
+            internal enum GetMessagesType : byte
+            {
+                Before,
+                After,
+                Around
+            }
             private async Task<List<Ban>> GetGuildBannedUsers(string guildId)
             {
                 string endPoint = $"/api/guilds/{guildId}/bans";
                 HttpResponseMessage requestResult = await httpClient.Get(endPoint);
-                string content = ReadFromStream(await requestResult.Content.ReadAsStreamAsync());
+                string content = await requestResult.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<List<Ban>>(content);
             }
             private async Task<List<Invite>> GetGuildInvites(string guildId)
             {
                 string endPoint = $"/api/guilds/{guildId}/invites";
                 HttpResponseMessage requestResult = await httpClient.Get(endPoint);
-                string content = ReadFromStream(await requestResult.Content.ReadAsStreamAsync());
+                string content = await requestResult.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<List<Invite>>(content);
             }
-            private string ReadFromStream(Stream stream)
-            {
-                using (stream)
-                    return new StreamReader(stream).ReadToEnd();
-            }
+            #endregion
         }
     }
 }
