@@ -123,11 +123,11 @@ namespace SyDiscordSharp
 
             internal IGuild TryToGetGuild(string id)
             {
-                DiscordClient client = GetInstance();
-                if (client.guilds.ContainsKey(id))
-                    return client.guilds[id];
-                else
-                    return null;
+                if (guilds.TryGetValue(id, out IGuild guild))
+                {
+                    return guild;
+                }
+                return null;
             }
             internal IGuild[] GetUserGuilds(IUser user) => GetUserGuilds(user.Identifier);
             internal IGuild[] GetUserGuilds(string userId)
