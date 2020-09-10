@@ -165,6 +165,7 @@ namespace SyDiscordSharp
                 gatewayClient.DispatchEventHandler.GuildBanRemoved += OnUserUnbanned;
                 gatewayClient.DispatchEventHandler.MessageCreated += OnMessageReceived;
                 gatewayClient.DispatchEventHandler.MessageDeleted += OnMessageDeleted;
+                gatewayClient.DispatchEventHandler.MessageDeletedBulk += OnMessageDeletedBulk;
                 gatewayClient.DispatchEventHandler.MessageReactionAdded += OnMessageReactionAdded;
                 gatewayClient.DispatchEventHandler.MessageReactionRemoved += OnMessageReactionRemoved;
                 gatewayClient.DispatchEventHandler.MessageReactionRemovedAll += OnMessageAllReactionsRemoved;
@@ -422,6 +423,17 @@ namespace SyDiscordSharp
                         RaiseLog("Error during MessageDeleted event handling. Cannot find target channel or cast it to ITextChannel");
                 else
                     RaiseLog("Error during MessageReceived event handling. Cannot find target guild or cast it to Guild");
+            }
+            private void OnMessageDeletedBulk(object sender, EventHandlerArgs args)
+            {
+                if (args.EventData is MessageDeletedBulk deletedMessages)
+                {
+                    // TODO: прокидывание сообщения
+                }
+                else
+                {
+                    RaiseLog("Error during MessageReceived event handling. Cannot cast received data to MessageBase[]");
+                }
             }
             private void OnMessageReactionAdded(object sender, EventHandlerArgs args)
             {
