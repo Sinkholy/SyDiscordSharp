@@ -518,25 +518,29 @@ namespace SyDiscordSharp
             }
             private void OnMessageReceived(object sender, EventHandlerArgs args)
             {
-                IMessage newMessage = args.EventData as IMessage;
-                if (TryToGetGuild((newMessage.Channel as IGuildChannel).GuildIdentifier) is Guild guild)
-                    if (guild.TryToGetChannel(newMessage.Channel.Identifier) is IMessageEditableChannel channel)
-                        channel.AddMessage(newMessage);
-                    else
-                        RaiseLog("Error during MessageReceived event handling. Cannot find target channel or cast it to IMessageEditableChannel");
+                if (args.EventData is IMessage newMessage)
+                {
+                    if (newMessage.MentionedUsers.Where(x => x.Identifier == BotUser.Identifier).SingleOrDefault() != null)
+                    {
+                        // Точка входа при упоминании
+                    }
+                    // TODO: прокидывание
+                }
                 else
-                    RaiseLog("Error during MessageReceived event handling. Cannot find target guild or cast it to Guild");
+                {
+                    RaiseLog("Error during MessageReceived event handling. Cannot cast received data to Message.");
+                }
             }
             private void OnMessageDeleted(object sender, EventHandlerArgs args)
             {
-                IMessage deletedMessage = args.EventData as IMessage;
-                if (TryToGetGuild((deletedMessage.Channel as IGuildChannel).GuildIdentifier) is Guild guild)
-                    if (guild.TryToGetChannel(deletedMessage.Channel.Identifier) is ITextChannel channel)
-                        channel.RemoveMessage(deletedMessage.Identifier);
-                    else
-                        RaiseLog("Error during MessageDeleted event handling. Cannot find target channel or cast it to ITextChannel");
+                if (args.EventData is IMessage deletedMessage)
+                {
+                    // TODO: прокидывание сообщения
+                }
                 else
-                    RaiseLog("Error during MessageReceived event handling. Cannot find target guild or cast it to Guild");
+                {
+                    RaiseLog("Error during MessageReceived event handling. Cannot cast received data to IMessage");
+                }
             }
             private void OnMessageDeletedBulk(object sender, EventHandlerArgs args)
             {
