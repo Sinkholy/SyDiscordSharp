@@ -1,39 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.IO.Pipes;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Mime;
-using System.Net.Sockets;
-using System.Net.WebSockets;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using API;
+﻿using API;
 using Gateway;
-//using Discord;
-//using Discord.WebSocket;
-using System.Collections.Concurrent;
-using System.Diagnostics;
+using Gateway.Entities;
+using Gateway.Entities.Channels;
+using Gateway.Entities.Channels.Text;
+using Gateway.Entities.Embed;
+using Gateway.Entities.Emojis;
 using Gateway.Entities.Guilds;
 using Gateway.Entities.Invite;
-using Gateway.Entities;
-using Gateway.Entities.Users;
-using Gateway.Payload.DataObjects.Dispatch.DispatchEvents;
-using Gateway.Payload.DataObjects;
 using Gateway.Entities.Message;
-using Gateway.Entities.Channels.Text;
-using Gateway.Entities.Channels;
+using Gateway.Entities.Presences;
+using Gateway.Entities.Users;
+using Gateway.Entities.VoiceSession;
+using Gateway.Payload.DataObjects;
+using Gateway.Payload.DataObjects.Dispatch.DispatchEvents;
+using Gateway.Payload.DataObjects.Enums;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace SyDiscordSharp
 {
@@ -98,7 +87,7 @@ namespace SyDiscordSharp
             public IReadOnlyCollection<IGuild> Guilds
                 => guilds.Values.ToList() as IReadOnlyCollection<IGuild>;
             public IUser BotUser { get; private set; }
-            public TimeSpan Uptime => DateTime.Now - readyReceived;
+            public TimeSpan Uptime => DateTime.Now - readyReceived; // TODO: считать тотальный аптайм, а не сессионный
             private Dictionary<string, IGuild> guilds;
             private Dictionary<string, List<string>> userGuilds;
             private readonly DiscordHttpClient httpClient;
@@ -106,17 +95,14 @@ namespace SyDiscordSharp
             private DateTime readyReceived;
             #endregion
             #region Singleton
-            public static DiscordClient GetInstance() //TAI : потокобезопасность
+            public static DiscordClient GetInstance() // TAI : потокобезопасность
+                                                      // TODO : записывать в Instance - this, чтобы не было конфликтов. 
             {
                 if (instance == null)
                 {
                     instance = new DiscordClient();
-                    return instance;
                 }
-                else
-                {
-                    return instance;
-                }
+                return instance;
             }
             private static DiscordClient instance;
             #endregion
@@ -144,9 +130,7 @@ namespace SyDiscordSharp
             {
                 await httpClient.StartAsync();
                 GatewayInfo gatewayInfo = await httpClient.GetGatewayInfoAsync(); //TODO : GatewayUri должен содержать тип кодировки и версию API
-                //HttpResponseMessage message = await httpClient.Get($"/api/channels/{511489105494802442}/messages/{742057322607673384}");
-                //string res = ReadFromStream(await message.Content.ReadAsStreamAsync());
-                await gatewayClient.StartAsync(gatewayInfo.Uri, "NTU5MDkwMTUzOTM1NjAxNjY1.XwSWOw.AD65cI1to13kYiOttDZx-cUEac0"); //TODO : перенести токен в конфиг и объеденить методы с API
+                await gatewayClient.StartAsync(gatewayInfo.Uri, "NTU5MDkwMTUzOTM1NjAxNjY1.XJaDSA.IX8ZHPTebYrgzYPJsXyezjA40EQ"); //TODO : перенести токен в конфиг и объеденить методы с API
                 gatewayClient.DispatchEventHandler.GuildCreated += OnGuildCreated;
                 gatewayClient.DispatchEventHandler.GuildUpdated += OnGuildUpdated;
                 gatewayClient.DispatchEventHandler.GuildDeleted += OnGuildDeleted;
@@ -178,17 +162,16 @@ namespace SyDiscordSharp
                 gatewayClient.DispatchEventHandler.ChannelPinsUpdated += OnChannelPinsUpdated;
                 gatewayClient.DispatchEventHandler.GuildEmojisUpdated += OnGuildEmojisUpdated;
                 gatewayClient.DispatchEventHandler.PresenceUpdated += OnPresenceUpdated;
-
                 gatewayClient.DispatchEventHandler.Ready += OnReady;
                 gatewayClient.SystemEventHandler.Connected += OnConnection;
+                Log += x => Console.WriteLine(x);
             }
             public DiscordClient()
             {
-                guilds = new Dictionary<string, IGuild>();
                 httpClient = new DiscordHttpClient();
                 gatewayClient = new DiscordGatewayClient();
             }
-            #region Events handling
+            #region Gateway events handling
             private async void OnGuildCreated(object sender, EventHandlerArgs args)
             {
                 if (args.EventData is IGuild guild)
@@ -566,6 +549,13 @@ namespace SyDiscordSharp
                 {
                     if (newMessage.MentionedUsers.Where(x => x.Identifier == BotUser.Identifier).SingleOrDefault() != null)
                     {
+                        IUpdatableGuildTextChannel channel = TryToGetGuild("540324745367781376").TryToGetChannel("543127619936190493") as IUpdatableGuildTextChannel;
+                        channel.SetNewName("#2");
+                        channel.SetNewTopic("Новый топик в #2");
+                        channel.SetNewCategory("543127580413394973");
+
+
+                        ModifyChannel(channel as IChannel);
                         // Точка входа при упоминании
                     }
                     // TODO: прокидывание
@@ -797,6 +787,17 @@ namespace SyDiscordSharp
                     RaiseLog("Error during MessageReactionAdded event handling. Cannot cast received data to VoiceServerUpdate");
                 }
             }
+            private void OnReady(object sender, EventHandlerArgs args)
+            {
+                Ready ready = args.EventData as Ready;
+                BotUser = ready.User;
+                guilds = new Dictionary<string, IGuild>(capacity: ready.Guilds.Length);
+                readyReceived = DateTime.Now;
+            }
+            private void OnConnection(IGatewayDataObject payload)
+            {
+                Console.WriteLine("Connected");//TODO : do smth
+            }
             private void OnTypingStarted(object sender, EventHandlerArgs args)
             {
                 // TODO: пробрасывать событие наверх
@@ -820,17 +821,17 @@ namespace SyDiscordSharp
                     RaiseLog("Error duting ChannelPinsUpdated event handling. Cannot cast received data to ChannelPinsUpdatedEvent.");
                 }
             }
-            private void OnReady(object sender, EventHandlerArgs args)
+            private void OnUserUpdated(object sender, EventHandlerArgs args)
             {
-                Ready ready = args.EventData as Ready;
-                BotUser = ready.User;
-                foreach (var guild in ready.Guilds)
-                    guilds.Add(guild.Identifier, guild as IGuild);
-                readyReceived = DateTime.Now;
-            }
-            private void OnConnection(IGatewayDataObject payload)
-            {
-                Console.WriteLine("Connected");//TODO : do smth
+                if (args.EventData is User newUserInfo)
+                { // TODO: закончить
+                    //(BotUser as IUpdatableUser).UpdateAvatar(newUserInfo.AvatarIdentifier);
+                    //(BotUser as IUpdatableUser).UpdateUsername(newUserInfo.Username);
+                }
+                else
+                {
+                    RaiseLog("Error duting UserUpdated event handling. Cannot cast received data to User.");
+                }
             }
             #endregion
             #region Http methods
