@@ -482,19 +482,39 @@ namespace SyDiscordSharp
             }
             private void OnUserBanned(object sender, EventHandlerArgs args)
             {
-                Ban bannedUser = args.EventData as Ban;
-                if (TryToGetGuild(bannedUser.GuildIdentifier) is Guild guild)
-                    guild.AddBan(bannedUser);
+                if (args.EventData is Ban bannedUser)
+                {
+                    if (TryToGetGuild(bannedUser.GuildIdentifier) is IUpdatableGuild guild)
+                    {
+                        guild.AddBan(bannedUser);
+                    }
+                    else
+                    {
+                        RaiseLog("Error during UserBanned event handling. Cannot find target guild.");
+                    }
+                }
                 else
-                    RaiseLog("Error during UserBanned event handling. Cannot find target guild or cast it to Guild");
+                {
+                    RaiseLog("Error during UserBanned event handling. Cannot cast received data to Ban.");
+                }
             }
             private void OnUserUnbanned(object sender, EventHandlerArgs args)
             {
-                Ban bannedUser = args.EventData as Ban;
-                if (TryToGetGuild(bannedUser.GuildIdentifier) is Guild guild)
-                    guild.RemoveBan(bannedUser.User.Identifier);
+                if (args.EventData is Ban bannedUser)
+                {
+                    if (TryToGetGuild(bannedUser.GuildIdentifier) is IUpdatableGuild guild)
+                    {
+                        guild.RemoveBan(bannedUser.User.Identifier);
+                    }
+                    else
+                    {
+                        RaiseLog("Error during UserUnbanned event handling. Cannot find target guild.");
+                    }
+                }
                 else
-                    RaiseLog("Error during UserUnbanned event handling. Cannot find target guild or cast it to Guild");
+                {
+                    RaiseLog("Error during UserUnbanned event handling. Cannot cast received data to Ban.");
+                }
             }
             private void OnMessageReceived(object sender, EventHandlerArgs args)
             {
