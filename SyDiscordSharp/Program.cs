@@ -174,6 +174,7 @@ namespace SyDiscordSharp
                 gatewayClient.DispatchEventHandler.VoiceServerUpdated += OnVoiceServerUpdated;
                 gatewayClient.DispatchEventHandler.TypingStarted += OnTypingStarted;
                 gatewayClient.DispatchEventHandler.GuildIntegrationsUpdated += OnGuildIntegrationUpdated;
+                gatewayClient.DispatchEventHandler.WebhooksUpdated += OnWebhookUpdated;
 
                 gatewayClient.DispatchEventHandler.Ready += OnReady;
                 gatewayClient.SystemEventHandler.Connected += OnConnection;
@@ -616,6 +617,10 @@ namespace SyDiscordSharp
                 // TODO: пробрасывать событие наверх
             }
             private void OnGuildIntegrationUpdated(object sender, EventHandlerArgs args)
+            {
+                // TODO: пробрасывание события
+            }
+            private void OnWebhookUpdated(object sender, EventHandlerArgs args)
             {
                 // TODO: пробрасывание события
             }
