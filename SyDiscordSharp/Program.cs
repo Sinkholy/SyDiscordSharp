@@ -177,6 +177,7 @@ namespace SyDiscordSharp
                 gatewayClient.DispatchEventHandler.WebhooksUpdated += OnWebhookUpdated;
                 gatewayClient.DispatchEventHandler.ChannelPinsUpdated += OnChannelPinsUpdated;
                 gatewayClient.DispatchEventHandler.GuildEmojisUpdated += OnGuildEmojisUpdated;
+                gatewayClient.DispatchEventHandler.PresenceUpdated += OnPresenceUpdated;
 
                 gatewayClient.DispatchEventHandler.Ready += OnReady;
                 gatewayClient.SystemEventHandler.Connected += OnConnection;
@@ -620,6 +621,38 @@ namespace SyDiscordSharp
                 else
                 {
                     RaiseLog("Error during MessageReactionAdded event handling. Cannot cast received data to MessageReactionEvent");
+                }
+            }
+            private void OnPresenceUpdated(object sender, EventHandlerArgs args)
+            {
+                if (args.EventData is IPresence presenceReceived)
+                {
+                    if (TryToGetGuild(presenceReceived.GuildIdentifier) is IGuild guild)
+                    {
+                        if (presenceReceived.UserStatus == UserStatus.Offline)
+                        {
+                            (guild as IUpdatableGuild).RemovePresence(presenceReceived.UserIdentifier);
+                        }
+                        else
+                        {
+                            if (guild.TryToGetPresence(presenceReceived.UserIdentifier) is IPresence)
+                            {
+                                (guild as IUpdatableGuild).OverridePresence(presenceReceived);
+                            }
+                            else
+                            {
+                                (guild as IUpdatableGuild).AddPresence(presenceReceived);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        RaiseLog("Error during PresenceUpdated event handling. Cannot find target Guild.");
+                    }
+                }
+                else
+                {
+                    RaiseLog("Error during PresenceUpdated event handling. Cannot cast received data to PresenceUpdatedEvent.");
                 }
             }
             private void OnVoiceServerUpdated(object sender, EventHandlerArgs args) // TODO: не смог получить данное событие
