@@ -261,61 +261,56 @@ namespace SyDiscordSharp
             }
             private void OnRoleCreated(object sender, EventHandlerArgs args)
             {
-                RoleEvent createdRole = args.EventData as RoleEvent;
-                if (!guilds.ContainsKey(createdRole.GuildIdentifier))
-                    RaiseLog("Handling RoleCreated event. Cannot find target guild");
-                else
+                if (args.EventData is RoleEvent createdRole)
                 {
-                    if (guilds[createdRole.GuildIdentifier] is Guild guild)
+                    if (TryToGetGuild(createdRole.GuildIdentifier) is IUpdatableGuild guild)
                     {
                         guild.AddRole(createdRole.Role);
                     }
                     else
                     {
-                        RaiseLog("Handling RoleCreated event. Cannot cast target IGuild to Guild");
+                        RaiseLog("Handling RoleCreated event. Cannot find target guild.");
                     }
+                }
+                else
+                {
+                    RaiseLog("Handling RoleCreated event. Cannot cast received data to RoleEvent.");
                 }
             }
             private void OnRoleUpdated(object sender, EventHandlerArgs args)
             {
-                RoleEvent updatedRole = args.EventData as RoleEvent;
-                if (!guilds.ContainsKey(updatedRole.GuildIdentifier))
-                    RaiseLog("Handling RoleUpdated event. Cannot find target guild");
-                else
+                if (args.EventData is RoleEvent updatedRole)
                 {
-                    if (guilds[updatedRole.GuildIdentifier] is Guild guild)
+                    if (TryToGetGuild(updatedRole.GuildIdentifier) is IUpdatableGuild guild)
                     {
-                        Role roleToUpdate = guild.TryToGetRole(updatedRole.Role.Identifier);
-                        if (roleToUpdate is null)
-                        {
-                            RaiseLog("Handling RoleUpdated event. Cannot find target role");
-                        }
-                        else
-                        {
-                            roleToUpdate.UpdateRole(updatedRole.Role);
-                        }
+                        guild.OverrideRole(updatedRole.Role);
                     }
                     else
                     {
-                        RaiseLog("Handling RoleUpdated event. Cannot cast target IGuild to Guild");
+                        RaiseLog("Handling RoleUpdated event. Cannot find target guild.");
                     }
+                }
+                else
+                {
+                    RaiseLog("Handling RoleUpdated event. Cannot cast received data to RoleEvent.");
                 }
             }
             private void OnRoleDeleted(object sender, EventHandlerArgs args)
             {
-                RoleDeletedEvent deletedRole = args.EventData as RoleDeletedEvent;
-                if (!guilds.ContainsKey(deletedRole.GuildIdentifier))
-                    RaiseLog("Handling RoleDeleted event. Cannot find target guild");
-                else
+                if (args.EventData is RoleDeletedEvent deletedRole)
                 {
-                    if (guilds[deletedRole.GuildIdentifier] is Guild guild)
+                    if (TryToGetGuild(deletedRole.GuildIdentifier) is IUpdatableGuild guild)
                     {
                         guild.RemoveRole(deletedRole.RoleIdentifier);
                     }
                     else
                     {
-                        RaiseLog("Handling RoleDeleted event. Cannot cast target IGuild to Guild");
+                        RaiseLog("Handling RoleDeleted event. Cannot find target guild.");
                     }
+                }
+                else
+                {
+                    RaiseLog("Handling RoleDeleted event. Cannot cast received data to RoleDeletedEvent.");
                 }
             }
             private void OnGuildUserAdded(object sender, EventHandlerArgs args)
