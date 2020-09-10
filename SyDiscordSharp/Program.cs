@@ -175,6 +175,7 @@ namespace SyDiscordSharp
                 gatewayClient.DispatchEventHandler.TypingStarted += OnTypingStarted;
                 gatewayClient.DispatchEventHandler.GuildIntegrationsUpdated += OnGuildIntegrationUpdated;
                 gatewayClient.DispatchEventHandler.WebhooksUpdated += OnWebhookUpdated;
+                gatewayClient.DispatchEventHandler.ChannelPinsUpdated += OnChannelPinsUpdated;
 
                 gatewayClient.DispatchEventHandler.Ready += OnReady;
                 gatewayClient.SystemEventHandler.Connected += OnConnection;
@@ -623,6 +624,17 @@ namespace SyDiscordSharp
             private void OnWebhookUpdated(object sender, EventHandlerArgs args)
             {
                 // TODO: пробрасывание события
+            }
+            private void OnChannelPinsUpdated(object sender, EventHandlerArgs args)
+            {
+                if (args.EventData is ChannelPinsUpdatedEvent pinInfo)
+                {
+                    // TODO: пробрасывание события
+                }
+                else
+                {
+                    RaiseLog("Error duting ChannelPinsUpdated event handling. Cannot cast received data to ChannelPinsUpdatedEvent.");
+                }
             }
             private async void OnGuildCreated(object sender, EventHandlerArgs args)
             {
