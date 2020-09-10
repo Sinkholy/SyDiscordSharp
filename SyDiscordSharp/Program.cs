@@ -189,17 +189,62 @@ namespace SyDiscordSharp
                 gatewayClient = new DiscordGatewayClient();
             }
             #region Events handling
-            private void OnGuildDeleted(object sender, EventHandlerArgs args)
+            private async void OnGuildCreated(object sender, EventHandlerArgs args)
             {
-                GuildPreview guild = args.EventData as GuildPreview;
-                if (guild.Unavailable)
+                if (args.EventData is IGuild guild)
                 {
-                    (guilds[guild.Identifier] as Guild).Unavailable = true;
-                    GuildBecameUnavailable(guild.Identifier); //TODO : проверка была ли удалена гильдия при помощи отправки GET запроса
+                    //guild.BannedUsersList = await GetGuildBannedUsers(guild.Identifier);
+                    //List<Invite> invites = await GetGuildInvites(guild.Identifier);
+                    //guild.InvitesList = invites.Select(x => x as IInvite).ToList();
+                    guilds.Add(guild.Identifier, guild);
                 }
                 else
                 {
-                    BotRemovedFromGuild(guild.Identifier);
+                    RaiseLog("Handling GuildCreated event. Cannot cast received data to IGuild.");
+                }
+            }
+            private void OnGuildUpdated(object sender, EventHandlerArgs args)
+            {
+                if (args.EventData is IGuild newGuildInfo)
+                {
+                    if (TryToGetGuild(newGuildInfo.Identifier) is Guild oldGuildInfo)
+                    {
+                        (newGuildInfo as IUpdatableGuild).LoadInfoFromOldGuild(oldGuildInfo);
+                        guilds[oldGuildInfo.Identifier] = newGuildInfo;
+                    }
+                    else
+                    {
+                        RaiseLog("Handling GuildUpdated event. Cannot find target guild.");
+                    }
+                }
+                else
+                {
+                    RaiseLog("Handling GuildUpdated event. Cannot cast received data to IGuild.");
+                }
+            }
+            private void OnGuildDeleted(object sender, EventHandlerArgs args) // TODO: проверять был ли пользователь удален из гильдии
+            {
+                if (args.EventData is GuildPreview deletedGuild)
+                {
+                    if (deletedGuild.Unavailable)
+                    {
+                        if (guilds.ContainsKey(deletedGuild.Identifier))
+                        {
+                            guilds.Remove(deletedGuild.Identifier);
+                        }
+                        else
+                        {
+                            RaiseLog("Handling GuildDeleted event. Cannot find target guild.");
+                        }
+                    }
+                    else
+                    {
+                        guilds.Remove(deletedGuild.Identifier);
+                    }
+                }
+                else
+                {
+                    RaiseLog("Handling GuildDeleted event. Cannot cast received data to GuildPreview.");
                 }
             }
             private void OnChannelCreated(object sender, EventHandlerArgs args)
@@ -775,34 +820,6 @@ namespace SyDiscordSharp
                 {
                     RaiseLog("Error duting ChannelPinsUpdated event handling. Cannot cast received data to ChannelPinsUpdatedEvent.");
                 }
-            }
-            private async void OnGuildCreated(object sender, EventHandlerArgs args)
-            {
-                IGuild guild = args.EventData as IGuild;
-                if (guilds.ContainsKey(guild.Identifier))
-                    guilds[guild.Identifier] = guild;
-                else
-                    guilds.Add(guild.Identifier, guild);
-                GuildCreated(sender, args);
-                //Guild guild = arg.EventData as Guild;
-                //List<Ban> bans = await GetGuildBannedUsers(guild.Identifier);
-                //List<Invite> invites = await GetGuildInvites(guild.Identifier);
-                ////TAI : не добавлять каждый инвайт\бан в список, а заменять список 
-                ////т.к. эти запросы происходят только при первичном создании гильдии
-                //for (int i = 0; i < invites.Count; i++)
-                //{
-                //    guild.AddInvite(invites[i]);
-                //}
-                //for(int i = 0; i < bans.Count; i++)
-                //{
-                //    //TODO : уставливать здесь в бане GuildID(в данном запросе приходит без инфы о гильдии)
-                //    guild.AddBan(bans[i]);
-                //}
-            }
-            private void OnGuildUpdated(object sender, EventHandlerArgs args)
-            {
-                Guild guild = args.EventData as Guild;
-                (guilds[guild.Identifier] as Guild).UpdateGuild(guild);
             }
             private void OnReady(object sender, EventHandlerArgs args)
             {
