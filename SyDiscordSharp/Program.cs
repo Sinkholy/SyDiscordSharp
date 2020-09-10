@@ -555,21 +555,14 @@ namespace SyDiscordSharp
             }
             private void OnMessageReactionAdded(object sender, EventHandlerArgs args)
             {
-                MessageReactionEvent newReaction = args.EventData as MessageReactionEvent;
-                if (TryToGetGuild(newReaction.guildIdentifier) is Guild guild)
-                    if (guild.TryToGetChannel(newReaction.channelIdentifier) is ITextChannel channel)
-                    {
-                        if (channel.TryToGetMessage(newReaction.MessageIdentifier) is IUpdatableMessage message)
-                        {
-                            message.AddReaction(newReaction.Emoji);
-                        }
-                        else
-                            RaiseLog("Error during MessageReactionAdded event handling. Cannot find target message or cast it to IUpdatableMessage");
-                    }
-                    else
-                        RaiseLog("Error during MessageReactionAdded event handling. Cannot find target channel or cast it to ITextChannel");
+                if (args.EventData is MessageReactionEvent newReaction)
+                {
+                    // TODO: пробрасывать
+                }
                 else
-                    RaiseLog("Error during MessageReactionAdded event handling. Cannot find target guild or cast it to Guild");
+                {
+                    RaiseLog("Error during MessageReactionAdded event handling. Cannot cast received data to MessageReactionEvent.");
+                }
             }
             private void OnMessageReactionRemoved(object sender, EventHandlerArgs args)
             {
