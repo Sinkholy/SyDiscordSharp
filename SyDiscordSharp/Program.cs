@@ -171,6 +171,7 @@ namespace SyDiscordSharp
                 gatewayClient.DispatchEventHandler.MessageReactionEmojiRemoved += OnMessageEmojiRemoved;
                 gatewayClient.DispatchEventHandler.VoiceStateUpdated += OnVoiceStateUpdated;
                 gatewayClient.DispatchEventHandler.VoiceServerUpdated += OnVoiceServerUpdated;
+                gatewayClient.DispatchEventHandler.TypingStarted += OnTypingStarted;
 
                 gatewayClient.DispatchEventHandler.Ready += OnReady;
                 gatewayClient.SystemEventHandler.Connected += OnConnection;
@@ -473,7 +474,7 @@ namespace SyDiscordSharp
                     RaiseLog("Error during MessageReactionAdded event handling. Cannot cast received data to MessageReactionEvent");
                 }
             }
-                        private void OnVoiceStateUpdated(object sender, EventHandlerArgs args)
+            private void OnVoiceStateUpdated(object sender, EventHandlerArgs args)
             {
                 if (args.EventData is IVoiceSession newVoiceState)
                 {
@@ -596,6 +597,10 @@ namespace SyDiscordSharp
                 {
                     RaiseLog("Error during MessageReactionAdded event handling. Cannot cast received data to VoiceServerUpdate");
                 }
+            }
+            private void OnTypingStarted(object sender, EventHandlerArgs args)
+            {
+                // TODO: пробрасывать событие наверх
             }
             private async void OnGuildCreated(object sender, EventHandlerArgs args)
             {
