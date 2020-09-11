@@ -1,6 +1,4 @@
-﻿using Gateway.Entities.Channels.Text;
-using Gateway.Entities.Channels.Voice;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;

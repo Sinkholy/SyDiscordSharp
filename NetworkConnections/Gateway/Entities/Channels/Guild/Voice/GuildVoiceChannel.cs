@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gateway.Entities.Channels.Voice
+namespace Gateway.Entities.Channels.Guild.Voice
 {
     [JsonObject(MemberSerialization.OptIn)]
     internal class GuildVoiceChannel : Channel, IVoiceChannel, IGuildChannel

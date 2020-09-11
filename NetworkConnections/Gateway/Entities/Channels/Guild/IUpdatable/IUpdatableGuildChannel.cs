@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Gateway.Entities.Channels
+namespace Gateway.Entities.Channels.Guild.IUpdatable
 {
     public interface IUpdatableGuildChannel
     {

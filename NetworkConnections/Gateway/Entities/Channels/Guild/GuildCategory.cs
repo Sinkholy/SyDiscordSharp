@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Channels
+namespace Gateway.Entities.Channels.Guild
 {
     [JsonObject(MemberSerialization.OptIn)]
     internal class ChannelCategory : Channel, IGuildChannel, IChannelCategory, IUpdatableGuildCategory

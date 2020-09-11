@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gateway.Entities.Channels
+namespace Gateway.Entities.Channels.Guild
 {
     public interface IChannelCategory : IChannel
     {

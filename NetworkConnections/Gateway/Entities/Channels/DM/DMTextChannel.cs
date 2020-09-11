@@ -7,7 +7,7 @@ using System.Security.Authentication.ExtendedProtection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gateway.Entities.Channels.Text
+namespace Gateway.Entities.Channels.DM
 {
     [JsonObject(MemberSerialization.OptIn)]
     internal class DMTextChannel : TextChannel

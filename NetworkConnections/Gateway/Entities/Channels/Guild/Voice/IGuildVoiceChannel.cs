@@ -1,7 +1,7 @@
 ﻿using Gateway.Entities.VoiceSession;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Channels.Voice
+namespace Gateway.Entities.Channels.Guild.Voice
 {
     public interface IVoiceChannel : IChannel
     {

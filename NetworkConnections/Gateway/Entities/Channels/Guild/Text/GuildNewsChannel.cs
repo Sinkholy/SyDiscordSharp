@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gateway.Entities.Channels.Text
+namespace Gateway.Entities.Channels.Guild.Text
 {
     [JsonObject(MemberSerialization.OptIn)]
     internal class GuildNewsChannel : GuildTextChannelBase

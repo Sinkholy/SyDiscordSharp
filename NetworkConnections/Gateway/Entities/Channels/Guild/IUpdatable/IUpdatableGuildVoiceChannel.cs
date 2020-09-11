@@ -1,4 +1,4 @@
-﻿namespace Gateway.Entities.Channels.Voice
+﻿namespace Gateway.Entities.Channels.Guild.IUpdatable
 {
     public interface IUpdatableVoiceChannel : IUpdatableGuildChannel
     {

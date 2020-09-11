@@ -1,4 +1,4 @@
-﻿namespace Gateway.Entities.Channels.Text
+﻿namespace Gateway.Entities.Channels.Guild.IUpdatable
 {
     public interface IUpdatableGuildTextChannel : IUpdatableGuildChannel
     {
