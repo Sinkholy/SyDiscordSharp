@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Gateway.Entities.Channels.Guild.Text
 {
-    internal abstract class GuildTextChannelBase : GuildChannel, IGuildTextChannel, IUpdatableGuildTextChannel
+    internal abstract class GuildTextChannelBase : GuildChannel, ITextChannel, IGuildTextChannel, IUpdatableGuildTextChannel
     {
         [JsonProperty(PropertyName = "last_message_id")]
         public string LastMessageIdentifier { get; private set; }

@@ -72,8 +72,10 @@
     <Compile Include="Entities\Channels\Guild\IUpdatable\IUpdatableGuildStoreChannel.cs" />
     <Compile Include="Entities\Channels\Guild\Text\IGuildNewsChannel.cs" />
     <Compile Include="Entities\Channels\Guild\Text\IGuildTextChannel.cs" />
+    <Compile Include="Entities\Channels\ITextChannel.cs" />
     <Compile Include="Entities\Channels\IUpdatableChannel.cs" />
     <Compile Include="Entities\Channels\IChannel.cs" />
+    <Compile Include="Entities\Channels\IVoiceChannel.cs" />
     <Compile Include="Entities\Channels\PermissionOverwrite.cs" />
     <Compile Include="Entities\Channels\DM\DMTextChannel.cs" />
     <Compile Include="Entities\Channels\DM\GroupDMTextChannel.cs" />

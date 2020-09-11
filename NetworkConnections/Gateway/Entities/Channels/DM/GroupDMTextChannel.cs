@@ -2,7 +2,7 @@
 
 namespace Gateway.Entities.Channels.DM
 {
-    internal class GroupDMTextChannel : DMChannel, IGroupDMTextChannel
+    internal class GroupDMTextChannel : DMChannel, ITextChannel, IGroupDMTextChannel
     {
         [JsonProperty(PropertyName = "name")]
         public string Name { get; private set; }

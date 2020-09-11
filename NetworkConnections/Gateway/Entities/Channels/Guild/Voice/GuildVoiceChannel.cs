@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Gateway.Entities.Channels.Guild.Voice
 {
-    internal class GuildVoiceChannel : GuildChannel, IGuildVoiceChannel, IUpdatableGuildVoiceChannel
+    internal class GuildVoiceChannel : GuildChannel, IVoiceChannel, IGuildVoiceChannel, IUpdatableGuildVoiceChannel
     {
         [JsonProperty(PropertyName = "bitrate")]
         public int Bitrate { get; private set; }
