@@ -1,69 +1,16 @@
-﻿using Gateway.Entities.Users;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
 
 namespace Gateway.Entities.Channels.DM
 {
-    [JsonObject(MemberSerialization.OptIn)]
-    internal class GroupDMTextChannel : DMTextChannel
+    internal class GroupDMTextChannel : DMChannel, IGroupDMTextChannel
     {
-        [JsonProperty(PropertyName = "owner_id")]
-        internal string OwnerIdentifier;
-        [JsonProperty(PropertyName = "icon")]
-        internal string IconHash;
         [JsonProperty(PropertyName = "name")]
-        internal string Name;
-
-        public override string UpdateChannel(IChannel channelNewInfo)
-        {
-            StringBuilder result = new StringBuilder();
-            result.Append(base.UpdateChannel(channelNewInfo));
-            GroupDMTextChannel newChannel = channelNewInfo as GroupDMTextChannel;
-            if (newChannel is null)
-            {
-                // TODO : инструмент логирования ("Handling channel updated event. Cannot cast to DMTextChannel");
-                return "";
-            }
-            else
-            {
-                if(IconHash != newChannel.IconHash)
-                {
-                    IconHash = newChannel.IconHash;
-                    result.Append("Icon |");
-                }
-                if(Name != newChannel.Name)
-                {
-                    Name = newChannel.Name;
-                    result.Append("Name |");
-                }
-                if(OwnerIdentifier != newChannel.OwnerIdentifier)
-                {
-                    OwnerIdentifier = newChannel.OwnerIdentifier;
-                    result.Append("Owner |");
-                }
-            }
-            return result.ToString();
-        }
+        public string Name { get; private set; }
+        [JsonProperty(PropertyName = "icon")]
+        public string Icon { get; private set; }
         #region Ctor's
-        internal GroupDMTextChannel(string id,
-                                    ChannelType type,
-                                    string lastMsgId,
-                                    IUser[] recipients,
-                                    string ownerId,
-                                    string iconHash,
-                                    string name)
-            : base(id, type, lastMsgId, recipients)
-        {
-            OwnerIdentifier = ownerId;
-            IconHash = iconHash;
-            Name = name;
-        }
-        internal GroupDMTextChannel(ChannelType type)
-            : base(type) { }
+        internal GroupDMTextChannel()
+            : base(ChannelType.GroupDirectMessage) { }
         #endregion
     }
 }

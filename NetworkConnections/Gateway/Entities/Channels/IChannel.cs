@@ -1,11 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using Gateway.Entities.Channels.DM;
+using Gateway.Entities.Channels.Guild;
+using Gateway.Entities.Channels.Guild.Text;
+using Gateway.Entities.Channels.Guild.Voice;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Gateway.Entities.Channels
 {
@@ -30,25 +29,25 @@ namespace Gateway.Entities.Channels
             switch (type)
             {
                 case ChannelType.DirectMessage:
-                    result = new DMTextChannel(type);
+                    result = new DMTextChannel();
                     break;
                 case ChannelType.GroupDirectMessage:
-                    result = new GroupDMTextChannel(type);
+                    result = new GroupDMTextChannel();
                     break;
                 case ChannelType.GuildCategory:
-                    result = new ChannelCategory(type);
+                    result = new GuildCategory();
                     break;
                 case ChannelType.GuildNews:
-                    result = new GuildNewsChannel(type);
+                    result = new GuildNewsChannel();
                     break;
                 case ChannelType.GuildStore:
-                    result = new GuildStoreChannel(type);
+                    result = new GuildStoreChannel();
                     break;
                 case ChannelType.GuildText:
-                    result = new GuildTextChannel(type);
+                    result = new GuildTextChannel();
                     break;
                 case ChannelType.GuildVoice:
-                    result = new GuildVoiceChannel(type);
+                    result = new GuildVoiceChannel();
                     break;
                 default:
                     throw new Exception("Unknown channel type"); //TODO : адекватное исключение
@@ -59,7 +58,7 @@ namespace Gateway.Entities.Channels
         /// <summary>
         /// Not implemented
         /// </summary>
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer) 
+        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
             => throw new NotImplementedException();
     }
 }

@@ -1,55 +1,25 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using Gateway.Entities.Channels.Guild.IUpdatable;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Gateway.Entities.Channels.Guild.Text
 {
-    [JsonObject(MemberSerialization.OptIn)]
-    internal class GuildNewsChannel : GuildTextChannelBase
+    internal class GuildNewsChannel : GuildTextChannelBase, IGuildNewsChannel, IUpdatableGuildNewsChannel
     {
-        [JsonProperty(PropertyName = "topic")]
-        internal string Topic;
-
-        public override string UpdateChannel(IChannel newChannelInfo)
-        {
-            StringBuilder result = new StringBuilder();
-            result.Append(base.UpdateChannel(newChannelInfo));
-            GuildNewsChannel newChannel = newChannelInfo as GuildNewsChannel;
-            if(newChannel is null)
-            {
-                // TODO : инструмент логирования ("Handling channel updated event. Cannot cast to GuildNewsChannel");
-                return "";
-            }
-            else
-            {
-                if(Topic != newChannel.Topic)
-                {
-                    Topic = newChannel.Topic;
-                    result.Append("Topic |");
-                }
-            }
-            return result.ToString();
-        }
         #region Ctor's
-        internal GuildNewsChannel(string id,
-                                  ChannelType type,
-                                  string lastMsgId,
-                                  string guildId,
+        internal GuildNewsChannel(string guildId,
                                   string name,
-                                  int position,
-                                  List<Overwrite> permissionsOverwrite,
                                   bool nsfw,
-                                  string parentId,
-                                  string topic)
-            : base(id, type, lastMsgId, guildId, name, position, permissionsOverwrite, nsfw, parentId)
+                                  int position,
+                                  List<PermissionOverwrite> permissionOverwrites,
+                                  int rateLimit,
+                                  string topic = null,
+                                  string lastMessageId = null,
+                                  string categoryId = null)
+            : base(ChannelType.GuildNews, guildId, name, nsfw, position, permissionOverwrites, rateLimit, topic, lastMessageId, categoryId)
         {
-            Topic = topic;
         }
-        internal GuildNewsChannel(ChannelType type)
-            : base(type) { }
+        internal GuildNewsChannel()
+            : base(ChannelType.GuildNews) { }
         #endregion
     }
 }

@@ -1,175 +1,225 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="FullSignature">
-  <Class Name="Gateway.Entities.Channels.Channel">
-    <Position X="16.25" Y="0.5" Width="1.75" />
+  <Class Name="Gateway.Entities.Channels.Guild.Voice.GuildVoiceChannel">
+    <Position X="9.75" Y="15" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAIAAAAAAQAAAAAAQAAQAAAAAA=</HashCode>
-      <FileName>Entities\Channels\Channel.cs</FileName>
+      <HashCode>BEAAAAAAAAAAAAAAEAACAAAAAAgAAAABAAAAAAAAAgA=</HashCode>
+      <FileName>Entities\Channels\Guild\Voice\GuildVoiceChannel.cs</FileName>
     </TypeIdentifier>
-    <Lollipop Position="0.186" />
+    <Lollipop Position="1.8" />
   </Class>
-  <Class Name="Gateway.Entities.Channels.Voice.GuildVoiceChannel">
-    <Position X="15.75" Y="3.75" Width="2.75" />
+  <Class Name="Gateway.Entities.Channels.Guild.GuildCategory">
+    <Position X="13" Y="15" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>BEAAAAAEAAAAAQAgEAAIAAQBAAgAAAAAAAAAAIAIIgA=</HashCode>
-      <FileName>Entities\Channels\Voice\GuildVoiceChannel.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Entities\Channels\Guild\GuildCategory.cs</FileName>
     </TypeIdentifier>
-    <Lollipop Position="2.55" />
+    <Lollipop Position="1.3" />
   </Class>
-  <Class Name="Gateway.Entities.Channels.ChannelCategory">
-    <Position X="20.25" Y="3.75" Width="1.5" />
-    <InheritanceLine Type="Gateway.Entities.Channels.Channel" ManuallyRouted="true">
+  <Class Name="Gateway.Entities.Channels.Guild.GuildChannel" Collapsed="true">
+    <Position X="10" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAEAAAAIQAgABAABAQAACQgAAAABAAAAIEAAAA=</HashCode>
+      <FileName>Entities\Channels\Guild\GuildChannel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="1.3" />
+  </Class>
+  <Class Name="Gateway.Entities.Channels.Guild.Text.GuildTextChannelBase">
+    <Position X="18.25" Y="15" Width="1.75" />
+    <InheritanceLine Type="Gateway.Entities.Channels.Guild.GuildChannel" ManuallyRouted="true">
       <Path>
-        <Point X="17.125" Y="2.824" />
-        <Point X="17.125" Y="3.251" />
-        <Point X="21" Y="3.251" />
-        <Point X="21" Y="3.75" />
+        <Point X="10.75" Y="11.441" />
+        <Point X="10.75" Y="14.503" />
+        <Point X="19.125" Y="14.503" />
+        <Point X="19.125" Y="15" />
       </Path>
     </InheritanceLine>
     <TypeIdentifier>
-      <HashCode>AAAAIAAEAAAAIQAgAAAAAAQAAAAgAAAABAAAAIEIIAA=</HashCode>
-      <FileName>Entities\Channels\ChannelCategory.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Position="1.29" />
-  </Class>
-  <Class Name="Gateway.Entities.Channels.Text.TextChannel">
-    <Position X="12" Y="3.75" Width="1.75" />
-    <InheritanceLine Type="Gateway.Entities.Channels.Channel" ManuallyRouted="true">
-      <Path>
-        <Point X="17.125" Y="2.824" />
-        <Point X="17.125" Y="3.259" />
-        <Point X="12.875" Y="3.259" />
-        <Point X="12.875" Y="3.75" />
-      </Path>
-    </InheritanceLine>
-    <TypeIdentifier>
-      <HashCode>AAUAEAAAAAAAAAAAACAIAAAAAFAAAAABAAAAIQAAAAA=</HashCode>
-      <FileName>Entities\Channels\Text\TextChannel.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAEABBAAAAAACCAAAg=</HashCode>
+      <FileName>Entities\Channels\Guild\Text\GuildTextChannelBase.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="1.55" />
   </Class>
-  <Class Name="Gateway.Entities.Channels.Text.DMTextChannel">
-    <Position X="10.75" Y="8.5" Width="1.75" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAIAAAAAEAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Entities\Channels\Text\DMTextChannel.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="Gateway.Entities.Channels.Text.GuildTextChannelBase">
-    <Position X="13.5" Y="8.5" Width="1.75" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAEAAAAAQAgAAAIAAQBAAAAAAAAAAAAAIAIIAA=</HashCode>
-      <FileName>Entities\Channels\Text\GuildTextChannelBase.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Position="1.055" />
-  </Class>
-  <Class Name="Gateway.Entities.Channels.Text.GroupDMTextChannel">
-    <Position X="10.75" Y="11.5" Width="1.75" />
-    <TypeIdentifier>
-      <HashCode>CAACAAAAAAAAAAAAAAAIAAQAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Entities\Channels\Text\GroupDMTextChannel.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="Gateway.Entities.Channels.Text.GuildNewsChannel">
-    <Position X="13.5" Y="12.5" Width="1.75" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAACAAAAA=</HashCode>
-      <FileName>Entities\Channels\Text\GuildNewsChannel.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="Gateway.Entities.Channels.Text.GuildStoreChannel">
-    <Position X="15.5" Y="12.5" Width="1.75" />
+  <Class Name="Gateway.Entities.Channels.Guild.Text.GuildTextChannel">
+    <Position X="21" Y="18.75" Width="1.5" />
+    <InheritanceLine Type="Gateway.Entities.Channels.Guild.Text.GuildTextChannelBase" ManuallyRouted="true">
+      <Path>
+        <Point X="19.125" Y="17.838" />
+        <Point X="19.125" Y="18.191" />
+        <Point X="21.75" Y="18.191" />
+        <Point X="21.75" Y="18.75" />
+      </Path>
+    </InheritanceLine>
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Entities\Channels\Text\GuildStoreChannel.cs</FileName>
+      <FileName>Entities\Channels\Guild\Text\GuildTextChannel.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Gateway.Entities.Channels.Text.GuildTextChannel">
-    <Position X="17.5" Y="12.5" Width="1.5" />
+  <Class Name="Gateway.Entities.Channels.Guild.GuildStoreChannel">
+    <Position X="15.5" Y="15" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAACAAAAg=</HashCode>
-      <FileName>Entities\Channels\Text\GuildTextChannel.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Channels\Guild\GuildStoreChannel.cs</FileName>
     </TypeIdentifier>
+    <Lollipop Position="1.55" />
   </Class>
-  <Interface Name="Gateway.Entities.Channels.Text.ITextChannel">
-    <Position X="0.5" Y="2.75" Width="1.5" />
+  <Class Name="Gateway.Entities.Channels.Guild.Text.GuildNewsChannel">
+    <Position X="18.25" Y="18.75" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAQAAAAA=</HashCode>
-      <FileName>Entities\Channels\Text\ITextChannel.cs</FileName>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Channels\Guild\Text\GuildNewsChannel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="1.55" />
+  </Class>
+  <Class Name="Gateway.Entities.Channels.DM.DMChannel" Collapsed="true">
+    <Position X="5.5" Y="10.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAAAAAAAAAAAAAEAEAAAABAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Channels\DM\DMChannel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Gateway.Entities.Channels.DM.DMTextChannel" Collapsed="true">
+    <Position X="2.75" Y="12.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Channels\DM\DMTextChannel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Gateway.Entities.Channels.DM.GroupDMTextChannel" Collapsed="true">
+    <Position X="5.25" Y="12.5" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Entities\Channels\DM\GroupDMTextChannel.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Class Name="Gateway.Entities.Channels.Channel">
+    <Position X="7.75" Y="7.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAAAAAAAAAAAAAAAAAQBAAAAAQAAQAAAAAA=</HashCode>
+      <FileName>Entities\Channels\Channel.cs</FileName>
+    </TypeIdentifier>
+    <ShowAsAssociation>
+      <Property Name="Type" />
+    </ShowAsAssociation>
+    <Lollipop Position="0.2" />
+  </Class>
+  <Interface Name="Gateway.Entities.Channels.Guild.IGuildCategory">
+    <Position X="12.75" Y="26" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Channels\Guild\IGuildCategory.cs</FileName>
     </TypeIdentifier>
   </Interface>
-  <Interface Name="Gateway.Entities.Channels.IGuildChannel">
-    <Position X="5" Y="2.75" Width="1.5" />
+  <Interface Name="Gateway.Entities.Channels.Guild.IGuildChannel">
+    <Position X="10" Y="22.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAAAAAAEAAAAAQAgAAAAAAQBAAAAAAAAAAAAAIAIAAA=</HashCode>
-      <FileName>Entities\Channels\IGuildChannel.cs</FileName>
+      <HashCode>AAAAAAAEAAAAAQAgAAAAAAQAAAQAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Entities\Channels\Guild\IGuildChannel.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Gateway.Entities.Channels.Guild.Text.IGuildTextChannel">
+    <Position X="18" Y="26" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAACAAAAg=</HashCode>
+      <FileName>Entities\Channels\Guild\Text\IGuildTextChannel.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Gateway.Entities.Channels.Guild.Text.IGuildNewsChannel" Collapsed="true">
+    <Position X="17.75" Y="28.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Channels\Guild\Text\IGuildNewsChannel.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Gateway.Entities.Channels.Guild.Voice.IGuildVoiceChannel">
+    <Position X="9.75" Y="26" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AEAAAAAAAAAAAAAAEAAAAAAAAAgAAAAAAAAAAAAAAgA=</HashCode>
+      <FileName>Entities\Channels\Guild\Voice\IGuildVoiceChannel.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Gateway.Entities.Channels.Guild.IGuildStoreChannel">
+    <Position X="15.25" Y="26" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Channels\Guild\IGuildStoreChannel.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Gateway.Entities.Channels.IUpdatableChannel">
+    <Position X="3.75" Y="29.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Channels\IUpdatableChannel.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Gateway.Entities.Channels.Guild.IUpdatable.IUpdatableGuildTextChannel" Collapsed="true">
+    <Position X="13" Y="34.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAABAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
+      <FileName>Entities\Channels\Guild\IUpdatable\IUpdatableGuildTextChannel.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Gateway.Entities.Channels.Guild.IUpdatable.IUpdatableGuildVoiceChannel" Collapsed="true">
+    <Position X="3.25" Y="34.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAABAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Channels\Guild\IUpdatable\IUpdatableGuildVoiceChannel.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Gateway.Entities.Channels.Guild.IUpdatable.IUpdatableGuildChannel">
+    <Position X="3.5" Y="31.25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAABQCAAAAAAAAAAAAAAAAgAAIAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Channels\Guild\IUpdatable\IUpdatableGuildChannel.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Gateway.Entities.Channels.Guild.IUpdatable.IUpdatableGuildNewsChannel" Collapsed="true">
+    <Position X="13" Y="36" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Channels\Guild\IUpdatable\IUpdatableGuildNewsChannel.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Gateway.Entities.Channels.Guild.IUpdatable.IUpdatableGuildStoreChannel" Collapsed="true">
+    <Position X="9.75" Y="34.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Channels\Guild\IUpdatable\IUpdatableGuildStoreChannel.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Interface Name="Gateway.Entities.Channels.IChannel">
-    <Position X="2.75" Y="0.5" Width="1.5" />
+    <Position X="8.25" Y="20.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAQAAAAAA=</HashCode>
       <FileName>Entities\Channels\IChannel.cs</FileName>
     </TypeIdentifier>
   </Interface>
-  <Interface Name="Gateway.Entities.Channels.Voice.IVoiceChannel">
-    <Position X="2.75" Y="2.75" Width="1.5" />
+  <Interface Name="Gateway.Entities.Channels.DM.IDMChannel" Collapsed="true">
+    <Position X="6.25" Y="22.75" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AEAAAAAEAAAAAQAgEAAAAAQAAAgAAAAAAAAAAIAAAgA=</HashCode>
-      <FileName>Entities\Channels\Voice\IVoiceChannel.cs</FileName>
+      <HashCode>CAAAAAAAAAAAAAAAAAAAAAAEAEAAAABAAAAAAAAAAAA=</HashCode>
+      <FileName>Entities\Channels\DM\IDMChannel.cs</FileName>
     </TypeIdentifier>
   </Interface>
-  <Interface Name="Gateway.Entities.Channels.IUpdatableChannel">
-    <Position X="0.5" Y="4.75" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Entities\Channels\IUpdatableChannel.cs</FileName>
-    </TypeIdentifier>
-  </Interface>
-  <Interface Name="Gateway.Entities.Channels.Text.IUpdatableTextChannel">
-    <Position X="0.5" Y="6.25" Width="3" />
-    <TypeIdentifier>
-      <HashCode>AAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAA=</HashCode>
-      <FileName>Entities\Channels\Text\IUpdatableTextChannel.cs</FileName>
-    </TypeIdentifier>
-  </Interface>
-  <Interface Name="Gateway.Entities.Channels.IChannelCategory" Collapsed="true">
-    <Position X="7.25" Y="2.75" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAEAAAAAQAgAAAAAAQAAAAAAAAAAAAAAAAIAAA=</HashCode>
-      <FileName>Entities\Channels\IChannelCategory.cs</FileName>
-    </TypeIdentifier>
-  </Interface>
-  <Interface Name="Gateway.Entities.Channels.IUpdatableGuildChannel">
-    <Position X="6" Y="12.5" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>BAAAAAAAAQCAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAA=</HashCode>
-      <FileName>Entities\Channels\IUpdatableGuildChannel.cs</FileName>
-    </TypeIdentifier>
-  </Interface>
-  <Interface Name="Gateway.Entities.Channels.Voice.IUpdatableVoiceChannel">
-    <Position X="6" Y="15.25" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>AAAAAAAABAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Entities\Channels\Voice\IUpdatableVoiceChannel.cs</FileName>
-    </TypeIdentifier>
-  </Interface>
-  <Interface Name="Gateway.Entities.Channels.Text.IUpdatableGuildTextChannel">
-    <Position X="3" Y="15.25" Width="2.25" />
-    <TypeIdentifier>
-      <HashCode>AAAAAABABAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAA=</HashCode>
-      <FileName>Entities\Channels\Text\IUpdatableGuildTextChannel.cs</FileName>
-    </TypeIdentifier>
-  </Interface>
-  <Interface Name="Gateway.Entities.Channels.IUpdatableGuildCategory">
-    <Position X="8.75" Y="15.25" Width="1.5" />
+  <Interface Name="Gateway.Entities.Channels.DM.IDMTextChannel" Collapsed="true">
+    <Position X="3.5" Y="25" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>Entities\Channels\IUpdatableGuildCategory.cs</FileName>
+      <FileName>Entities\Channels\DM\IDMTextChannel.cs</FileName>
+    </TypeIdentifier>
+  </Interface>
+  <Interface Name="Gateway.Entities.Channels.DM.IGroupDMTextChannel" Collapsed="true">
+    <Position X="6" Y="25" Width="2" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAEAAAA=</HashCode>
+      <FileName>Entities\Channels\DM\IGroupDMTextChannel.cs</FileName>
     </TypeIdentifier>
   </Interface>
   <Enum Name="Gateway.Entities.Channels.ChannelType" Collapsed="true">
-    <Position X="13" Y="0.5" Width="1.5" />
+    <Position X="5.5" Y="7.75" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAEAAAAQABAAAAAgAAAAAAAIAAAAABAAAEAAAAAA=</HashCode>
       <FileName>Entities\Channels\Channel.cs</FileName>

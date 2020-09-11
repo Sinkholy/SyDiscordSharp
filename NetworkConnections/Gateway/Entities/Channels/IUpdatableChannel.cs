@@ -1,14 +1,11 @@
-﻿using Gateway.Entities.Guilds;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Gateway.Entities.Channels
+﻿namespace Gateway.Entities.Channels
 {
-    interface IUpdatableChannel
+    public interface IUpdatableChannel
     {
-        string UpdateChannel(IChannel channelNewInfo); // TODO : нужен какой-то способ передавать что было изменено. 
+        /// <summary>
+        /// Only two types of channels can be exchanged: News to Text \ Text to News;
+        /// </summary>
+        /// <param name="type"></param>
+        void UpdateChannelType(ChannelType type);
     }
 }

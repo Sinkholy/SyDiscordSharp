@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Gateway.Entities.Channels.Guild.Text
+﻿namespace Gateway.Entities.Channels.Guild.Text
 {
-    interface IGuildTextChannel
+    public interface IGuildTextChannel : IGuildChannel
     {
+        string LastMessageIdentifier { get; }
+        string Topic { get; }
+        int RateLimitPerUser { get; }
     }
 }

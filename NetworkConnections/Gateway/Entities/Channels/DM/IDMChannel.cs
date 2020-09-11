@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Gateway.Entities.Users;
 
 namespace Gateway.Entities.Channels.DM
 {
-    interface IDMChannel
+    public interface IDMChannel : IChannel
     {
+        string ApplicationIdentifier { get; }
+        string LastMessageIdentifier { get; }
+        string OwnerIdentifier { get; }
+        IUser[] Recipients { get; }
     }
 }

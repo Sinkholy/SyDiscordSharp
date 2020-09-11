@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Gateway.Entities.Channels.DM
+﻿namespace Gateway.Entities.Channels.DM
 {
-    interface IGroupDMTextChannel
+    public interface IGroupDMTextChannel : IDMChannel
     {
+        string Icon { get; }
+        string Name { get; }
     }
 }

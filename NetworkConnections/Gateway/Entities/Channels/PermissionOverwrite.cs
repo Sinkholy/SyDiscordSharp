@@ -1,25 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Gateway.Entities.Channels
 {
-    [JsonObject(MemberSerialization.OptIn)]
-    public class Overwrite // TODO: интерфейс?
+    public class PermissionOverwrite // TODO: разобраться с Receiving\Sending и Permissions sets
     {
         [JsonProperty(PropertyName = "id")]
-        internal string Identifier { get; private set; }
+        public string Identifier { get; private set; }
         [JsonProperty(PropertyName = "type")]
-        internal OverwriteType Type { get; private set; }
+        public OverwriteType Type { get; private set; }
         [JsonProperty(PropertyName = "allow")]
         public int Allow { get; internal set; }
         [JsonProperty(PropertyName = "deny")]
         public int Deny { get; internal set; }
+
+        public PermissionOverwrite(OverwriteType type, int allow, int deny)
+        {
+            Type = type;
+            Allow = allow;
+            Deny = deny;
+        }
     }
-    internal enum OverwriteType : byte
+    public enum OverwriteType : byte
     {
         Role,
         Member

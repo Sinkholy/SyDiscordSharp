@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Gateway.Entities.Channels.Guild.Text
+﻿namespace Gateway.Entities.Channels.Guild.Text
 {
-    interface IGuildNewsChannel
+    public interface IGuildNewsChannel : IGuildTextChannel
     {
     }
 }

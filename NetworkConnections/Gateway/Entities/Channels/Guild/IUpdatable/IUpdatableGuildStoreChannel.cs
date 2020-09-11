@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Gateway.Entities.Channels.Guild.IUpdatable
+﻿namespace Gateway.Entities.Channels.Guild.IUpdatable
 {
-    interface IUpdatableGuildStoreChannel
+    interface IUpdatableGuildStoreChannel : IUpdatableGuildChannel
     {
     }
 }

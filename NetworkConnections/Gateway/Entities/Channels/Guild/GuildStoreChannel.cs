@@ -1,31 +1,22 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using Gateway.Entities.Channels.Guild.IUpdatable;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Gateway.Entities.Channels.Guild
 {
-    [JsonObject(MemberSerialization.OptIn)]
-    internal class GuildStoreChannel : GuildTextChannelBase
+    internal class GuildStoreChannel : GuildChannel, IGuildStoreChannel, IUpdatableGuildStoreChannel
     {
         #region Ctor's
-        internal GuildStoreChannel(string id,
-                                  ChannelType type,
-                                  string lastMsgId,
-                                  string guildId,
-                                  string name,
-                                  int position,
-                                  List<Overwrite> permissionsOverwrite,
-                                  bool nsfw,
-                                  string parentId,
-                                  string topic)
-            : base(id, type, lastMsgId, guildId, name, position, permissionsOverwrite, nsfw, parentId)
+        internal GuildStoreChannel(string guildId,
+                                 string name,
+                                 bool nsfw,
+                                 int position,
+                                 List<PermissionOverwrite> permissionOverwrites,
+                                 string categoryId = null)
+            : base(ChannelType.GuildStore, guildId, name, nsfw, position, permissionOverwrites, categoryId)
         {
         }
-        internal GuildStoreChannel(ChannelType type)
-            : base(type) { }
+        internal GuildStoreChannel()
+            : base(ChannelType.GuildStore) { }
         #endregion
     }
 }

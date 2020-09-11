@@ -1,65 +1,24 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Gateway.Entities.Channels.Guild.Text
 {
-    [JsonObject(MemberSerialization.OptIn)]
     internal class GuildTextChannel : GuildTextChannelBase
     {
-        [JsonProperty(PropertyName = "rate_limit_per_user")]
-        internal int RateLimitPerUser;
-        [JsonProperty(PropertyName = "topic")]
-        internal string Topic;
-
-        public override string UpdateChannel(IChannel newChannelInfo)
-        {
-            StringBuilder result = new StringBuilder();
-            result.Append(base.UpdateChannel(newChannelInfo));
-            GuildTextChannel newChannel = newChannelInfo as GuildTextChannel;
-            if (newChannel is null)
-            {
-                // TODO : инструмент логирования ("Handling channel updated event. Cannot cast to GuildTextChannel");
-                return string.Empty;
-            }
-            else
-            {
-                if(RateLimitPerUser != newChannel.RateLimitPerUser)
-                {
-                    RateLimitPerUser = newChannel.RateLimitPerUser;
-                    result.Append("RateLimitPeruser |");
-                }
-                if(Topic != newChannel.Topic)
-                {
-                    Topic = newChannel.Topic;
-                    result.Append("Topic |");
-                }
-            }
-            return result.ToString();
-        }
         #region Ctor's
-        internal GuildTextChannel(string id,
-                                  ChannelType type,
-                                  string lastMsgId,
-                                  string guildId,
+        internal GuildTextChannel(string guildId,
                                   string name,
-                                  int position,
-                                  List<Overwrite> permissionsOverwrite,
                                   bool nsfw,
-                                  string parentId,
-                                  int rateLimitPerUser,
-                                  string topic)
-            : base(id, type, lastMsgId, guildId, name, position, permissionsOverwrite, nsfw, parentId)
+                                  int position,
+                                  List<PermissionOverwrite> permissionOverwrites,
+                                  int rateLimit,
+                                  string topic = null,
+                                  string lastMessageId = null,
+                                  string categoryId = null)
+            : base(ChannelType.GuildText, guildId, name, nsfw, position, permissionOverwrites, rateLimit, topic, lastMessageId, categoryId)
         {
-            Topic = topic;
-            RateLimitPerUser = rateLimitPerUser;
         }
-        internal GuildTextChannel(ChannelType type)
-            : base(type) { }
+        internal GuildTextChannel()
+            : base(ChannelType.GuildText) { }
         #endregion
     }
 }
