@@ -1,5 +1,4 @@
-﻿using Gateway.Entities.Channels.Text;
-using Gateway.Entities.Emojis;
+﻿using Gateway.Entities.Emojis;
 using Gateway.Entities.Guilds;
 using Newtonsoft.Json;
 

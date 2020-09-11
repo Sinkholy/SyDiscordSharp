@@ -1,6 +1,6 @@
 ﻿namespace Gateway.Entities.Channels
 {
-    interface ITextChannel : IChannel
+    public interface ITextChannel : IChannel
     {
     }
 }

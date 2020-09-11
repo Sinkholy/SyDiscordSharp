@@ -1,7 +1,6 @@
 ﻿using Gateway.DataObjects.Voice;
 using Gateway.Entities.Channels;
-using Gateway.Entities.Channels.Text;
-using Gateway.Entities.Channels.Voice;
+using Gateway.Entities.Channels.Guild;
 using Gateway.Entities.Emojis;
 using Gateway.Entities.Invite;
 using Gateway.Entities.Presences;
@@ -51,7 +50,7 @@ namespace Gateway.Entities.Guilds
         #region RO collections
         IReadOnlyCollection<GuildEmoji> Emojis { get; }
         IReadOnlyCollection<IChannel> Channels { get; }
-        IReadOnlyCollection<IChannelCategory> ChannelCategories { get; }
+        IReadOnlyCollection<IGuildCategory> ChannelCategories { get; }
         IReadOnlyCollection<IVoiceChannel> VoiceChannels { get; }
         IReadOnlyCollection<ITextChannel> TextChannels { get; }
         IReadOnlyCollection<IInvite> Invites { get; }

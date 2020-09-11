@@ -1,5 +1,4 @@
 ﻿using Gateway.Entities.Channels;
-using Gateway.Entities.Channels.Text;
 using Gateway.Entities.Emojis;
 using Gateway.Entities.Users;
 using Newtonsoft.Json;

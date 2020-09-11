@@ -2,7 +2,8 @@
 using Gateway;
 using Gateway.Entities;
 using Gateway.Entities.Channels;
-using Gateway.Entities.Channels.Text;
+using Gateway.Entities.Channels.Guild;
+using Gateway.Entities.Channels.Guild.IUpdatable;
 using Gateway.Entities.Embed;
 using Gateway.Entities.Emojis;
 using Gateway.Entities.Guilds;
@@ -871,7 +872,7 @@ namespace SyDiscordSharp
                 [JsonProperty(PropertyName = "rate_limit_per_user", NullValueHandling = NullValueHandling.Ignore)]
                 internal int? UserRateLimit;
                 [JsonProperty(PropertyName = "permission_overwrites", NullValueHandling = NullValueHandling.Ignore)]
-                internal List<Overwrite> PermissionOverwrites;
+                internal List<PermissionOverwrite> PermissionOverwrites;
                 [JsonProperty(PropertyName = "parent_id", NullValueHandling = NullValueHandling.Ignore)]
                 internal string CategoryIdentifier;
             }

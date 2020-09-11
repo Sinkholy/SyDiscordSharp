@@ -1,5 +1,4 @@
-﻿using Gateway.Entities.Channels.Text;
-using Gateway.Entities.Users;
+﻿using Gateway.Entities.Users;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
