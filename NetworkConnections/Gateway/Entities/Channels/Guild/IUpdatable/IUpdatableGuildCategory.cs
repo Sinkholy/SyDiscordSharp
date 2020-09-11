@@ -1,7 +1,6 @@
-﻿namespace Gateway.Entities.Channels
+﻿namespace Gateway.Entities.Channels.Guild.IUpdatable
 {
     public interface IUpdatableGuildCategory : IUpdatableGuildChannel
     {
-
     }
 }

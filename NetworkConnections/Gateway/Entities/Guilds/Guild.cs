@@ -1,6 +1,7 @@
 ﻿using Gateway.Entities.Channels;
-using Gateway.Entities.Channels.Text;
-using Gateway.Entities.Channels.Voice;
+using Gateway.Entities.Channels.Guild;
+using Gateway.Entities.Channels.Guild.IUpdatable;
+using Gateway.Entities.Channels.Guild.Voice;
 using Gateway.Entities.Emojis;
 using Gateway.Entities.Invite;
 using Gateway.Entities.Presences;
@@ -232,10 +233,10 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
         public IUser Owner
             => UsersById[ownerIdentifier];
         public IReadOnlyCollection<IChannel> Channels => ChannelsById.Values.ToList();
-        public IReadOnlyCollection<IChannelCategory> ChannelCategories
-            => ChannelsById.Values.Where(x => x is IChannelCategory)
-                       .Select(x => x as ChannelCategory)
-                       .ToList() as IReadOnlyCollection<ChannelCategory>;
+        public IReadOnlyCollection<IGuildCategory> ChannelCategories
+            => ChannelsById.Values.Where(x => x is IGuildCategory)
+                       .Select(x => x as IGuildCategory)
+                       .ToList() as IReadOnlyCollection<IGuildCategory>;
         public IReadOnlyCollection<IVoiceChannel> VoiceChannels
             => ChannelsById.Values.Where(x => x is IVoiceChannel)
                        .Select(x => x as IVoiceChannel)
@@ -409,7 +410,10 @@ namespace Gateway.Entities.Guilds //TAI : ленивая загрузка все
             {
                 foreach (IGuildChannel channel in channelsReceived)
                 {
-                    channel.UpdateChannelGuildId(this.Identifier);
+                    if(channel is IUpdatableGuildChannel updatableChannel)
+                    {
+                        updatableChannel.SetNewGuildId(this.Identifier);
+                    }
                     if (channel.Type == ChannelType.GuildVoice)
                     {
                         (channel as GuildVoiceChannel).activeVoiceSessionsEnumerable = GetActiveSessionsForChannel(channel.Identifier);
