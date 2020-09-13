@@ -45,6 +45,31 @@ namespace Gateway.Entities.Channels.Guild.IUpdatable
         void SetNewPermissionsOverwrire(List<PermissionOverwrite> overwrite);
         //
         // Summary:
+        //     Add new permission overwrite to channel.
+        //
+        // Parameters:
+        //     overwrite:
+        //          Overwrite to add to channel.
+        // Exceptions:
+        //     T:System.ArgumentNullException:
+        //          overwrite is null.
+        //     T:System.ArgumentException:
+        //          Channel's permission overwrites allready contains overwrite with provided id.
+        void AddNewPermissionOverwrite(PermissionOverwrite overwrite);
+        //
+        // Summary:
+        //     Remove permission overwrite from channel.
+        //
+        // Parameters:
+        //     id:
+        //          Role or user id in overwrite.
+        //          If corresponding to provided id overwite wont be found no exception will be passed.
+        // Exceptions:
+        //     T:System.ArgumentNullException:
+        //          id is null.
+        void RemovePermissionOverwrite(string id);
+        //
+        // Summary:
         //     Sets channel's new category.
         //
         // Parameters:
