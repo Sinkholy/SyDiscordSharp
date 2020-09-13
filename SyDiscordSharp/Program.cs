@@ -852,6 +852,16 @@ namespace SyDiscordSharp
                 var response = await httpClient.Patch(endPoint, content);
                 string responseString = await response.Content.ReadAsStringAsync();
             }
+            private async Task DeleteChannel(IChannel channel)
+            {
+                await DeleteChannel(channel.Identifier);
+            }
+            private async Task DeleteChannel(string channelId)
+            {
+                string endPoint = $"/api/channels/{channelId}";
+                var response = await httpClient.Delete(endPoint);
+                string responseString = await response.Content.ReadAsStringAsync();
+            }
 
             internal class ModifyChanelRequest
             {
