@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Gateway.Entities.Channels.Guild
 {
@@ -59,6 +60,27 @@ namespace Gateway.Entities.Channels.Guild
                 throw new ArgumentNullException("Cannot set no guild to channel.");
             }
             GuildIdentifier = guildId;
+        }
+        void IUpdatableGuildChannel.AddNewPermissionOverwrite(PermissionOverwrite overwrite)
+        {
+            if(overwrite is null)
+            {
+                throw new ArgumentNullException("Cannot add empty overwrite to channel.");
+            }
+            permissionOverwrites.Add(overwrite);
+        }
+        void IUpdatableGuildChannel.RemovePermissionOverwrite(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id))
+            {
+                throw new ArgumentNullException("Cannot remove overwrite with null or empty id.");
+            }
+            PermissionOverwrite overwriteToRemove = permissionOverwrites.Where(x => x.Identifier == id)
+                                                                        .SingleOrDefault();
+            if(overwriteToRemove != null)
+            {
+                permissionOverwrites.Remove(overwriteToRemove);
+            }
         }
         #endregion
         #region Ctor's
