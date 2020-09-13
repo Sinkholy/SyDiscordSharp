@@ -1,5 +1,6 @@
 ﻿using Gateway.Entities.Channels.Guild.IUpdatable;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace Gateway.Entities.Channels.Guild.Text
@@ -16,10 +17,18 @@ namespace Gateway.Entities.Channels.Guild.Text
         #region IUpdatableGuildTextChannel
         void IUpdatableGuildTextChannel.SetNewRateLimit(int rateLimit)
         {
+            if(rateLimit < 0 || rateLimit > 21600)
+            {
+                throw new ArgumentOutOfRangeException("Text channel rate limit must be in range 0 - 21600 seconds.");
+            }
             RateLimitPerUser = rateLimit;
         }
         void IUpdatableGuildTextChannel.SetNewTopic(string topic)
         {
+            if(topic.Length > 1024)
+            {
+                throw new ArgumentOutOfRangeException("Topic length must be less then 1024 symbols.");
+            }
             Topic = topic;
         }
         void IUpdatableGuildTextChannel.SetNewLastMessageIdentifier(string messageId)

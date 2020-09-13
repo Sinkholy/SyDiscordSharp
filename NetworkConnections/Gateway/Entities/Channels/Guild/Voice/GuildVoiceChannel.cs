@@ -1,11 +1,13 @@
 ﻿using Gateway.Entities.Channels.Guild.IUpdatable;
 using Gateway.Entities.VoiceSession;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Gateway.Entities.Channels.Guild.Voice
-{
+{ 
+    [JsonObject(MemberSerialization.OptIn)]
     internal class GuildVoiceChannel : GuildChannel, IVoiceChannel, IGuildVoiceChannel, IUpdatableGuildVoiceChannel
     {
         [JsonProperty(PropertyName = "bitrate")]
@@ -22,10 +24,18 @@ namespace Gateway.Entities.Channels.Guild.Voice
         #region IUpdatableGuildVoiceChannel implementation
         void IUpdatableGuildVoiceChannel.SetNewBitrate(int bitrate)
         {
+            if(bitrate < 8000)
+            {
+                throw new ArgumentOutOfRangeException("Bitrate must be greater or equeal to 8000kbps");
+            }
             Bitrate = bitrate;
         }
         void IUpdatableGuildVoiceChannel.SetNewUserLimit(int limit)
         {
+            if(limit < 0 || limit > 99)
+            {
+                throw new ArgumentOutOfRangeException("User limit must be in range 0 - 99");
+            }
             UserLimit = limit;
         }
         #endregion

@@ -1,9 +1,11 @@
 ﻿using Gateway.Entities.Channels.Guild.IUpdatable;
 using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace Gateway.Entities.Channels.Guild
 {
+    [JsonObject(MemberSerialization.OptIn)]
     internal abstract class GuildChannel : Channel, IGuildChannel, IUpdatableGuildChannel
     {
         [JsonProperty(PropertyName = "parent_id")]
@@ -24,10 +26,18 @@ namespace Gateway.Entities.Channels.Guild
         #region IUpdatableGuildChannel implementation
         void IUpdatableGuildChannel.SetNewName(string name)
         {
+            if(name.Length < 2 || name.Length > 100)
+            {
+                throw new ArgumentOutOfRangeException("Name must be in range 2-100 characters.");
+            }
             Name = name;
         }
         void IUpdatableGuildChannel.SetNewPosition(int position)
         {
+            if(position < 0)
+            {
+                throw new ArgumentOutOfRangeException("Position must be greater or equal 0.");
+            }
             Position = position;
         }
         void IUpdatableGuildChannel.SetNewNsfw(bool nsfw)
@@ -44,6 +54,10 @@ namespace Gateway.Entities.Channels.Guild
         }
         void IUpdatableGuildChannel.SetNewGuildId(string guildId)
         {
+            if(string.IsNullOrWhiteSpace(guildId) || guildId is null)
+            {
+                throw new ArgumentNullException("Cannot set no guild to channel.");
+            }
             GuildIdentifier = guildId;
         }
         #endregion
