@@ -997,6 +997,11 @@ namespace SyDiscordSharp
                 string content = await requestResult.Content.ReadAsStringAsync();
                 return JsonConvert.DeserializeObject<List<Message>>(content).Select(x => x as IMessage).ToList();
             }
+            internal async Task<List<IMessage>> GetMessages(IChannel channel,
+                                                            string messageId,
+                                                            GetMessagesType type,
+                                                            int limit = 50)
+                => await GetMessages(channel.Identifier, messageId, type, limit);
             internal enum GetMessagesType : byte
             {
                 Before,
