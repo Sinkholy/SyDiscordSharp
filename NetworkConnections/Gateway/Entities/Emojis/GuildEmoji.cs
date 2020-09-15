@@ -15,7 +15,8 @@ namespace Gateway.Entities.Emojis
         public bool Managed { get; private set; }
         [JsonProperty(PropertyName = "available")]
         public bool Available { get; private set; }
-        public string Mention => $"<:{Name}:{Identifier}>";
+        public override string Mention => $"<:{Name}:{Identifier}>";
         public override bool IsUnicodeEmoji => false;
+        public override string UrlEncoded => $"{Name}%3A{Identifier}";
     }
 }

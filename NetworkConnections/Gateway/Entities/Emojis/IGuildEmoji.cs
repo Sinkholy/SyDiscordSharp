@@ -6,6 +6,6 @@
         bool RequireColons { get; }
         bool Managed { get; }
         bool Available { get; }
-        string Mention { get; }
+        string UrlEncoded { get; }
     }
 }

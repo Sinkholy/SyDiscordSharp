@@ -912,11 +912,13 @@ namespace SyDiscordSharp
                 [JsonProperty(PropertyName = "messages")]
                 internal ICollection<string> messages; // up to 2000 chars
             }
-            private async void AddReactionToMessage(IEmoji emoji, string channelId, string messageId)
+            public async Task AddReactionToMessage(IEmoji emoji, string channelId, string messageId)
             {
-                string endPoint = $"/channels/{channelId}/messages/{messageId}/reactions/{emoji}/@me";
-                HttpResponseMessage requestResult = await httpClient.Get(endPoint);
+                string endPoint = $"/api/channels/{channelId}/messages/{messageId}/reactions/{emoji.UrlEncoded}/@me";
+                HttpResponseMessage requestResult = await httpClient.Put(endPoint);
             }
+            public async Task AddReactionToMessage(IEmoji emoji, ITextChannel channel, string messageId)
+                => await AddReactionToMessage(emoji, channel.Identifier, messageId);
             private async void SendMessage(ITextChannel channel, IMessage message)
             {
                 string endPoint = $"/api/channels/{channel.Identifier}/messages";

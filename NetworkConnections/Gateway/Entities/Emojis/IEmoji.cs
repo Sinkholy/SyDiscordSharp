@@ -12,6 +12,8 @@ namespace Gateway.Entities.Emojis
         string Name { get; }
         bool Animated { get; }
         bool IsUnicodeEmoji { get; }
+        string Mention { get; }
+        string UrlEncoded { get; }
     }
 
     internal class IEmojiConverter : JsonConverter // TODO: вытащить все конвертеры куда-нибудь
@@ -32,13 +34,13 @@ namespace Gateway.Entities.Emojis
         {
             JObject json = JObject.Load(reader);
             IEmoji result;
-            if (json.ContainsKey("id"))
+            if (string.IsNullOrWhiteSpace(json["id"]?.ToString() ?? string.Empty))
             {
-                result = new GuildEmoji();
+                result = new Emoji();
             }
             else
             {
-                result = new Emoji();
+                result = new GuildEmoji();
             }
             JsonConvert.PopulateObject(json.ToString(), result);
             return result;

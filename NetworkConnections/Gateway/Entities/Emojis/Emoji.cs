@@ -19,5 +19,7 @@ namespace Gateway.Entities.Emojis
         [JsonProperty(PropertyName = "animated")]
         public bool Animated { get; private set; }
         public virtual bool IsUnicodeEmoji => true;
+        public virtual string Mention => Name;
+        public virtual string UrlEncoded => Name;
     }
 }
