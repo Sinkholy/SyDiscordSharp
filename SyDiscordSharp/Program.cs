@@ -919,26 +919,41 @@ namespace SyDiscordSharp
             }
             public async Task AddReactionToMessage(IEmoji emoji, ITextChannel channel, string messageId)
                 => await AddReactionToMessage(emoji, channel.Identifier, messageId);
-            private async void SendMessage(ITextChannel channel, IMessage message)
+            private async Task<IMessage> SendMessage(string channelId, object message)
             {
-                string endPoint = $"/api/channels/{channel.Identifier}/messages";
-                string msgToSend = JsonConvert.SerializeObject(new MsgClass
-                {
-                    tts = message.TTS,
-                    nonce = message.Nonce,
-                    content = message.Content,
-                    Embed = (message as EmbeddedMessage)?.Embeds[0], // TAI: пахнет писькой
-                });
-                StringContent content = new StringContent(msgToSend, Encoding.UTF8, "application/json");
-                HttpResponseMessage requestResult = await httpClient.Post(endPoint, content);
+                string endPoint = $"/api/channels/{channelId}/messages";
+                StringContent content = new StringContent(JsonConvert.SerializeObject(message),
+                                          Encoding.UTF8,
+                                          "application/json");
+                HttpResponseMessage response = await httpClient.Post(endPoint, content);
+                string json = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<IMessage>(json);
             }
-            private async void SendMessageWithAttachement(ITextChannel channel,
-                                                          IMessage message,
-                                                          byte[] fileData,
-                                                          string fileName)
+            public async Task<IMessage> SendMessage(ITextChannel channel,
+                                                    IMessage message,
+                                                    AllowedMentions allowedMentions = null)
+            {
+                var messageToSerialize = new
+                {
+                    content = message.Content,
+                    nonce = message.Nonce,
+                    tts = message.TTS,
+                    embed = (message as IEmbeddedMessage).Embeds?[0],
+                    allowed_mentions = allowedMentions
+                };
+                return await SendMessage(channel.Identifier, messageToSerialize);
+            }
+            public async Task<IMessage> SendMessage(ITextChannel channel, string message)
+            {
+                return await SendMessage(channel.Identifier, new { content = message });
+            }
+            public async Task<IMessage> SendMessageWithAttachement(ITextChannel channel, // TODO: проверить есть ли возможность прикрепить файл к Embed-сообщению
+                                                                   IMessage message,
+                                                                   byte[] fileData,
+                                                                   string fileName)
             {
                 string endPoint = $"/api/channels/{channel.Identifier}/messages";
-                string msgToSend = JsonConvert.SerializeObject(new MsgClass
+                string msgToSend = JsonConvert.SerializeObject(new
                 {
                     tts = message.TTS,
                     nonce = message.Nonce,
@@ -961,19 +976,93 @@ namespace SyDiscordSharp
                     stringContent,
                     fileContent
                 };
-                HttpResponseMessage requestResult = await httpClient.Post(endPoint, multipartContent);
+                HttpResponseMessage response = await httpClient.Post(endPoint, multipartContent);
+                string json = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<IMessage>(json);
+            }
+            public enum AllowedMentionTypes : byte
+            {
+                Roles,
+                Users,
+                Everyone
             }
             [JsonObject(MemberSerialization.OptIn)]
-            internal class MsgClass
+            internal class AllowedMentions
             {
-                [JsonProperty(PropertyName = "content")]
-                internal object content; // up to 2000 chars
-                [JsonProperty(PropertyName = "tts")]
-                internal bool tts;
-                [JsonProperty(PropertyName = "nonce")]
-                internal string nonce;
-                [JsonProperty(PropertyName = "embed")]
-                internal EmbedData Embed;
+                public AllowedMentionTypes[] MentionsToParse { get; private set; }
+                [JsonProperty(PropertyName = "users", NullValueHandling = NullValueHandling.Ignore)]
+                public string[] Users { get; private set; }
+                [JsonProperty(PropertyName = "roles", NullValueHandling = NullValueHandling.Ignore)]
+                public string[] Roles { get; private set; }
+                [JsonProperty(PropertyName = "parse", NullValueHandling = NullValueHandling.Include)]
+                private string[] parse => MentionsToParse?.Select(x => x.ToString().ToLower()).ToArray()
+                                                         ?? new string[0];
+
+                public static AllowedMentions SupressAllMentions()
+                {
+                    return new AllowedMentions(null, null, null);
+                }
+                // Will also supress @here
+                public static AllowedMentions SupressEveryoneMention(string[] usersToMention = null, string[] rolesToMention = null)
+                {
+                    AllowedMentionTypes[] supress = new AllowedMentionTypes[1] { AllowedMentionTypes.Everyone };
+                    return new AllowedMentions(supress, usersToMention, rolesToMention);
+                }
+                public static AllowedMentions SupressRolesMention(bool supressEveryone = false, string[] usersToMention = null)
+                {
+                    AllowedMentionTypes[] supress;
+                    if (supressEveryone)
+                    {
+                        supress = new AllowedMentionTypes[] { AllowedMentionTypes.Roles, AllowedMentionTypes.Everyone };
+                    }
+                    else
+                    {
+                        supress = new AllowedMentionTypes[] { AllowedMentionTypes.Roles };
+                    }
+                    return new AllowedMentions(supress, usersToMention, null);
+                }
+                public static AllowedMentions SupressUsersMention(bool supressEveryone = false, string[] rolesToMention = null)
+                {
+                    AllowedMentionTypes[] supress;
+                    if (supressEveryone)
+                    {
+                        supress = new AllowedMentionTypes[] { AllowedMentionTypes.Users, AllowedMentionTypes.Everyone };
+                    }
+                    else
+                    {
+                        supress = new AllowedMentionTypes[] { AllowedMentionTypes.Users };
+                    }
+                    return new AllowedMentions(supress, rolesToMention, null);
+                }
+                public AllowedMentions(AllowedMentionTypes[] mentionsToParse,
+                                       string[] users,
+                                       string[] roles)
+                {
+                    if (mentionsToParse != null || mentionsToParse.Length != 0)
+                    {
+                        if (mentionsToParse.Contains(AllowedMentionTypes.Roles))
+                        {
+                            if (roles != null || roles.Length != 0)
+                            {
+                                throw new ArgumentException("Conditions cannot be " +
+                                                            "fulfilled simultaneously. " +
+                                                            "They are mutually exclusive.", "roles");
+                            }
+                        }
+                        else if (mentionsToParse.Contains(AllowedMentionTypes.Users))
+                        {
+                            if (users != null || users.Length != 0)
+                            {
+                                throw new ArgumentException("Conditions cannot be " +
+                                                            "fulfilled simultaneously. " +
+                                                            "They are mutually exclusive.", "users");
+                            }
+                        }
+                    }
+                    MentionsToParse = mentionsToParse;
+                    Users = users;
+                    Roles = roles;
+                }
             }
             private async Task<IMessage> GetMessage(string channelId, string messageId)
             {
