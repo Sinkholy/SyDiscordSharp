@@ -894,23 +894,15 @@ namespace SyDiscordSharp
                 [JsonProperty(PropertyName = "avatar", NullValueHandling = NullValueHandling.Ignore)]
                 internal string avatar;
             }
-            private async Task BulkDeleteMessages(string channelId, ICollection<string> identifiers)
+            public async Task BulkDeleteMessages(string channelId, ICollection<string> identifiers)
             {
                 string endPoint = $"/api/channels/{channelId}/messages/bulk-delete";
-                MsgesToDelete message = new MsgesToDelete
+                StringContent contentToSend = new StringContent(JsonConvert.SerializeObject(new
                 {
                     messages = identifiers
-                };
-                string msgToSend = JsonConvert.SerializeObject(message, typeof(MsgesToDelete), null);
-                StringContent contentToSend = new StringContent(msgToSend, Encoding.UTF8, "application/json");
+                }), Encoding.UTF8, "application/json");
                 HttpResponseMessage requestResult = await httpClient.Post(endPoint, contentToSend);
 
-            }
-            [JsonObject(MemberSerialization.OptIn)]
-            internal class MsgesToDelete
-            {
-                [JsonProperty(PropertyName = "messages")]
-                internal ICollection<string> messages; // up to 2000 chars
             }
             public async Task AddReactionToMessage(IEmoji emoji, string channelId, string messageId)
             {
