@@ -58,21 +58,79 @@ namespace API
                 return JsonConvert.DeserializeObject<GatewayInfo>(content);
             }
         }
-        public async Task<HttpResponseMessage> Get(string endPoint)
+        private async Task<HttpResponseMessage> Get(string endPoint)
         {
             return await SendAsync(HttpMethods.Get, endPoint, null);
         }
-        public async Task<HttpResponseMessage> Put(string endPoint)
+        private async Task<HttpResponseMessage> Put(string endPoint)
         {
             return await SendAsync(HttpMethods.Put, endPoint, null);
         }
-        public async Task<HttpResponseMessage> Post(string endPoint, HttpContent content = null)
+        private async Task<HttpResponseMessage> Post(string endPoint, HttpContent content = null)
         {
             return await SendAsync(HttpMethods.Post, endPoint, content);
         }
-        public async Task<HttpResponseMessage> Patch(string endPoint, HttpContent content = null)
+        private async Task<HttpResponseMessage> Patch(string endPoint, HttpContent content = null)
          {
             return await SendAsync(HttpMethods.Patch, endPoint, content);
+        }
+        private async Task<HttpResponseMessage> Delete(string endPoint, HttpContent content = null)
+        {
+            return await SendAsync(HttpMethods.Delete, endPoint, content);
+        }
+        public async Task<HttpResponseMessage> GetGuildBannedUsers(string targetGuildId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/bans";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetGuildInvites(string targetGuildId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/invites";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetMessages(string targetChannelId,
+                                                           string messagesRange)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/messages{messagesRange}";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetMessage(string targetChannelId, string targetMessageId)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/messages/{targetMessageId}";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> ModifyCurrentUser(StringContent userNewInfo)
+        {
+            string endPoint = "/api/users/@me";
+            return await Patch(endPoint, userNewInfo);
+        }
+        public async Task<HttpResponseMessage> ModifyChannel(string targetChannelId, StringContent newChannelInfo)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}";
+            return await Patch(endPoint, newChannelInfo);
+        }
+        public async Task<HttpResponseMessage> DeleteChannel(string targetChannelId)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> BulkDeleteMessages(string targetChannelId, 
+                                                                  StringContent messagesIdentifiers)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/messages/bulk-delete";
+            return await Post(endPoint, messagesIdentifiers);
+        }
+        public async Task<HttpResponseMessage> CreateReaction(string targetChannelId, 
+                                                              string targetMessageId, 
+                                                              string emoji)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/messages/{targetMessageId}/reactions/{emoji}/@me";
+            return await Put(endPoint);
+        }
+        public async Task<HttpResponseMessage> SendMessage(string targetChannelId, HttpContent message)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/messages";
+            return await Post(endPoint, message);
         }
         private async Task<bool> TryToConnect() //TODO : реализовать проверку подключения к дискорду
         {
