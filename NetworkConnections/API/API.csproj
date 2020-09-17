@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="DiscordHttpClient.cs" />
     <Compile Include="Enums\HttpMethods.cs" />
+    <Compile Include="Enums\JsonErrorCode.cs" />
     <Compile Include="Enums\TokenType.cs" />
     <Compile Include="GatewayUriResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

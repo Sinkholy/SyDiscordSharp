@@ -836,31 +836,30 @@ namespace SyDiscordSharp
             }
             #endregion
             #region Http methods
-            private async Task ModifyBotUser()
+            private async Task<DiscordResponse<IUser>> ModifyBotUser()
             {
                 string endPoint = "/api/users/@me";
                 NewBotUserInfo newUserInfo = new NewBotUserInfo { username = "newBotNameTest" };
                 string msgToSend = JsonConvert.SerializeObject(newUserInfo, typeof(NewBotUserInfo), null);
                 StringContent contentToSend = new StringContent(msgToSend, Encoding.UTF8, "application/json");
-                HttpResponseMessage requestResult = await httpClient.Patch(endPoint, contentToSend);
+                HttpResponseMessage response = await httpClient.Patch(endPoint, contentToSend);
+                return await DiscordResponse<IUser>.ParseAsync(response);
             }
-            private async Task ModifyChannel(IChannel channel)
+            private async Task<DiscordResponse<IChannel>> ModifyChannel(IChannel channel)
             {
                 string endPoint = $"/api/channels/{channel.Identifier}";
                 //ModifyChanelRequest request = new ModifyChanelRequest { Name = "SomeShit", Type = ChannelType.GuildCategory };
                 StringContent content = new StringContent(JsonConvert.SerializeObject(channel), Encoding.UTF8, "application/json");
-                var response = await httpClient.Patch(endPoint, content);
-                string responseString = await response.Content.ReadAsStringAsync();
+                HttpResponseMessage response = await httpClient.Patch(endPoint, content);
+                return await DiscordResponse<IChannel>.ParseAsync(response);
             }
-            private async Task DeleteChannel(IChannel channel)
-            {
-                await DeleteChannel(channel.Identifier);
-            }
-            private async Task DeleteChannel(string channelId)
+            private async Task<DiscordResponse<IChannel>> DeleteChannel(IChannel channel) 
+                => await DeleteChannel(channel.Identifier);
+            private async Task<DiscordResponse<IChannel>> DeleteChannel(string channelId)
             {
                 string endPoint = $"/api/channels/{channelId}";
-                var response = await httpClient.Delete(endPoint);
-                string responseString = await response.Content.ReadAsStringAsync();
+                HttpResponseMessage response = await httpClient.Delete(endPoint);
+                return await DiscordResponse<IChannel>.ParseAsync(response);
             }
 
             internal class ModifyChanelRequest
@@ -894,34 +893,33 @@ namespace SyDiscordSharp
                 [JsonProperty(PropertyName = "avatar", NullValueHandling = NullValueHandling.Ignore)]
                 internal string avatar;
             }
-            public async Task BulkDeleteMessages(string channelId, ICollection<string> identifiers)
+            public async Task<DiscordResponse<string>> BulkDeleteMessages(string channelId, ICollection<string> identifiers)
             {
                 string endPoint = $"/api/channels/{channelId}/messages/bulk-delete";
                 StringContent contentToSend = new StringContent(JsonConvert.SerializeObject(new
                 {
                     messages = identifiers
                 }), Encoding.UTF8, "application/json");
-                HttpResponseMessage requestResult = await httpClient.Post(endPoint, contentToSend);
-
+                HttpResponseMessage response = await httpClient.Post(endPoint, contentToSend);
+                return await DiscordResponse<string>.ParseAsync(response);
             }
-            public async Task AddReactionToMessage(IEmoji emoji, string channelId, string messageId)
+            public async Task<DiscordResponse<string>> AddReactionToMessage(IEmoji emoji, string channelId, string messageId)
             {
                 string endPoint = $"/api/channels/{channelId}/messages/{messageId}/reactions/{emoji.UrlEncoded}/@me";
-                HttpResponseMessage requestResult = await httpClient.Put(endPoint);
+                HttpResponseMessage response = await httpClient.Put(endPoint);
+                return await DiscordResponse<string>.ParseAsync(response);
             }
-            public async Task AddReactionToMessage(IEmoji emoji, ITextChannel channel, string messageId)
+            public async Task<DiscordResponse<string>> AddReactionToMessage(IEmoji emoji, ITextChannel channel, string messageId)
                 => await AddReactionToMessage(emoji, channel.Identifier, messageId);
-            private async Task<IMessage> SendMessage(string channelId, object message)
+            private async Task<DiscordResponse<IMessage>> SendMessage(string channelId, object message)
             {
                 string endPoint = $"/api/channels/{channelId}/messages";
                 StringContent content = new StringContent(JsonConvert.SerializeObject(message),
                                           Encoding.UTF8,
                                           "application/json");
-                HttpResponseMessage response = await httpClient.Post(endPoint, content);
-                string json = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<IMessage>(json);
+                return await DiscordResponse<IMessage>.ParseAsync(await httpClient.Post(endPoint, content));
             }
-            public async Task<IMessage> SendMessage(ITextChannel channel,
+            public async Task<DiscordResponse<IMessage>> SendMessage(ITextChannel channel,
                                                     IMessage message,
                                                     AllowedMentions allowedMentions = null)
             {
@@ -935,14 +933,14 @@ namespace SyDiscordSharp
                 };
                 return await SendMessage(channel.Identifier, messageToSerialize);
             }
-            public async Task<IMessage> SendMessage(ITextChannel channel, string message)
+            public async Task<DiscordResponse<IMessage>> SendMessage(ITextChannel channel, string message)
             {
                 return await SendMessage(channel.Identifier, new { content = message });
             }
-            public async Task<IMessage> SendMessageWithAttachement(ITextChannel channel, // TODO: проверить есть ли возможность прикрепить файл к Embed-сообщению
-                                                                   IMessage message,
-                                                                   byte[] fileData,
-                                                                   string fileName)
+            public async Task<DiscordResponse<IMessage>> SendMessageWithAttachement(ITextChannel channel, // TODO: проверить есть ли возможность прикрепить файл к Embed-сообщению
+                                                                                        IMessage message,
+                                                                                        byte[] fileData,
+                                                                                        string fileName)
             {
                 string endPoint = $"/api/channels/{channel.Identifier}/messages";
                 string msgToSend = JsonConvert.SerializeObject(new
@@ -969,8 +967,7 @@ namespace SyDiscordSharp
                     fileContent
                 };
                 HttpResponseMessage response = await httpClient.Post(endPoint, multipartContent);
-                string json = await response.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<IMessage>(json);
+                return await DiscordResponse<IMessage>.ParseAsync(response);
             }
             public enum AllowedMentionTypes : byte
             {
@@ -1056,19 +1053,18 @@ namespace SyDiscordSharp
                     Roles = roles;
                 }
             }
-            private async Task<IMessage> GetMessage(string channelId, string messageId)
+            private async Task<DiscordResponse<IMessage>> GetMessage(string channelId, string messageId)
             {
                 string endPoint = $"/api/channels/{channelId}/messages/{messageId}";
-                HttpResponseMessage requestResult = await httpClient.Get(endPoint);
-                string content = await requestResult.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<IMessage>(content);
+                HttpResponseMessage response = await httpClient.Get(endPoint);
+                return await DiscordResponse<IMessage>.ParseAsync(response);
             }
-            private async Task<IMessage> GetMessage(ITextChannel channel, string messageId)
+            private async Task<DiscordResponse<IMessage>> GetMessage(ITextChannel channel, string messageId)
                 => await GetMessage(channel.Identifier, messageId);
-            internal async Task<List<IMessage>> GetMessages(string channelId,
-                                                            string messageId,
-                                                            GetMessagesType type,
-                                                            int limit = 50)
+            internal async Task<DiscordResponse<IMessage[]>> GetMessages(string channelId,
+                                                                             string messageId,
+                                                                             GetMessagesType type,
+                                                                             int limit = 50)
             {
                 var queryParams = new NameValueCollection{
                                                             { type.ToString().ToLower(), messageId },
@@ -1076,14 +1072,13 @@ namespace SyDiscordSharp
                                                          };
                 string endPoint = $"/api/channels/{channelId}/messages"
                     .AddQueryParameters(queryParams);
-                HttpResponseMessage requestResult = await httpClient.Get(endPoint);
-                string content = await requestResult.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<List<Message>>(content).Select(x => x as IMessage).ToList();
+                HttpResponseMessage response = await httpClient.Get(endPoint);
+                return await DiscordResponse<IMessage[]>.ParseAsync(response);
             }
-            internal async Task<List<IMessage>> GetMessages(IChannel channel,
-                                                            string messageId,
-                                                            GetMessagesType type,
-                                                            int limit = 50)
+            internal async Task<DiscordResponse<IMessage[]>> GetMessages(IChannel channel,
+                                                                             string messageId,
+                                                                             GetMessagesType type,
+                                                                             int limit = 50)
                 => await GetMessages(channel.Identifier, messageId, type, limit);
             internal enum GetMessagesType : byte
             {
@@ -1091,19 +1086,17 @@ namespace SyDiscordSharp
                 After,
                 Around
             }
-            private async Task<List<Ban>> GetGuildBannedUsers(string guildId)
+            private async Task<DiscordResponse<Ban>> GetGuildBannedUsers(string guildId)
             {
                 string endPoint = $"/api/guilds/{guildId}/bans";
-                HttpResponseMessage requestResult = await httpClient.Get(endPoint);
-                string content = await requestResult.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<List<Ban>>(content);
+                HttpResponseMessage response = await httpClient.Get(endPoint);
+                return await DiscordResponse<Ban>.ParseAsync(response);
             }
-            private async Task<List<Invite>> GetGuildInvites(string guildId)
+            private async Task<DiscordResponse<IInvite>> GetGuildInvites(string guildId)
             {
                 string endPoint = $"/api/guilds/{guildId}/invites";
-                HttpResponseMessage requestResult = await httpClient.Get(endPoint);
-                string content = await requestResult.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<List<Invite>>(content);
+                HttpResponseMessage response = await httpClient.Get(endPoint);
+                return await DiscordResponse<IInvite>.ParseAsync(response);
             }
             #endregion
         }
