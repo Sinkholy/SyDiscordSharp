@@ -836,62 +836,101 @@ namespace SyDiscordSharp
             }
             #endregion
             #region Http methods
-            private async Task<DiscordResponse<IUser>> ModifyBotUser()
+            private bool IsSnowflakeValid(string snowflake)
             {
-                NewBotUserInfo newUserInfo = new NewBotUserInfo { username = "newBotNameTest" };
-                string msgToSend = JsonConvert.SerializeObject(newUserInfo, typeof(NewBotUserInfo), null);
-                StringContent contentToSend = new StringContent(msgToSend, Encoding.UTF8, "application/json");
+                bool result = true;
+                if (snowflake.Length >= 19)
+                {
+                    if (snowflake.Length > 19)
+                    {
+                        result = false;
+                    }
+                    else
+                    {
+                        try
+                        {
+                            long.Parse(snowflake);
+                        }
+                        catch (OverflowException)
+                        {
+                            result = false;
+                        }
+                    }
+                }
+                return result;
+            }
+            public async Task<DiscordResponse<IUser>> ModifyBotUser(string username, string avatar)
+            {
+                if (string.IsNullOrWhiteSpace(username))
+                {
+                    throw new ArgumentNullException("username", "Cannot set empty or null username.");
+                }
+                StringContent contentToSend = new StringContent(JsonConvert.SerializeObject(new
+                {
+                    username,
+                    avatar
+                }), Encoding.UTF8, "application/json");
                 HttpResponseMessage response = await httpClient.ModifyCurrentUser(contentToSend);
                 return await DiscordResponse<IUser>.ParseAsync(response);
             }
-            private async Task<DiscordResponse<IChannel>> ModifyChannel(IChannel channel)
+            public async Task<DiscordResponse<IChannel>> ModifyChannel(IChannel channel)
             {
-                //ModifyChanelRequest request = new ModifyChanelRequest { Name = "SomeShit", Type = ChannelType.GuildCategory };
-                StringContent content = new StringContent(JsonConvert.SerializeObject(channel), Encoding.UTF8, "application/json");
+                if (channel is null)
+                {
+                    throw new ArgumentNullException("channel");
+                }
+                else if (string.IsNullOrWhiteSpace(channel.Identifier))
+                {
+                    throw new ArgumentOutOfRangeException("channel.Identifier", "Cannot send to null channel.");
+                }
+                else if (!IsSnowflakeValid(channel.Identifier))
+                {
+                    throw new
+                        ArgumentOutOfRangeException("channel.Identifier",
+                                                    "Channel id must be less or equal to 9223372036854775807.");
+                }
+                StringContent content = new StringContent(JsonConvert.SerializeObject(channel),
+                                                          Encoding.UTF8,
+                                                          "application/json");
                 HttpResponseMessage response = await httpClient.ModifyChannel(channel.Identifier, content);
                 return await DiscordResponse<IChannel>.ParseAsync(response);
             }
-            private async Task<DiscordResponse<IChannel>> DeleteChannel(IChannel channel)
-                => await DeleteChannel(channel.Identifier);
-            private async Task<DiscordResponse<IChannel>> DeleteChannel(string channelId)
+            public async Task<DiscordResponse<IChannel>> DeleteChannel(string channelId)
             {
+                if (string.IsNullOrWhiteSpace(channelId))
+                {
+                    throw new ArgumentNullException("channelId");
+                }
+                else if (!IsSnowflakeValid(channelId))
+                {
+                    throw new
+                        ArgumentOutOfRangeException("channel.Identifier",
+                                                    "Channel id must be less or equal to 9223372036854775807.");
+                }
                 HttpResponseMessage response = await httpClient.DeleteChannel(channelId);
                 return await DiscordResponse<IChannel>.ParseAsync(response);
             }
-
-            internal class ModifyChanelRequest
+            public async Task<DiscordResponse<string>> BulkDeleteMessages(string channelId,
+                                                                          ICollection<string> identifiers)
             {
-                [JsonProperty(PropertyName = "name", NullValueHandling = NullValueHandling.Ignore)]
-                internal string Name;
-                [JsonProperty(PropertyName = "type", NullValueHandling = NullValueHandling.Ignore)]
-                internal ChannelType Type;
-                [JsonProperty(PropertyName = "position", NullValueHandling = NullValueHandling.Ignore)]
-                internal int? Position;
-                [JsonProperty(PropertyName = "topic", NullValueHandling = NullValueHandling.Ignore)]
-                internal string Topic;
-                [JsonProperty(PropertyName = "nsfw", NullValueHandling = NullValueHandling.Ignore)]
-                internal bool? NSFW;
-                [JsonProperty(PropertyName = "user_limit", NullValueHandling = NullValueHandling.Ignore)]
-                internal int? UserLimit;
-                [JsonProperty(PropertyName = "bitrate", NullValueHandling = NullValueHandling.Ignore)]
-                internal int? Bitrate;
-                [JsonProperty(PropertyName = "rate_limit_per_user", NullValueHandling = NullValueHandling.Ignore)]
-                internal int? UserRateLimit;
-                [JsonProperty(PropertyName = "permission_overwrites", NullValueHandling = NullValueHandling.Ignore)]
-                internal List<PermissionOverwrite> PermissionOverwrites;
-                [JsonProperty(PropertyName = "parent_id", NullValueHandling = NullValueHandling.Ignore)]
-                internal string CategoryIdentifier;
-            }
-            [JsonObject(MemberSerialization.OptIn)]
-            internal class NewBotUserInfo
-            {
-                [JsonProperty(PropertyName = "username", NullValueHandling = NullValueHandling.Ignore)]
-                internal string username;
-                [JsonProperty(PropertyName = "avatar", NullValueHandling = NullValueHandling.Ignore)]
-                internal string avatar;
-            }
-            public async Task<DiscordResponse<string>> BulkDeleteMessages(string channelId, ICollection<string> identifiers)
-            {
+                if (string.IsNullOrWhiteSpace(channelId))
+                {
+                    throw new ArgumentNullException("channelId");
+                }
+                else if (!IsSnowflakeValid(channelId))
+                {
+                    throw new
+                        ArgumentOutOfRangeException("channelId",
+                                                    "Channel id must be less or equal to 9223372036854775807.");
+                }
+                else if (identifiers is null)
+                {
+                    throw new ArgumentNullException("identifiers");
+                }
+                else if (identifiers.Count == 0)
+                {
+                    throw new ArgumentOutOfRangeException("identifiers", "Cannot delete 0 messages.");
+                }
                 StringContent contentToSend = new StringContent(JsonConvert.SerializeObject(new
                 {
                     messages = identifiers
@@ -899,25 +938,67 @@ namespace SyDiscordSharp
                 HttpResponseMessage response = await httpClient.BulkDeleteMessages(channelId, contentToSend);
                 return await DiscordResponse<string>.ParseAsync(response);
             }
-            public async Task<DiscordResponse<string>> AddReactionToMessage(IEmoji emoji, string channelId, string messageId)
+            public async Task<DiscordResponse<string>> AddReactionToMessage(IEmoji emoji,
+                                                                            string channelId,
+                                                                            string messageId)
             {
+                if (string.IsNullOrWhiteSpace(channelId))
+                {
+                    throw new ArgumentNullException("channelId");
+                }
+                else if (!IsSnowflakeValid(channelId))
+                {
+                    throw new
+                        ArgumentOutOfRangeException("channelId",
+                                                    "Channel id must be less or equal to 9223372036854775807.");
+                }
+                else if (string.IsNullOrWhiteSpace(messageId))
+                {
+                    throw new ArgumentNullException("messageId");
+                }
+                else if (!IsSnowflakeValid(messageId))
+                {
+                    throw new
+                        ArgumentOutOfRangeException("messageId",
+                                                    "Message id must be less or equal to 9223372036854775807.");
+                }
+                else if (emoji is null)
+                {
+                    throw new ArgumentNullException("emoji");
+                }
                 HttpResponseMessage response = await httpClient.CreateReaction(channelId, messageId, emoji.UrlEncoded);
                 return await DiscordResponse<string>.ParseAsync(response);
             }
-            public async Task<DiscordResponse<string>> AddReactionToMessage(IEmoji emoji, ITextChannel channel, string messageId)
-                => await AddReactionToMessage(emoji, channel.Identifier, messageId);
             private async Task<DiscordResponse<IMessage>> SendMessage(string channelId, object message)
             {
+                if (message is null)
+                {
+                    throw new ArgumentNullException("message", "Cannot send null or empty message.");
+                }
+                if (string.IsNullOrWhiteSpace(channelId))
+                {
+                    throw new ArgumentNullException("channelId");
+                }
+                if (!IsSnowflakeValid(channelId))
+                {
+                    throw new
+                        ArgumentOutOfRangeException("channelId",
+                                                    "Channel id must be less or equal to 9223372036854775807.");
+                }
                 StringContent content = new StringContent(JsonConvert.SerializeObject(message),
                                           Encoding.UTF8,
                                           "application/json");
                 HttpResponseMessage response = await httpClient.SendMessage(channelId, content);
                 return await DiscordResponse<IMessage>.ParseAsync(response);
             }
-            public async Task<DiscordResponse<IMessage>> SendMessage(ITextChannel channel,
-                                                    IMessage message,
-                                                    AllowedMentions allowedMentions = null)
+            public async Task<DiscordResponse<IMessage>> SendMessage(string channelId,
+                                                                     IMessage message,
+                                                                     AllowedMentions allowedMentions = null)
             {
+                if (message is null)
+                {
+                    throw new ArgumentNullException("message", "Cannot send null or empty message.");
+                }
                 var messageToSerialize = new
                 {
                     content = message.Content,
@@ -926,25 +1007,50 @@ namespace SyDiscordSharp
                     embed = (message as IEmbeddedMessage).Embeds?[0],
                     allowed_mentions = allowedMentions
                 };
-                return await SendMessage(channel.Identifier, messageToSerialize);
+                return await SendMessage(channelId, messageToSerialize);
             }
-            public async Task<DiscordResponse<IMessage>> SendMessage(ITextChannel channel, string message)
+            public async Task<DiscordResponse<IMessage>> SendMessage(string channelId, string message)
             {
-                return await SendMessage(channel.Identifier, new { content = message });
+                if (string.IsNullOrWhiteSpace(message))
+                {
+                    throw new ArgumentNullException("message", "Cannot send empty or null message.");
+                }
+                return await SendMessage(channelId, new { content = message });
             }
-            public async Task<DiscordResponse<IMessage>> SendMessageWithAttachement(ITextChannel channel, // TODO: проверить есть ли возможность прикрепить файл к Embed-сообщению
+            public async Task<DiscordResponse<IMessage>> SendMessageWithAttachement(string channelId, // TODO: проверить есть ли возможность прикрепить файл к Embed-сообщению
                                                                                     IMessage message,
                                                                                     byte[] fileData,
                                                                                     string fileName)
             {
-                string msgToSend = JsonConvert.SerializeObject(new
+                if (string.IsNullOrWhiteSpace(channelId))
+                {
+                    throw new ArgumentNullException("channelId");
+                }
+                else if (!IsSnowflakeValid(channelId))
+                {
+                    throw new
+                        ArgumentOutOfRangeException("channel.Identifier",
+                                                    "Channel id must be less or equal to 9223372036854775807.");
+                }
+                if (message is null)
+                {
+                    throw new ArgumentNullException("message", "Cannot send null or empty message.");
+                }
+                else if (fileData is null)
+                {
+                    throw new ArgumentNullException("fileData");
+                }
+                else if (string.IsNullOrWhiteSpace(fileName))
+                {
+                    throw new ArgumentNullException("fileName", "File must contain name.");
+                }
+                StringContent stringContent = new StringContent(JsonConvert.SerializeObject(new
                 {
                     tts = message.TTS,
                     nonce = message.Nonce,
                     content = message.Content,
                     Embed = (message as EmbeddedMessage)?.Embeds[0], // TAI: пахнет писькой
-                });
-                StringContent stringContent = new StringContent(msgToSend);
+                }));
                 ByteArrayContent fileContent = new ByteArrayContent(fileData);
                 fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
                 {
@@ -960,21 +1066,59 @@ namespace SyDiscordSharp
                     stringContent,
                     fileContent
                 };
-                HttpResponseMessage response = await httpClient.SendMessage(channel.Identifier, multipartContent);
+                HttpResponseMessage response = await httpClient.SendMessage(channelId, multipartContent);
                 return await DiscordResponse<IMessage>.ParseAsync(response);
             }
-            private async Task<DiscordResponse<IMessage>> GetMessage(string channelId, string messageId)
+            public async Task<DiscordResponse<IMessage>> GetMessage(string channelId, string messageId)
             {
+                if (string.IsNullOrWhiteSpace(channelId))
+                {
+                    throw new ArgumentNullException("channelId");
+                }
+                else if (!IsSnowflakeValid(channelId))
+                {
+                    throw new
+                        ArgumentOutOfRangeException("channelId",
+                                                    "Channel id must be less or equal to 9223372036854775807.");
+                }
+                else if (string.IsNullOrWhiteSpace(messageId))
+                {
+                    throw new ArgumentNullException("messageId");
+                }
+                else if (!IsSnowflakeValid(messageId))
+                {
+                    throw new
+                        ArgumentOutOfRangeException("messageId",
+                                                    "Message id must be less or equal to 9223372036854775807.");
+                }
                 HttpResponseMessage response = await httpClient.GetMessage(channelId, messageId);
                 return await DiscordResponse<IMessage>.ParseAsync(response);
             }
-            private async Task<DiscordResponse<IMessage>> GetMessage(ITextChannel channel, string messageId)
-                => await GetMessage(channel.Identifier, messageId);
-            internal async Task<DiscordResponse<IMessage[]>> GetMessages(string channelId,
-                                                                         string messageId,
-                                                                         GetMessagesType type,
-                                                                         int limit = 50)
+            public async Task<DiscordResponse<IMessage[]>> GetMessages(string channelId,
+                                                                       string messageId,
+                                                                       GetMessagesRange type,
+                                                                       int limit = 50)
             {
+                if (string.IsNullOrWhiteSpace(channelId))
+                {
+                    throw new ArgumentNullException("channelId");
+                }
+                else if (!IsSnowflakeValid(channelId))
+                {
+                    throw new
+                        ArgumentOutOfRangeException("channelId",
+                                                    "Channel id must be less or equal to 9223372036854775807.");
+                }
+                else if (string.IsNullOrWhiteSpace(messageId))
+                {
+                    throw new ArgumentNullException("messageId");
+                }
+                else if (!IsSnowflakeValid(messageId))
+                {
+                    throw new
+                        ArgumentOutOfRangeException("messageId",
+                                                    "Message id must be less or equal to 9223372036854775807.");
+                }
                 //var queryParams = new NameValueCollection{
                 //                                            { type.ToString().ToLower(), messageId },
                 //                                            { "limit", limit.ToString() }
@@ -984,12 +1128,7 @@ namespace SyDiscordSharp
                 HttpResponseMessage response = await httpClient.GetMessages(channelId, null);
                 return await DiscordResponse<IMessage[]>.ParseAsync(response);
             }
-            internal async Task<DiscordResponse<IMessage[]>> GetMessages(IChannel channel,
-                                                                             string messageId,
-                                                                             GetMessagesType type,
-                                                                             int limit = 50)
-                => await GetMessages(channel.Identifier, messageId, type, limit);
-            internal enum GetMessagesType : byte
+            internal enum GetMessagesRange : byte
             {
                 Before,
                 After,
