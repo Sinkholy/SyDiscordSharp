@@ -10,7 +10,7 @@ namespace Gateway.Entities.Emojis
     {
         string Identifier { get; }
         string Name { get; }
-        bool Animated { get; }
+        bool IsAnimated { get; }
         bool IsUnicodeEmoji { get; }
         string Mention { get; }
         string UrlEncoded { get; }
