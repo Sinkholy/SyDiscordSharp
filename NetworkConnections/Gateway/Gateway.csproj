@@ -120,6 +120,9 @@
     <Compile Include="Entities\Users\IUpdatableUser.cs" />
     <Compile Include="Entities\VoiceSession\IUpdatableVoiceSession.cs" />
     <Compile Include="Entities\VoiceSession\IVoiceSession.cs" />
+    <Compile Include="Entities\Webhook\IWebHook.cs" />
+    <Compile Include="Entities\Webhook\Webhook.cs" />
+    <Compile Include="Entities\Webhook\WebhookType.cs" />
     <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\ChannelPinsUpdatedEvent.cs" />
     <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\GuildEmojiUpdatedEvent.cs" />
     <Compile Include="Payload\DataObjects\Dispatch\DispatchEvents\GuildMemberChunkEvent.cs" />
