@@ -60,6 +60,17 @@
     <Compile Include="Entities\Activities\Streaming\StreamingPlatform.cs" />
     <Compile Include="Entities\Activities\Streaming\IStreamingActivity.cs" />
     <Compile Include="Entities\Activities\Streaming\StreamingActivity.cs" />
+    <Compile Include="Entities\Audit\AuditLog.cs" />
+    <Compile Include="Entities\Audit\LogEntry\EntryChange\EntryChange.cs" />
+    <Compile Include="Entities\Audit\LogEntry\AuditLogEntry.cs" />
+    <Compile Include="Entities\Audit\LogEntry\AuditLogEntryType.cs" />
+    <Compile Include="Entities\Audit\IAuditLog.cs" />
+    <Compile Include="Entities\Audit\LogEntry\EntryChange\EntryDataType.cs" />
+    <Compile Include="Entities\Audit\LogEntry\EntryChange\LogEntryChangeKey.cs" />
+    <Compile Include="Entities\Audit\LogEntry\EntryOptionalInfo\IOptionalEntryInfo.cs" />
+    <Compile Include="Entities\Audit\LogEntry\IAuditLogEntry.cs" />
+    <Compile Include="Entities\Audit\LogEntry\EntryChange\IEntryChange.cs" />
+    <Compile Include="Entities\Audit\LogEntry\EntryOptionalInfo\OptionalEntryInfo.cs" />
     <Compile Include="Entities\Ban.cs" />
     <Compile Include="Entities\Channels\Channel.cs" />
     <Compile Include="Entities\Channels\DM\DMChannel.cs" />
