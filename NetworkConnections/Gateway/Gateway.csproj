@@ -101,6 +101,10 @@
     <Compile Include="Entities\Embed\EmbedVideo.cs" />
     <Compile Include="Entities\Emojis\IGuildEmoji.cs" />
     <Compile Include="Entities\Guilds\IUpdatableGuild.cs" />
+    <Compile Include="Entities\Integration\IIntegration.cs" />
+    <Compile Include="Entities\Integration\IIntegrationAccount.cs" />
+    <Compile Include="Entities\Integration\Integration.cs" />
+    <Compile Include="Entities\Integration\IntegrationAccount.cs" />
     <Compile Include="Entities\Message\ActivityMessage.cs" />
     <Compile Include="Entities\Message\AllowedMentions.cs" />
     <Compile Include="Entities\Message\CrossPostedMessage.cs" />
