@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BotHttpToken.cs" />
     <Compile Include="DiscordHttpClient.cs" />
     <Compile Include="Enums\HttpMethods.cs" />
     <Compile Include="Enums\JsonErrorCode.cs" />
