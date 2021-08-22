@@ -45,6 +45,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BotHttpToken.cs" />
+    <Compile Include="Connection\Header.cs" />
+    <Compile Include="Connection\IHeaders.cs" />
+    <Compile Include="Connection\Wrappers\Headers.cs" />
     <Compile Include="DiscordHttpClient.cs" />
     <Compile Include="Enums\HttpMethods.cs" />
     <Compile Include="Enums\JsonErrorCode.cs" />
