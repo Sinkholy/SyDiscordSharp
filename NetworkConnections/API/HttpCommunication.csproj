@@ -49,10 +49,24 @@
     <Compile Include="Enums\JsonErrorCode.cs" />
     <Compile Include="Enums\TokenType.cs" />
     <Compile Include="GatewayUriResponse.cs" />
+    <Compile Include="Connection\HttpStatusCode.cs" />
+    <Compile Include="Connection\Wrappers\SystemNetHttpClientWrapper.cs" />
+    <Compile Include="Connection\IHttpContent.cs" />
+    <Compile Include="Connection\HttpRequestMessage.cs" />
+    <Compile Include="Connection\IHttpConnection.cs" />
+    <Compile Include="Connection\HttpResponseMessage.cs" />
+    <Compile Include="Connection\Wrappers\SystemNetHttpMessageContentWrapper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="HttpCommunication.drawio" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\JsonHandler\JsonHandler.csproj">
+      <Project>{c48f68a6-f399-49ec-bd48-ce1c06c91a97}</Project>
+      <Name>JsonHandler</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
