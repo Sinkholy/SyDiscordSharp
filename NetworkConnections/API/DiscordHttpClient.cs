@@ -2,6 +2,7 @@
 using API.Enums;
 
 using Http;
+using Http.Connection;
 
 using HttpCommunication.Connection;
 
@@ -21,85 +22,128 @@ namespace HttpCommunication
 	{
         readonly EndpointsGenerator endpointsGenerator;
         readonly IHttpConnection httpConnection;
-        BotHttpToken token;
 
-        public DiscordHttpClient() // параметры
+        public DiscordHttpClient(IHttpConnection httpClient, ConnectionParameters parameters, BotHttpToken token)
         {
-            // Сгенерировать Authorize и UserAgent http-заголовки
-            // Установить заголовки в http соединении
+            Token = token;
+            bool validToken = ValidateToken(Token);
+            if (!validToken)
+            {
+                var message = "Provided token isnt valid."; // TODO: добавить правильную структуру токена
+                var exepction = new ArgumentException(message, "token");
+                throw exepction;
+            }
+            ApiAddress = parameters.BaseAddress;
+            ApiVersion = parameters.ApiVersion;
+            endpointsGenerator = new EndpointsGenerator();
+            httpConnection = httpClient;
+            PrepareHttpConnection();
+
+            void PrepareHttpConnection()
+			{
+                httpConnection.Headers.AuthorizationHeader = CreateAuthorizationHeader();
+                httpConnection.Headers.UserAgentHeader = CreateUserAgentHeader();
+                httpConnection.BaseAdress = CreateBaseAddressWithApiVersion();
+
+                Header CreateAuthorizationHeader()
+                {
+                    string authorizationHeaderParameter = $"{token.Type} {token.Value}";
+                    return new Header("Authorization", authorizationHeaderParameter);
+                }
+                Header CreateUserAgentHeader()
+                {
+                    //User - Agent: DiscordBot($url, $versionNumber)
+                    // TODO: протестировать как это должно выглядеть
+                    // У меня два варианта:
+                    // 1 - на место "DiscordBot" нужно устанавливать имя библиотеки
+                    // 2 - на место $url нужно устанавливать имя библиотеки
+                    var headerParameter = $"{parameters.LibraryName} ({parameters.BaseAddress}, {parameters.ApiVersion})";
+                    return new Header("User - Agent", headerParameter);
+                }
+                Uri CreateBaseAddressWithApiVersion()
+				{
+                    return new Uri(parameters.BaseAddress, $"/{parameters.ApiVersion}");
+				}
+            }
         }
 
-        public Uri Address { get; set; }
-        public BotHttpToken Token
-		{
-            get => token;
-            set
-			{
-                // Провалидировать токен
-                // Если токен не валиден
-                    // Создать ArgumentException и указать причину в том, что токен не валиден
-                    // Приложить к описанию исключения правильную структуру токенов
-                    // Пробросить исключение
-                // Присвоить значение токену
-			}
-		}
+        public Uri ApiAddress { get; private set; }
+        public int ApiVersion { get; private set; }
+        public BotHttpToken Token { get; private set; }
 
         public async Task<AuthenticationResult> AuthenticateAsync()
 		{
-            // Сгенерировать Authorize endpoint
-            // Установить в Http соединении сгенерированный заголовок авторизации
-            // Отправить GET запрос на авторизацию и дождаться ответа
-            // Создать AuthenticationResult объект
-            // Вернуть результат
+            string endpoint = endpointsGenerator.GenerateAuthorizationEndpoint();
+            var message = new Connection.HttpRequestMessage(endpoint, null);
+			Connection.HttpResponseMessage responseMessage = await httpConnection.GetAsync(message);
+            var result = new AuthenticationResult(responseMessage.IsSuccessStatusCode, responseMessage.ReasonPhrase);
+            return result;
         }
         public async Task<GatewayInfo> GetGatewayBotInfoAsync()
 		{
-            // Сгенерировать GatewayBot endpoint
-            // Отправить GET запрос и дождаться ответа
-            // Десериализовать полученный результат
-            // Вернуть сгенерированный объект
+            string endpoint = endpointsGenerator.GenerateGatewayBotEndpoint();
+            var message = new Connection.HttpRequestMessage(endpoint, null);
+            Connection.HttpResponseMessage responseMessage = await httpConnection.GetAsync(message);
+            GatewayInfo result = await Deserialize();
+            return result;
+
+            async Task<GatewayInfo> Deserialize()
+			{
+                string receivedResult = await responseMessage.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<GatewayInfo>(receivedResult);
+			}
         }
 
         bool ValidateToken(BotHttpToken target)
 		{
             // Провалидировать токен
             // Вернуть результат
+            return true; // UNDONE: заглушка
 		}
 
-        internal class EndpointsGenerator
+        class EndpointsGenerator
 		{
-            const string UsersEndpoint = "users";
-            const string MeEndpoint = "@me";
-            const string ChannelsEndpoint = "channels";
-            const string MessagesEndpoint = "messages";
+            const string Users = "users";
+            const string Me = "@me";
+            const string Gateway = "gateway";
+            const string Bot = "bot";
+            const string Channels = "channels";
+            const string Messages = "messages";
             // Другие промежуточные\конечные пункты
-            // Разделители
+            const string Splitter = "/";
+
             readonly StringBuilder combiner;
 
-            internal string GenerateAuthorizationEndpoint()
+            internal EndpointsGenerator()
 			{
-                // Взять пункт users
-                // Взять пункт @me
-                // Скомбинировать пункты
-                // Вернуть результат
+                combiner = new StringBuilder();
+			}
+
+			internal string GenerateAuthorizationEndpoint()
+			{
+                return Combine(Users, Me);
 			}
             internal string GenerateGatewayBotEndpoint()
 			{
-                // Взять пункт gateway
-                // Взять пункт bot
-                // Скомбинировать пункты
-                // Вернуть результат
+                return Combine(Gateway, Bot);
 			}
 
             string Combine(params string[] components)
 			{
-                // Объявить пустой итоговый результат
-                // Добавить разделитель первый компонентом
-                // Для каждого компонента из components
-                    // Добавить текущий компонент к итоговому результату
-                    // Добавить разделитель
-                // Вернуть итоговый результат
-			}
+                combiner.Clear();
+				foreach (string component in components)
+				{
+                    combiner.Append(Splitter);
+                    combiner.Append(component);
+                }
+                return combiner.ToString();
+            }
+        }
+        public class ConnectionParameters
+        {
+            public Uri BaseAddress { get; private set; }
+            public int ApiVersion { get; private set; }
+            public string LibraryName { get; private set; }
         }
     }
 
