@@ -5,7 +5,7 @@ using Http.Connection;
 
 namespace HttpCommunication.Connection
 {
-	internal interface IHttpConnection
+	public interface IHttpConnection
 	{
 		Uri BaseAdress { get; set; }
 		TimeSpan Timeout { get; set; }

@@ -1,6 +1,6 @@
 ﻿namespace Http.Connection
 {
-	internal interface IHeaders
+	public interface IHeaders
 	{
 		Header AuthorizationHeader { get; set; }
 		Header UserAgentHeader { get; set; }
