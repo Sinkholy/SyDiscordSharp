@@ -61,6 +61,7 @@
     <Compile Include="Connection\IHttpConnection.cs" />
     <Compile Include="Connection\HttpResponseMessage.cs" />
     <Compile Include="Connection\Wrappers\SystemNetHttpMessageContentWrapper.cs" />
+    <Compile Include="IObjectDeserializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

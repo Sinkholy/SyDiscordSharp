@@ -22,8 +22,12 @@ namespace HttpCommunication
 	{
         readonly EndpointsGenerator endpointsGenerator;
         readonly IHttpConnection httpConnection;
+        readonly IObjectDeserializer deserializer;
 
-        public DiscordHttpClient(IHttpConnection httpClient, ConnectionParameters parameters, BotHttpToken token)
+        public DiscordHttpClient(IHttpConnection httpClient, 
+                                ConnectionParameters parameters, 
+                                BotHttpToken token, 
+                                IObjectDeserializer deserializer)
         {
             Token = token;
             bool validToken = ValidateToken(Token);
@@ -33,6 +37,7 @@ namespace HttpCommunication
                 var exepction = new ArgumentException(message, "token");
                 throw exepction;
             }
+            this.deserializer = deserializer;
             ApiAddress = parameters.BaseAddress;
             ApiVersion = parameters.ApiVersion;
             endpointsGenerator = new EndpointsGenerator();
@@ -90,7 +95,7 @@ namespace HttpCommunication
             async Task<GatewayInfo> Deserialize()
 			{
                 string receivedResult = await responseMessage.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<GatewayInfo>(receivedResult);
+                return deserializer.Deserialize<GatewayInfo>(receivedResult);
 			}
         }
 
@@ -151,7 +156,7 @@ namespace HttpCommunication
     {
         internal delegate void ToLog(string logData);
         internal event ToLog Log = delegate { };
-        private readonly HttpClient httpClient;
+        private readonly HttpClient httpClient; 
         public DiscordHttpClient()
         {
             Uri baseApiUri = GetBaseApiUri();
