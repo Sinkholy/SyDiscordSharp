@@ -1,20 +1,109 @@
-﻿using API.Enums;
+﻿using API;
+using API.Enums;
+
+using Http;
+
+using HttpCommunication.Connection;
+
+using JsonHandler;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.CodeDom;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace API
+namespace HttpCommunication
 {
-    public class DiscordHttpClient
+    public partial class DiscordHttpClient
+	{
+        readonly EndpointsGenerator endpointsGenerator;
+        readonly IHttpConnection httpConnection;
+        BotHttpToken token;
+
+        public DiscordHttpClient() // параметры
+        {
+            // Сгенерировать Authorize и UserAgent http-заголовки
+            // Установить заголовки в http соединении
+        }
+
+        public Uri Address { get; set; }
+        public BotHttpToken Token
+		{
+            get => token;
+            set
+			{
+                // Провалидировать токен
+                // Если токен не валиден
+                    // Создать ArgumentException и указать причину в том, что токен не валиден
+                    // Приложить к описанию исключения правильную структуру токенов
+                    // Пробросить исключение
+                // Присвоить значение токену
+			}
+		}
+
+        public async Task<AuthenticationResult> AuthenticateAsync()
+		{
+            // Сгенерировать Authorize endpoint
+            // Установить в Http соединении сгенерированный заголовок авторизации
+            // Отправить GET запрос на авторизацию и дождаться ответа
+            // Создать AuthenticationResult объект
+            // Вернуть результат
+        }
+        public async Task<GatewayInfo> GetGatewayBotInfoAsync()
+		{
+            // Сгенерировать GatewayBot endpoint
+            // Отправить GET запрос и дождаться ответа
+            // Десериализовать полученный результат
+            // Вернуть сгенерированный объект
+        }
+
+        bool ValidateToken(BotHttpToken target)
+		{
+            // Провалидировать токен
+            // Вернуть результат
+		}
+
+        internal class EndpointsGenerator
+		{
+            const string UsersEndpoint = "users";
+            const string MeEndpoint = "@me";
+            const string ChannelsEndpoint = "channels";
+            const string MessagesEndpoint = "messages";
+            // Другие промежуточные\конечные пункты
+            // Разделители
+            readonly StringBuilder combiner;
+
+            internal string GenerateAuthorizationEndpoint()
+			{
+                // Взять пункт users
+                // Взять пункт @me
+                // Скомбинировать пункты
+                // Вернуть результат
+			}
+            internal string GenerateGatewayBotEndpoint()
+			{
+                // Взять пункт gateway
+                // Взять пункт bot
+                // Скомбинировать пункты
+                // Вернуть результат
+			}
+
+            string Combine(params string[] components)
+			{
+                // Объявить пустой итоговый результат
+                // Добавить разделитель первый компонентом
+                // Для каждого компонента из components
+                    // Добавить текущий компонент к итоговому результату
+                    // Добавить разделитель
+                // Вернуть итоговый результат
+			}
+        }
+    }
+
+    public partial class DiscordHttpClient
     {
         internal delegate void ToLog(string logData);
         internal event ToLog Log = delegate { };
@@ -44,7 +133,7 @@ namespace API
                 await StartAsync();
                 return; // TODO : пахнет неладным
             }
-                
+
             bool authorized = await TryToAuthorize();
             if (!authorized)
                 throw new Exception("Unable to Authorize"); //TODO : Собственное исключение
@@ -62,16 +151,16 @@ namespace API
         {
             return await SendAsync(HttpMethods.Get, endPoint, null);
         }
-        private async Task<HttpResponseMessage> Put(string endPoint)
+        private async Task<HttpResponseMessage> Put(string endPoint, HttpContent content = null)
         {
-            return await SendAsync(HttpMethods.Put, endPoint, null);
+            return await SendAsync(HttpMethods.Put, endPoint, content);
         }
         private async Task<HttpResponseMessage> Post(string endPoint, HttpContent content = null)
         {
             return await SendAsync(HttpMethods.Post, endPoint, content);
         }
         private async Task<HttpResponseMessage> Patch(string endPoint, HttpContent content = null)
-         {
+        {
             return await SendAsync(HttpMethods.Patch, endPoint, content);
         }
         private async Task<HttpResponseMessage> Delete(string endPoint, HttpContent content = null)
@@ -99,10 +188,22 @@ namespace API
             string endPoint = $"/api/channels/{targetChannelId}/messages/{targetMessageId}";
             return await Get(endPoint);
         }
-        public async Task<HttpResponseMessage> ModifyCurrentUser(StringContent userNewInfo)
+        public async Task<HttpResponseMessage> ModifyCurrentUser(string jsonUserInfo)
         {
             string endPoint = "/api/users/@me";
-            return await Patch(endPoint, userNewInfo);
+            StringContent content = new StringContent(jsonUserInfo, Encoding.UTF8, "application/json");
+            return await Patch(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> GetUserGuilds(string targetUserId, 
+                                                             string beforeGuildId, 
+                                                             string afterGuildId, 
+                                                             int limit = 100)
+        {
+            string endPoint = $"/api/users/{targetUserId}/guilds"
+                .AddQueryParameters(new (string, string)[] { ("before", beforeGuildId), 
+                                                             ("after", afterGuildId), 
+                                                             ("limit", limit.ToString()) });
+            return await Get(endPoint);
         }
         public async Task<HttpResponseMessage> ModifyChannel(string targetChannelId, StringContent newChannelInfo)
         {
@@ -114,22 +215,508 @@ namespace API
             string endPoint = $"/api/channels/{targetChannelId}";
             return await Delete(endPoint);
         }
-        public async Task<HttpResponseMessage> BulkDeleteMessages(string targetChannelId, 
+        public async Task<HttpResponseMessage> BulkDeleteMessages(string targetChannelId,
                                                                   StringContent messagesIdentifiers)
         {
             string endPoint = $"/api/channels/{targetChannelId}/messages/bulk-delete";
             return await Post(endPoint, messagesIdentifiers);
         }
-        public async Task<HttpResponseMessage> CreateReaction(string targetChannelId, 
-                                                              string targetMessageId, 
+        public async Task<HttpResponseMessage> CreateReaction(string targetChannelId,
+                                                              string targetMessageId,
                                                               string emoji)
         {
             string endPoint = $"/api/channels/{targetChannelId}/messages/{targetMessageId}/reactions/{emoji}/@me";
             return await Put(endPoint);
         }
+        public async Task<HttpResponseMessage> DeleteReaction(string targetChannelId,
+                                                              string targetMessageId,
+                                                              string emoji,
+                                                              string targetUserId)
+        {
+            StringBuilder endPoint = new StringBuilder($"/api/channels/{targetChannelId}/messages/{targetMessageId}/reactions");
+            if (!string.IsNullOrWhiteSpace(emoji))
+            {
+                endPoint.Append($"/{emoji}");
+            }
+            if (!string.IsNullOrWhiteSpace(targetUserId))
+            {
+                endPoint.Append($"/{targetUserId}");
+            }
+            return await Delete(endPoint.ToString());
+        }
+        public async Task<HttpResponseMessage> GetReactions(string targetChannelId,
+                                                            string targetMessageId,
+                                                            string emoji)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/messages/{targetMessageId}/reactions/{emoji}";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> EditMessage(string targetChannelId,
+                                                           string targetMessageId, 
+                                                           string jsonMessageData)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/messages/{targetMessageId}";
+            StringContent content = new StringContent(jsonMessageData,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Patch(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> DeleteMessage(string targetChannelId,
+                                                             string targetMessageId)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/messages/{targetMessageId}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetChannelInvites(string targetChannelId)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/invites";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> CreateChannelInvite(string targetChannelId,
+                                                                   string inviteJson)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/invites";
+            StringContent content = new StringContent(inviteJson,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Post(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> DeleteChannelPermission(string targetChannelId,
+                                                                       string targetOverwriteId)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/permissions/{targetOverwriteId}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> FollowNewsChannel(string targetChannelId, string jsonTargetWebhookChannelId)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/followers";
+            StringContent content = new StringContent(jsonTargetWebhookChannelId,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Post(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> EditChannelPermissions(string targetChannelId, 
+                                                                      string targetOverwriteId, 
+                                                                      string jsonOverwriteData)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/permissions/{targetOverwriteId}";
+            StringContent content = new StringContent(jsonOverwriteData,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Put(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> TriggerTypingIndicator(string targetChannelId)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/typing";
+            return await Post(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetPinnedMessages(string targetChannelId)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/pins";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> DeletePinnedMessage(string targetChannelId,
+                                                                   string targetMessageId)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/pins/{targetMessageId}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> PinMessage(string targetChannelId,
+                                                          string targetMessageId)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/pins/{targetMessageId}";
+            return await Put(endPoint);
+        }
+        public async Task<HttpResponseMessage> RemoveUserFromGroupDm(string targetChannelId,
+                                                                     string targetUserId)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/recipients/{targetUserId}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetGuildEmoji(string targetGuildId,
+                                                             string targetEmojiId)
+        {
+            StringBuilder endPoint = new StringBuilder($"/api/guilds/{targetGuildId}/emojis");
+            if (!string.IsNullOrWhiteSpace(targetEmojiId))
+            {
+                endPoint.Append($"/{targetEmojiId}");
+            }
+            return await Get(endPoint.ToString());
+        }
+        public async Task<HttpResponseMessage> CreateGuildEmoji(string targetGuildId,
+                                                                string emojiJson)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/emojis";
+            StringContent content = new StringContent(emojiJson,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Post(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> ModifyGuildEmoji(string targetGuildId,
+                                                                string targetEmojiId,
+                                                                string emojiJson)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/emojis/{targetEmojiId}";
+            StringContent content = new StringContent(emojiJson,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Patch(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> GetInvite(string targetInviteCode)
+        {
+            string endPoint = $"/api/invites/{targetInviteCode}";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> DeleteInvite(string targetInviteCode)
+        {
+            string endPoint = $"/api/invites/{targetInviteCode}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetUser(string targetUserId)
+        {
+            string endPoint = $"/api/users/{targetUserId}";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> DeleteGuildEmoji(string targetGuildId, string targetEmojiId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/emojis/{targetEmojiId}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> LeaveGuild(string targetGuildId)
+        {
+            string endPoint = $"/api/users/@me/guilds/{targetGuildId}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetUserDMs()
+        {
+            string endPoint = $"/api/users/@me/channels";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> CreateDM(string jsonUsers)
+        {
+            string endPoint = $"/api/users/@me/channels";
+            StringContent content = new StringContent(jsonUsers,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Post(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> GetUserConnections(string targetUser)
+        {
+            string endPoint = $"/api/users/{targetUser}/connections";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetVoiceRegions()
+        {
+            string endPoint = $"/api/voice/regions";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> CreateGuild(string jsonGuild)
+        {
+            string endPoint = $"/api/guilds";
+            StringContent content = new StringContent(jsonGuild,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Post(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> ModifyGuild(string targetGuildId, string jsonGuildInfo)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}";
+            StringContent content = new StringContent(jsonGuildInfo,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Patch(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> DeleteGuild(string targetGuildId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetGuild(string targetGuildId, bool preview, bool withCounts = false)
+        {
+            StringBuilder endPoint = new StringBuilder($"/api/guilds/{targetGuildId}");
+            if (preview)
+            {
+                endPoint.Append("/preview");
+            }
+            else
+            {
+                if (withCounts)
+                {
+                    endPoint.AddQueryParameters(new (string name, string value)[] { ("with_counts", "true") });
+                }
+            }
+            return await Get(endPoint.ToString());
+        }
+        public async Task<HttpResponseMessage> GetGuildChannels(string targetGuildId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/channels";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> CreateGuildChannel(string targetGuildId, string channelJson)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/channels";
+            StringContent content = new StringContent(channelJson,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Post(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> ModifyGuildChannelPositions(string targetGuildId, string json)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/channels";
+            StringContent content = new StringContent(json,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Patch(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> GetGuildUsers(string targetGuildId, string firstUserId, int limit = 1)
+        {
+            string endPoint;
+            if(limit == 1)
+            {
+                endPoint = $"/api/guilds/{targetGuildId}/members/{firstUserId}";
+            }
+            else
+            {
+                endPoint = $"/api/guilds/{targetGuildId}/members"
+                    .AddQueryParameters(new (string name, string value)[] { ("after", firstUserId), ("limit", limit.ToString()) });
+            }
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> AddGuildUser(string targetGuildId, 
+                                                            string targetUserId, 
+                                                            string jsonUserData)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/members/{targetUserId}";
+            StringContent content = new StringContent(jsonUserData,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Put(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> ModifyGuildMember(string targetGuildId,
+                                                                 string targetUserId,
+                                                                 string jsonParams)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/members/{targetUserId}";
+            StringContent content = new StringContent(jsonParams,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Patch(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> ModifyCurrentUserNickname(string targetGuildId, string jsonNickname)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/members/@me/nick";
+            StringContent content = new StringContent(jsonNickname,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Patch(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> AddGuildMemberRole(string targetGuildId,
+                                                                  string targetUserId,
+                                                                  string targetRoleId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/members/{targetUserId}/roles/{targetRoleId}";
+            return await Put(endPoint);
+        }
+        public async Task<HttpResponseMessage> RemoveGuildMemberRole(string targetGuildId,
+                                                                     string targetUserId,
+                                                                     string targetRoleId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/members/{targetUserId}/roles/{targetRoleId}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> RemoveGuildMember(string targetGuildId,
+                                                                 string targetUserId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/members/{targetUserId}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetGuildBan(string targetGuildId, string targetBanId = null)
+        {
+            StringBuilder endPoint = new StringBuilder($"/api/guilds/{targetGuildId}/bans");
+            if (targetBanId != null)
+            {
+                endPoint.Append($"/{targetBanId}");
+            }
+            return await Get(endPoint.ToString());
+        }
+        public async Task<HttpResponseMessage> CreateGuildBan(string targetGuildId,
+                                                              string targetUserId,
+                                                              string jsonParameters)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/bans/{targetUserId}";
+            StringContent content = new StringContent(jsonParameters,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Put(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> RemoveGuildBan(string targetGuildId,
+                                                              string targetUserId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/bans/{targetUserId}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetGuildRoles(string targetGuildId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/roles";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> CreateGuildRole(string targetGuildId, string jsonRoleData)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/roles";
+            StringContent content = new StringContent(jsonRoleData,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Post(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> ModifyGuildRolePosition(string targetGuildId, string jsonParams)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/roles";
+            StringContent content = new StringContent(jsonParams,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Patch(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> ModifyGuildRole(string targetGuildId,
+                                                               string targetRoleId,
+                                                               string jsonRoleData)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/roles/{targetRoleId}";
+            StringContent content = new StringContent(jsonRoleData,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Patch(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> DeleteGuildRole(string targetGuildId, string targetRoleId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/roles/{targetRoleId}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetGuildPruneCount(string targetGuildId, 
+                                                                  int days = 7, 
+                                                                  string[] includedRoles = null)
+        {
+            string includedRolesQueryParam = null;
+            if (includedRoles?.Length != 0)
+            {
+                includedRolesQueryParam = includedRoles.Aggregate((x, y) => $"{x},{y}");
+            }
+            string endPoint = $"/api/guilds/{targetGuildId}/prune"
+                .AddQueryParameters(new (string name, string value)[] { ("days", days.ToString()), 
+                                                                        ("include_roles", includedRolesQueryParam ) });
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> BeginGuildPrune(string targetGuildId, string jsonPruneData)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/prune";
+            StringContent content = new StringContent(jsonPruneData,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Post(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> GetGuildVoiceRegions(string targetGuildId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/regions";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetGuildIntegrations(string targetGuildId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/integrations";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> CreateGuildIntegration(string targetGuildId, string jsonIntegrationData)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/integrations";
+            StringContent content = new StringContent(jsonIntegrationData,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Post(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> ModifyGuildIntegration(string targetGuildId, 
+                                                                      string targetIntegrationId, 
+                                                                      string jsonIntegrationData)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/integrations/{targetIntegrationId}";
+            StringContent content = new StringContent(jsonIntegrationData,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Patch(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> DeleteGuildIntegration(string targetGuildId, string targetIntegrationId) 
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/integrations/{targetIntegrationId}";
+            return await Delete(endPoint);
+        }
+        public async Task<HttpResponseMessage> SyncGuildIntegration(string targetGuildId, string targetIntegrationId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/integrations/{targetIntegrationId}/sync";
+            return await Post(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetGuildVanityURL(string targetGuildId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/vanity-url";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> CreateWebhook(string targetChannelId, string jsonWebhookData)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/webhooks";
+            StringContent content = new StringContent(jsonWebhookData,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            var bytesCont = new ByteArrayContent();
+            return await Post(endPoint, content);
+        }
+        public async Task<HttpResponseMessage> GetChannelWebhooks(string targetChannelId)
+        {
+            string endPoint = $"/api/channels/{targetChannelId}/webhooks";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetGuildWebhooks(string targetGuildId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/webhooks";
+            return await Get(endPoint);
+        }
+        public async Task<HttpResponseMessage> GetWebhook(string targetWebhookId, string token = null)
+        {
+            StringBuilder endPoint = new StringBuilder($"/api/webhooks/{targetWebhookId}");
+            if (token != null)
+            {
+                endPoint.Append($"/{token}");
+            }
+            return await Get(endPoint.ToString());
+        }
+        public async Task<HttpResponseMessage> ModifyWebhook(string targetWebhookId, 
+                                                             string jsonWebhookData, 
+                                                             string token = null)
+        {
+            StringBuilder endPoint = new StringBuilder($"/api/webhooks/{targetWebhookId}");
+            if(token != null)
+            {
+                endPoint.Append($"/{token}");
+            }
+            StringContent content = new StringContent(jsonWebhookData,
+                                                      Encoding.UTF8,
+                                                      "application/json");
+            return await Patch(endPoint.ToString(), content);
+        }
+        public async Task<HttpResponseMessage> DeleteWebhook(string targetWebhookId, string token = null)
+        {
+            StringBuilder endPoint = new StringBuilder($"/api/webhooks/{targetWebhookId}");
+            if (token != null)
+            {
+                endPoint.Append($"/{token}");
+            }
+            return await Delete(endPoint.ToString());
+        }
+        public async Task<HttpResponseMessage> GetAuditLog(string targetGuildId)
+        {
+            string endPoint = $"/api/guilds/{targetGuildId}/audit-logs";
+            return await Get(endPoint);
+        }
+
+
         public async Task<HttpResponseMessage> SendMessage(string targetChannelId, HttpContent message)
         {
-            string endPoint = $"/api/channels/{targetChannelId}/messages";
+            string endPoint = $"/api/channels/{targetChannelId}/webhooks";
             return await Post(endPoint, message);
         }
         private async Task<bool> TryToConnect() //TODO : реализовать проверку подключения к дискорду
@@ -155,7 +742,7 @@ namespace API
         private (TokenType Type, string Token) GetTokenAndType() //TODO : подтягивать из конфига
         {
             TokenType type = TokenType.Bot;
-            string token = "NTU5MDkwMTUzOTM1NjAxNjY1.XJaDSA.IX8ZHPTebYrgzYPJsXyezjA40EQ";
+            string token = "NTU5MDkwMTUzOTM1NjAxNjY1.XJaDSA.XqQEemlTAVeK_ir_hO7gOo73jmk";
             return (Type: type, Token: token);
         }
         private Uri GetBaseApiUri()
