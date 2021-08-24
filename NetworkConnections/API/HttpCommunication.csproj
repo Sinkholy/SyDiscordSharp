@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AuthenticationResult.cs" />
     <Compile Include="BotHttpToken.cs" />
     <Compile Include="Connection\Header.cs" />
     <Compile Include="Connection\IHeaders.cs" />
