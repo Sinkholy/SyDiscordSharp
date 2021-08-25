@@ -1,0 +1,165 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{FBB8F0AB-8029-40CD-802E-DDE604ADF694}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>DiscordDataObjects</RootNamespace>
+    <AssemblyName>DiscordDataObjects</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Activities\Activity.cs" />
+    <Compile Include="Activities\Custom\CustomStatusActivity.cs" />
+    <Compile Include="Activities\Custom\ICustomStatusActivity.cs" />
+    <Compile Include="Activities\Gaming\GamingActivity.cs" />
+    <Compile Include="Activities\Gaming\IGamingActivity.cs" />
+    <Compile Include="Activities\Gaming\IRichPresenceGamingActivity.cs" />
+    <Compile Include="Activities\Gaming\RichPresenceGamingActivity.cs" />
+    <Compile Include="Activities\IActivity.cs" />
+    <Compile Include="Activities\Listening\IListeningActivity.cs" />
+    <Compile Include="Activities\Listening\ListeningActivity.cs" />
+    <Compile Include="Activities\RichPresenceActivityAssets.cs" />
+    <Compile Include="Activities\RichPresenceActivityParty.cs" />
+    <Compile Include="Activities\RichPresenceActivitySecrets.cs" />
+    <Compile Include="Activities\Streaming\IStreamingActivity.cs" />
+    <Compile Include="Activities\Streaming\StreamingActivity.cs" />
+    <Compile Include="Activities\Streaming\StreamingPlatform.cs" />
+    <Compile Include="Audit\AuditLog.cs" />
+    <Compile Include="Audit\IAuditLog.cs" />
+    <Compile Include="Audit\LogEntry\AuditLogEntry.cs" />
+    <Compile Include="Audit\LogEntry\AuditLogEntryType.cs" />
+    <Compile Include="Audit\LogEntry\EntryChange\EntryChange.cs" />
+    <Compile Include="Audit\LogEntry\EntryChange\EntryDataType.cs" />
+    <Compile Include="Audit\LogEntry\EntryChange\IEntryChange.cs" />
+    <Compile Include="Audit\LogEntry\EntryChange\LogEntryChangeKey.cs" />
+    <Compile Include="Audit\LogEntry\EntryOptionalInfo\IOptionalEntryInfo.cs" />
+    <Compile Include="Audit\LogEntry\EntryOptionalInfo\OptionalEntryInfo.cs" />
+    <Compile Include="Audit\LogEntry\IAuditLogEntry.cs" />
+    <Compile Include="Ban.cs" />
+    <Compile Include="Channels\Channel.cs" />
+    <Compile Include="Channels\DM\DMChannel.cs" />
+    <Compile Include="Channels\DM\DMTextChannel.cs" />
+    <Compile Include="Channels\DM\GroupDMTextChannel.cs" />
+    <Compile Include="Channels\DM\IDMChannel.cs" />
+    <Compile Include="Channels\DM\IDMTextChannel.cs" />
+    <Compile Include="Channels\DM\IGroupDMTextChannel.cs" />
+    <Compile Include="Channels\Guild\GuildCategory.cs" />
+    <Compile Include="Channels\Guild\GuildChannel.cs" />
+    <Compile Include="Channels\Guild\GuildStoreChannel.cs" />
+    <Compile Include="Channels\Guild\IGuildCategory.cs" />
+    <Compile Include="Channels\Guild\IGuildChannel.cs" />
+    <Compile Include="Channels\Guild\IGuildStoreChannel.cs" />
+    <Compile Include="Channels\Guild\IUpdatable\IUpdatableGuildCategory.cs" />
+    <Compile Include="Channels\Guild\IUpdatable\IUpdatableGuildChannel.cs" />
+    <Compile Include="Channels\Guild\IUpdatable\IUpdatableGuildNewsChannel.cs" />
+    <Compile Include="Channels\Guild\IUpdatable\IUpdatableGuildStoreChannel.cs" />
+    <Compile Include="Channels\Guild\IUpdatable\IUpdatableGuildTextChannel.cs" />
+    <Compile Include="Channels\Guild\IUpdatable\IUpdatableGuildVoiceChannel.cs" />
+    <Compile Include="Channels\Guild\Text\GuildNewsChannel.cs" />
+    <Compile Include="Channels\Guild\Text\GuildTextChannel.cs" />
+    <Compile Include="Channels\Guild\Text\GuildTextChannelBase.cs" />
+    <Compile Include="Channels\Guild\Text\IGuildNewsChannel.cs" />
+    <Compile Include="Channels\Guild\Text\IGuildTextChannel.cs" />
+    <Compile Include="Channels\Guild\Voice\GuildVoiceChannel.cs" />
+    <Compile Include="Channels\Guild\Voice\IGuildVoiceChannel.cs" />
+    <Compile Include="Channels\IChannel.cs" />
+    <Compile Include="Channels\ITextChannel.cs" />
+    <Compile Include="Channels\IUpdatableChannel.cs" />
+    <Compile Include="Channels\IVoiceChannel.cs" />
+    <Compile Include="Channels\PermissionOverwrite.cs" />
+    <Compile Include="Embed\EmbedAuthor.cs" />
+    <Compile Include="Embed\EmbedData.cs" />
+    <Compile Include="Embed\EmbedField.cs" />
+    <Compile Include="Embed\EmbedFooter.cs" />
+    <Compile Include="Embed\EmbedImage.cs" />
+    <Compile Include="Embed\EmbedProvider.cs" />
+    <Compile Include="Embed\EmbedVideo.cs" />
+    <Compile Include="Emojis\Emoji.cs" />
+    <Compile Include="Emojis\GuildEmoji.cs" />
+    <Compile Include="Emojis\IEmoji.cs" />
+    <Compile Include="Emojis\IGuildEmoji.cs" />
+    <Compile Include="FollowedChannel.cs" />
+    <Compile Include="Guilds\Guild.cs" />
+    <Compile Include="Guilds\GuildPreview.cs" />
+    <Compile Include="Guilds\IGuild.cs" />
+    <Compile Include="Guilds\IUpdatableGuild.cs" />
+    <Compile Include="Guilds\Integration\IIntegration.cs" />
+    <Compile Include="Guilds\Integration\IIntegrationAccount.cs" />
+    <Compile Include="Guilds\Integration\Integration.cs" />
+    <Compile Include="Guilds\Integration\IntegrationAccount.cs" />
+    <Compile Include="Invites\IInvite.cs" />
+    <Compile Include="Invites\Invite.cs" />
+    <Compile Include="Invites\Invitebase.cs" />
+    <Compile Include="Message\ActivityMessage.cs" />
+    <Compile Include="Message\AllowedMentions.cs" />
+    <Compile Include="Message\CrossPostedMessage.cs" />
+    <Compile Include="Message\EmbeddedMessage.cs" />
+    <Compile Include="Message\IActivityMessage.cs" />
+    <Compile Include="Message\ICrossPostedMessage.cs" />
+    <Compile Include="Message\IEmbeddedMessage.cs" />
+    <Compile Include="Message\IMessage.cs" />
+    <Compile Include="Message\IUpdatableMessage.cs" />
+    <Compile Include="Message\Message.cs" />
+    <Compile Include="Message\MessageBase.cs" />
+    <Compile Include="Message\Reaction.cs" />
+    <Compile Include="Presences\ClientPlatformStatuses.cs" />
+    <Compile Include="Presences\IPresence.cs" />
+    <Compile Include="Presences\Presence.cs" />
+    <Compile Include="Role.cs" />
+    <Compile Include="Users\Connection\Connection.cs" />
+    <Compile Include="Users\Connection\IConnection.cs" />
+    <Compile Include="Users\Connection\VisibilityType.cs" />
+    <Compile Include="Users\GuildUser.cs" />
+    <Compile Include="Users\IGuildUser.cs" />
+    <Compile Include="Users\IUpdatableUser.cs" />
+    <Compile Include="Users\IUser.cs" />
+    <Compile Include="Users\User.cs" />
+    <Compile Include="VoiceSession\IUpdatableVoiceSession.cs" />
+    <Compile Include="VoiceSession\IVoiceSession.cs" />
+    <Compile Include="VoiceSession\VoiceSession.cs" />
+    <Compile Include="Webhook\IWebHook.cs" />
+    <Compile Include="Webhook\Webhook.cs" />
+    <Compile Include="Webhook\WebhookType.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Activities\ActivitiesDiagram.cd" />
+    <None Include="Channels\ChannelClassDiagram.cd" />
+    <None Include="Guilds\GuildsClassDiagram.cd" />
+    <None Include="Message\MessagesDiagram.cd" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

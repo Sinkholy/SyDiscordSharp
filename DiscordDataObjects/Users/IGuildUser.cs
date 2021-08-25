@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Gateway.Entities.Users
 { 
-    public interface IGuildUser // TODO: поменять некоторые IUser на IGuildUser(по своему усмотрению)
+    public interface IGuildUser : IUser// TODO: поменять некоторые IUser на IGuildUser(по своему усмотрению)
     {
         string GuildIdentifier { get; }
         IReadOnlyCollection<Role> Roles { get; }
