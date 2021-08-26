@@ -13,4 +13,9 @@ namespace Gateway.Entities.Webhook
         string Avatar { get; }
         string Token { get; }
     }
+    public enum WebhookType : byte
+    {
+        Incoming,
+        ChannelFollower
+    }
 }

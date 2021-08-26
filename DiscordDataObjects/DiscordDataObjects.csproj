@@ -56,17 +56,13 @@
     <Compile Include="Users\Activities\RichPresenceActivitySecrets.cs" />
     <Compile Include="Users\Activities\Streaming\IStreamingActivity.cs" />
     <Compile Include="Users\Activities\Streaming\StreamingActivity.cs" />
-    <Compile Include="Users\Activities\Streaming\StreamingPlatform.cs" />
     <Compile Include="Audit\AuditLog.cs" />
     <Compile Include="Audit\IAuditLog.cs" />
     <Compile Include="Audit\LogEntry\AuditLogEntry.cs" />
-    <Compile Include="Audit\LogEntry\AuditLogEntryType.cs" />
     <Compile Include="Audit\LogEntry\EntryChange\EntryChange.cs" />
-    <Compile Include="Audit\LogEntry\EntryChange\EntryDataType.cs" />
     <Compile Include="Audit\LogEntry\EntryChange\IEntryChange.cs" />
-    <Compile Include="Audit\LogEntry\EntryChange\LogEntryChangeKey.cs" />
-    <Compile Include="Audit\LogEntry\EntryOptionalInfo\IOptionalEntryInfo.cs" />
-    <Compile Include="Audit\LogEntry\EntryOptionalInfo\OptionalEntryInfo.cs" />
+    <Compile Include="Audit\LogEntry\EntryChange\EntryOptionalInfo\IOptionalEntryInfo.cs" />
+    <Compile Include="Audit\LogEntry\EntryChange\EntryOptionalInfo\OptionalEntryInfo.cs" />
     <Compile Include="Audit\LogEntry\IAuditLogEntry.cs" />
     <Compile Include="Guilds\Ban.cs" />
     <Compile Include="Channels\Channel.cs" />
@@ -141,7 +137,6 @@
     <Compile Include="Guilds\Role.cs" />
     <Compile Include="Users\Connection\Connection.cs" />
     <Compile Include="Users\Connection\IConnection.cs" />
-    <Compile Include="Users\Connection\VisibilityType.cs" />
     <Compile Include="Users\GuildUser.cs" />
     <Compile Include="Users\IGuildUser.cs" />
     <Compile Include="Users\IUpdatableUser.cs" />
@@ -152,7 +147,6 @@
     <Compile Include="VoiceSession\VoiceSession.cs" />
     <Compile Include="Webhook\IWebHook.cs" />
     <Compile Include="Webhook\Webhook.cs" />
-    <Compile Include="Webhook\WebhookType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -13,6 +13,11 @@ namespace Gateway.Entities.Activities.Streaming
         string Game { get; }
         string StreamImagePreview { get; }
     }
+    public enum StreamingPlatform : byte
+    {
+        Twitch,
+        Youtube
+    }
     internal class IStreamingActivityConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType) => objectType == typeof(IStreamingActivity);

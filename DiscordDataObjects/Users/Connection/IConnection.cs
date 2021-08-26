@@ -15,4 +15,9 @@ namespace Gateway.Entities.Users.Connection
         bool IsShowActivity { get; }
         VisibilityType Visibility { get; }
     }
+    public enum VisibilityType : byte
+    {
+        None,
+        Everyone
+    }
 }
