@@ -9,17 +9,17 @@ namespace Gateway.Entities.Emojis
 {
     public class Emoji : IEmoji
     {
-        public virtual string Identifier 
-        {
-            get => Name;
-            private protected set => Identifier = value;
-        }
+        public virtual string Identifier { get; private set; }
         [JsonProperty(PropertyName = "name")]
         public string Name { get; private set; }
         [JsonProperty(PropertyName = "animated")]
         public bool IsAnimated { get; private set; }
-        public virtual bool IsUnicodeEmoji => true;
-        public virtual string Mention => Name;
-        public virtual string UrlEncoded => Name;
-    }
+        public string Mention => $"<{(IsAnimated ? "a" : string.Empty)}:{Name}:{Identifier}>";
+        public bool IsUnicodeEmoji => true;
+        public string UrlEncoded => $"{Name}%3A{Identifier}";
+        public Role[] Roles { get; private set; }
+		public bool RequireColons { get; private set; }
+		public bool Managed { get; private set; }
+		public bool Available { get; private set; }
+	}
 }
