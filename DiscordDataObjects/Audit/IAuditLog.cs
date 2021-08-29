@@ -1,4 +1,5 @@
 ﻿using Gateway.Entities.Audit.LogEntry;
+using Gateway.Entities.Channels;
 using Gateway.Entities.Integration;
 using Gateway.Entities.Users;
 using Gateway.Entities.Webhook;
@@ -12,5 +13,6 @@ namespace Gateway.Entities.Audit
         IReadOnlyCollection<IUser> Users { get; }
         IReadOnlyCollection<IIntegration> Integrations { get; }
         IReadOnlyCollection<IAuditLogEntry> Entries { get; }
+        IReadOnlyCollection<IChannel> Threads { get; }
     }
 }
