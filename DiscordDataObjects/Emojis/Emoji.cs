@@ -19,7 +19,7 @@ namespace Gateway.Entities.Emojis
         public string Mention => $"<{(IsAnimated ? "a" : string.Empty)}:{Name}:{Identifier}>";
         public bool IsUnicodeEmoji => true;
         public string UrlEncoded => $"{Name}%3A{Identifier}";
-        public Role[] Roles { get; private set; }
+        public Role[] AvailableForRoles { get; private set; }
         public IUser CreatedBy { get; private set; }
 		public bool RequireColons { get; private set; }
 		public bool Managed { get; private set; }

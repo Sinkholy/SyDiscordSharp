@@ -12,7 +12,7 @@ namespace Gateway.Entities.Emojis
     {
         string Identifier { get; }
         string Name { get; }
-        Role[] Roles { get; }
+        Role[] AvailableForRoles { get; }
         IUser CreatedBy { get; }
         bool RequireColons { get; }
         bool Managed { get; }
