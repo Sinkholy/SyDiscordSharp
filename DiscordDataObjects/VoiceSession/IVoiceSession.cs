@@ -1,4 +1,6 @@
 ﻿using Gateway.DataObjects.Voice;
+using Gateway.Entities.Users;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -9,6 +11,7 @@ namespace Gateway.Entities.VoiceSession
     public interface IVoiceSession
     {
         string UserIdentifier { get; }
+        IGuildUser User { get; }
         string ChannelIdentifier { get; }
         string GuildIdentifier { get; }
         string SessionIdentifier { get; }
@@ -19,6 +22,7 @@ namespace Gateway.Entities.VoiceSession
         bool SelfStream { get; }
         bool SelfVideo { get; }
         bool Suppressed { get; }
+        DateTime RequestToSpeakTimestamp { get; }
     }
 
     internal class IVoiceSessionConverter : JsonConverter // TODO: вытащить все конвертеры куда-нибудь

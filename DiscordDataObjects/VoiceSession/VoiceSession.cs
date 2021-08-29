@@ -1,4 +1,6 @@
-﻿using Gateway.Entities.Users;
+﻿using System;
+
+using Gateway.Entities.Users;
 using Newtonsoft.Json;
 
 namespace Gateway.Entities.VoiceSession
@@ -8,6 +10,7 @@ namespace Gateway.Entities.VoiceSession
         #region IVoiceSession implementation
         [JsonProperty(PropertyName = "user_id")]
         public string UserIdentifier { get; private set; }
+        public IGuildUser User => guildUser;
         [JsonProperty(PropertyName = "channel_id")]
         public string ChannelIdentifier { get; private set; }
         [JsonProperty(PropertyName = "guild_id")]
@@ -28,10 +31,11 @@ namespace Gateway.Entities.VoiceSession
         public bool SelfVideo { get; private set; }
         [JsonProperty(PropertyName = "suppress")]
         public bool Suppressed { get; private set; }
-        #endregion
+		public DateTime RequestToSpeakTimestamp { get; }
+		#endregion
 
-        internal IGuildUser User => guildUser;
-        [JsonProperty(PropertyName = "member")]
+
+		[JsonProperty(PropertyName = "member")]
         private GuildUser guildUser;
 
         void IUpdatableVoiceSession.SetGuildId(string guildId)
