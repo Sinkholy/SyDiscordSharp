@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Gateway.Entities.Users;
+
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 
@@ -11,6 +13,7 @@ namespace Gateway.Entities.Emojis
         string Identifier { get; }
         string Name { get; }
         Role[] Roles { get; }
+        IUser CreatedBy { get; }
         bool RequireColons { get; }
         bool Managed { get; }
         bool IsAnimated { get; }

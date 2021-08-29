@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Gateway.Entities.Users;
+
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +20,7 @@ namespace Gateway.Entities.Emojis
         public bool IsUnicodeEmoji => true;
         public string UrlEncoded => $"{Name}%3A{Identifier}";
         public Role[] Roles { get; private set; }
+        public IUser CreatedBy { get; private set; }
 		public bool RequireColons { get; private set; }
 		public bool Managed { get; private set; }
 		public bool Available { get; private set; }
