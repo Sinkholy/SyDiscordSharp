@@ -1,4 +1,6 @@
-﻿using Gateway.Entities.Users;
+﻿using Gateway.Entities.Channels;
+using Gateway.Entities.Guilds;
+using Gateway.Entities.Users;
 
 namespace Gateway.Entities.Webhook
 {
@@ -12,10 +14,15 @@ namespace Gateway.Entities.Webhook
         string Name { get; }
         string Avatar { get; }
         string Token { get; }
+        string ApplicationIdentifier { get; }
+        IGuild SourceGuild { get; }
+        IChannel SourceChannel { get; }
+        string Url { get; }
     }
     public enum WebhookType : byte
     {
-        Incoming,
-        ChannelFollower
+        Incoming = 1,
+        ChannelFollower = 2,
+        Application = 3
     }
 }

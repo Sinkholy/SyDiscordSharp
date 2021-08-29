@@ -1,4 +1,6 @@
-﻿using Gateway.Entities.Users;
+﻿using Gateway.Entities.Channels;
+using Gateway.Entities.Guilds;
+using Gateway.Entities.Users;
 using Newtonsoft.Json;
 
 namespace Gateway.Entities.Webhook
@@ -20,7 +22,11 @@ namespace Gateway.Entities.Webhook
         public string Avatar { get; private set; }
         [JsonProperty(PropertyName = "token")]
         public string Token { get; private set; }
+		public string ApplicationIdentifier { get; private set; }
+		public IGuild SourceGuild { get; private set; }
+		public IChannel SourceChannel { get; private set; }
+		public string Url { get; private set; }
 
-        private User createdBy;
+		private User createdBy;
     }
 }
