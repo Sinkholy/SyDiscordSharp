@@ -7,81 +7,93 @@ using Newtonsoft.Json;
 
 namespace DiscordDataObjectsJsonDeserializer
 {
-	public class DiscordDataObjectsJsonDeserializer : IDiscordDataObjectsStringDeserializer
+	public class DiscordDataObjectsJsonDeserializer : IDiscordDataObjectsStringDeserializer // TODO: подумай над тем, чтобы использовать JsonSerializer
 	{
-		readonly Dictionary<Type, ICollection<JsonConverter>> convertersByType;
+		readonly Dictionary<Type, JsonConverter[]> convertersByType;
 
 		public DiscordDataObjectsJsonDeserializer()
 		{
-			// Инициализировать переменную типа convertersByType;
+			convertersByType = new Dictionary<Type, JsonConverter[]>();
 		}
 
 		public DeserializationResult<T> Deserialize<T>(string value)
 		{
-			// Объявить переменную типа DesrializationError и инициализировать её значением None
-			// Объявить переменную result типа T и инициализировать её значением null
-			// Объявить переменную errorDesc типа string и инициализировать её значением string.empty;
-			// Объявить bool переменную typeCanBeConverter и инициализировать её результатом вызова TryToGetTypeConverters()
-			// Если тип не может быть конвертирован
-				// DeserializationError = TypeCannotBeConverter
-				// Присвоить описание ошибки десериализации = Type cannot be converted no match converters. Unkown type
-			// Так же
-				// Получить конвертеры типа
-				// Вызывать Вызвать JsonConvert.DeserializeObject и передать ему тип, json-объект и конвертеры
-				// Присвоить result результат вызова JsonConvert.DeserializeObject
-			// Сконструировать DeserializationResult
-			// Вернуть результат
+			var error = DeserializationError.None;
+			var errorDesc = string.Empty;
+			T deserialized = default;
+			bool typeCanBeConverted = IsTypePresented(typeof(T));
+			if (typeCanBeConverted)
+			{
+				JsonConverter[] converters = GetTypeConverters(typeof(T));
+				deserialized = JsonConvert.DeserializeObject<T>(value, converters);
+			}
+			else
+			{
+				error = DeserializationError.UnknownType;
+				errorDesc = "Type cannot be converted. No match converters"; // TODO: более подробно описать ошибку
+			}
+			return new DeserializationResult<T>(deserialized, error, errorDesc);
 		}
-		public void AddNewMultipleTypeConverters(Type targetType, JsonConverter[] converter)
+		public void AddNewMultipleTypeConverters(Type targetType, JsonConverter[] converters)
 		{
-			// Объявить переменную типа List<JsonConverter> - convertersToAdd 
-			// Если тип ещё не представлен
-				// Добавить новый тип к возможно десериализуемым
-				// Добавить все конвертеры из converters в convertersToAdd
-			// так же
-				// Для каждого конвертера в converters
-					// Если данный тип конвертера ещё не присутствует у типа
-						// Добавить конвертер в convertersToAdd
-			// Для каждого конвертера в convertersToAdd
-				// Добавить конвертер к конвертерам типа
+			if (targetType is null)
+			{
+				throw new ArgumentNullException("targetType");
+			}
+			if(converters is null)
+			{
+				throw new ArgumentNullException("converters");
+			}
+			if (converters.Length == 0)
+			{
+				string exceptionDesc = "Cannot add type without converters.";
+				throw new ArgumentException(exceptionDesc, "converters");
+			}
+			for (int i = 0; i < converters.Length; i++)
+			{
+				if (converters[i] is null)
+				{
+					string exceptionDesc = $"{converters[i]} was null. Cannot add null converter as type converter.";
+					throw new ArgumentException(exceptionDesc, "converters");
+				}
+			}
+			if (!IsTypePresented(targetType))
+			{
+				AddNewDeserializableType(targetType);
+			}
+			SetTypeConverters(targetType, converters);
 		}
 		public void AddNewTypeConverter(Type targetType, JsonConverter converter)
 		{
-			// Если тип уже представлен
-				// Если такого конвертера ещё нет в конвертерах типа
-					// Добавить конвертер в массив конвертеров этого типа
-			// Так же
-				// Добавить новый тип к возможно десериализуемым
-				// Добавить к этому типу конвертер
+			if (targetType is null)
+			{
+				throw new ArgumentNullException("targetType");
+			}
+			if (converter is null)
+			{
+				throw new ArgumentNullException("converter");
+			}
+			if (!IsTypePresented(targetType))
+			{
+				AddNewDeserializableType(targetType);
+			}
+			SetTypeConverters(targetType, new JsonConverter[] { converter });
 		}
 		void AddNewDeserializableType(Type type)
 		{
-			// Добавить новый тип в коллекцию
-			// Иницилализировать пустую коллекцию конвертеров
-		}
-		void AddNewTypeConverter(Type targetType, JsonConverter converter)
-		{
-			// Получить коллекцию десериализаторов типа
-			// Добавить в коллекцию новый десериализатор
+			convertersByType.Add(type, null);
 		}
 		bool IsTypePresented(Type targetType)
 		{
-			// Объявить bool переменную result и инициализировать её значением false;
-			// Если в коллекции присутствует тип соответвующий targetType
-			// Присвоить result значение true
-			// Вернуть результат
+			return convertersByType.ContainsKey(targetType);
 		}
-		bool IsConverterPresented(Type targetType, JsonConverter converter)
+		JsonConverter[] GetTypeConverters(Type targetType)
 		{
-			// Объявить bool переменную result и инициализировать её значением false;
-			// Получить коллекцию десериализаторов типа
-			// Если в коллекции присутствует тип соответвующий converter
-				// Присвоить result значение true
-			// Вернуть результат
+			return convertersByType[targetType];
 		}
-		ICollection<JsonConverter> GetTypeConverters(Type targetType)
+		void SetTypeConverters(Type targetType, JsonConverter[] converters)
 		{
-			// Вернуть коллекцию конвертеров
+			convertersByType[targetType] = converters;
 		}
 	}
 }
