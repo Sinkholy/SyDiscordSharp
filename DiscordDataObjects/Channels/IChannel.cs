@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace Gateway.Entities.Channels
+namespace DiscordDataObjects.Channels
 {
     [JsonConverter(typeof(IChannelConverter))]
     public interface IChannel

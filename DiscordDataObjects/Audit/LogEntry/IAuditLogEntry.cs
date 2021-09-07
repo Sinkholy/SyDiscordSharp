@@ -2,7 +2,7 @@
 using Gateway.Entities.Audit.LogEntry.EntryOptionalInfo;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Audit.LogEntry
+namespace DiscordDataObjects.Audit.LogEntry
 {
     public interface IAuditLogEntry
     {

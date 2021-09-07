@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace Gateway.Entities.Audit.LogEntry.EntryChange
+namespace DiscordDataObjects.Audit.LogEntry.EntryChange
 {
     [JsonConverter(typeof(EntryChangeConverter))]
     public abstract class EntryChange : IEntryChange

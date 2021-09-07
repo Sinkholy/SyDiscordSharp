@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gateway.Entities.Message
+namespace DiscordDataObjects.Channels.Message
 {
     public class Reaction // TAI: интерефейс?
     {

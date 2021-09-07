@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gateway.Entities.Users
+namespace DiscordDataObjects.Users
 {
     [JsonObject(MemberSerialization.OptIn)]
     internal class User : IUser
@@ -56,9 +56,9 @@ namespace Gateway.Entities.Users
         [JsonProperty(PropertyName = "public_flags")]
         public virtual UserFlags PublicFlags { get; private set; }
         public string Mention => $"<@!{Identifier}>";
-        #endregion
-        #region Ctor's
-        internal User() { }
+		#endregion
+		#region Ctor's
+		internal User() { }
         internal User(string username)
         {
 

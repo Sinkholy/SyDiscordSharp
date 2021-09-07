@@ -3,7 +3,7 @@ using Gateway.Entities.Audit.LogEntry.EntryOptionalInfo;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Audit.LogEntry
+namespace DiscordDataObjects.Audit.LogEntry
 {
     public class AuditLogEntry : IAuditLogEntry
     {

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Gateway.Entities.Audit.LogEntry.EntryOptionalInfo
+namespace DiscordDataObjects.Audit.LogEntry.EntryOptionalInfo
 {
     public class OptionalEntryInfo : IOptionalEntryInfo
     {

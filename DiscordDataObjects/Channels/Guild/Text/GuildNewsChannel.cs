@@ -1,7 +1,7 @@
 ﻿using Gateway.Entities.Channels.Guild.IUpdatable;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Channels.Guild.Text
+namespace DiscordDataObjects.Channels.Guild.Text
 {
     internal class GuildNewsChannel : GuildTextChannelBase, IGuildNewsChannel, IUpdatableGuildNewsChannel
     {

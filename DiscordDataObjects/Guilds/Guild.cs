@@ -17,7 +17,7 @@ using System.Runtime.Serialization;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-namespace Gateway.Entities.Guilds //TAI : ленивая загрузка всего и вся (ролей\пользователей etc.)
+namespace DiscordDataObjects.Guilds //TAI : ленивая загрузка всего и вся (ролей\пользователей etc.)
 {
     internal class Guild : GuildPreview, IGuild, IUpdatableGuild
     {

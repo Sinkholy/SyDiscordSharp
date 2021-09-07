@@ -1,7 +1,7 @@
 ﻿using Gateway.Entities.Users;
 using Newtonsoft.Json;
 
-namespace Gateway.Entities
+namespace DiscordDataObjects.Guilds
 {
     public class Ban
     {

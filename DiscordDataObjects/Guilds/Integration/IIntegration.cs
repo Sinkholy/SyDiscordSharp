@@ -1,7 +1,7 @@
 ﻿using Gateway.Entities.Users;
 using System;
 
-namespace Gateway.Entities.Integration
+namespace DiscordDataObjects.Guilds.Integration
 {
     public interface IIntegration
     {

@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace Gateway.Entities.Activities
+namespace DiscordDataObjects.Users.Activities
 {
     [JsonConverter(typeof(IActivityConverter))]
     [JsonObject(MemberSerialization.OptIn)]

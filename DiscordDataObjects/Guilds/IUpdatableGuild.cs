@@ -5,7 +5,7 @@ using Gateway.Entities.Presences;
 using Gateway.Entities.Users;
 using Gateway.Entities.VoiceSession;
 
-namespace Gateway.Entities.Guilds
+namespace DiscordDataObjects.Guilds
 {
     internal interface IUpdatableGuild
     {

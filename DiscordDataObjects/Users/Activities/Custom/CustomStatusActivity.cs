@@ -1,7 +1,7 @@
 ﻿using Gateway.Entities.Emojis;
 using Newtonsoft.Json;
 
-namespace Gateway.Entities.Activities.Custom
+namespace DiscordDataObjects.Users.Activities.Custom
 {
     internal class CustomStatusActivity : Activity, ICustomStatusActivity
     {

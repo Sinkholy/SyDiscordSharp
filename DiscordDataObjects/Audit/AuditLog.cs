@@ -6,7 +6,7 @@ using Gateway.Entities.Webhook;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Audit
+namespace DiscordDataObjects.Audit
 {
     public class AuditLog : IAuditLog
     {

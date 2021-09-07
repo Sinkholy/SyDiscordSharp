@@ -3,7 +3,7 @@
 using Gateway.Entities.Users;
 using Newtonsoft.Json;
 
-namespace Gateway.Entities.VoiceSession
+namespace DiscordDataObjects.VoiceSession
 {
     internal class VoiceSession : IVoiceSession, IUpdatableVoiceSession
     {

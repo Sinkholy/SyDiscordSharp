@@ -2,7 +2,7 @@
 using Gateway.Entities.Guilds;
 using Newtonsoft.Json;
 
-namespace Gateway.Entities.Message
+namespace DiscordDataObjects.Channels.Message
 {
     public class MessageBase
     {

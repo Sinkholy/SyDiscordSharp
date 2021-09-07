@@ -8,7 +8,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gateway.Entities.Invite
+namespace DiscordDataObjects.Guilds.Invite
 {
     public class InviteBase : IInvite
     {

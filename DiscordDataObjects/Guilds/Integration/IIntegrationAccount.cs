@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gateway.Entities.Integration
+namespace DiscordDataObjects.Guilds.Integration
 {
     public interface IIntegrationAccount
     {

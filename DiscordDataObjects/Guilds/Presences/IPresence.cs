@@ -5,7 +5,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Presences
+namespace DiscordDataObjects.Guilds.Presences
 {
     [JsonConverter(typeof(IPresenceConverter))]
     public interface IPresence

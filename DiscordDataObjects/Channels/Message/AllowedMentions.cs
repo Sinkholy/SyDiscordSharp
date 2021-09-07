@@ -2,7 +2,7 @@
 using System;
 using System.Linq;
 
-namespace Gateway.Entities.Message
+namespace DiscordDataObjects.Channels.Message
 {
     public enum AllowedMentionTypes : byte
     {

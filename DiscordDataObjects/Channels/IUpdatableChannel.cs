@@ -1,4 +1,4 @@
-﻿namespace Gateway.Entities.Channels
+﻿namespace DiscordDataObjects.Channels
 {
     public interface IUpdatableChannel
     {

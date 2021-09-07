@@ -1,7 +1,7 @@
 ﻿using Gateway.Entities.Integration;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Users.Connection
+namespace DiscordDataObjects.Users.Connection
 {
     public interface IConnection
     {

@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace Gateway.Entities.Embed
+namespace DiscordDataObjects.Channels.Message.Embed
 {
     /// <summary>
     /// Total embed characters count must not exceed 6000 characters 

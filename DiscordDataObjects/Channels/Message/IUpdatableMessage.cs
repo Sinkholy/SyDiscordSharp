@@ -1,6 +1,6 @@
 ﻿using Gateway.Entities.Emojis;
 
-namespace Gateway.Entities.Message
+namespace DiscordDataObjects.Channels.Message
 {
     internal interface IUpdatableMessage
     {

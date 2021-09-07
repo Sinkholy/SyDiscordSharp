@@ -1,7 +1,7 @@
 ﻿using Gateway.Entities.Embed;
 using Newtonsoft.Json;
 
-namespace Gateway.Entities.Message
+namespace DiscordDataObjects.Channels.Message
 {
     internal class EmbeddedMessage : Message, IEmbeddedMessage 
     {

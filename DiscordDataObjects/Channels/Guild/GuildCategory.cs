@@ -1,7 +1,7 @@
 ﻿using Gateway.Entities.Channels.Guild.IUpdatable;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Channels.Guild
+namespace DiscordDataObjects.Channels.Guild
 {
     internal class GuildCategory : GuildChannel, IGuildCategory, IUpdatableGuildCategory
     {

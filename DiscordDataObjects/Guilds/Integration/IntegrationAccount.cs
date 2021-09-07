@@ -1,4 +1,4 @@
-﻿namespace Gateway.Entities.Integration
+﻿namespace DiscordDataObjects.Guilds.Integration
 {
     public class IntegrationAccount : IIntegrationAccount
     {

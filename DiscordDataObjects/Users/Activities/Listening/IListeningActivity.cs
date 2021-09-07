@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace Gateway.Entities.Activities.Listening
+namespace DiscordDataObjects.Users.Activities.Listening
 {
     [JsonConverter(typeof(IListeningActivityConverter))]
     public interface IListeningActivity : IActivity

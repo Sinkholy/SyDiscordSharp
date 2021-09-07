@@ -9,7 +9,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gateway.Entities.Invite
+namespace DiscordDataObjects.Guilds.Invite
 {
     [JsonObject(MemberSerialization.OptIn)]
     public class Invite : InviteBase

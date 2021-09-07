@@ -5,7 +5,7 @@ using Gateway.Entities.Users;
 using Gateway.Entities.Webhook;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Audit
+namespace DiscordDataObjects.Audit
 {
     interface IAuditLog
     {

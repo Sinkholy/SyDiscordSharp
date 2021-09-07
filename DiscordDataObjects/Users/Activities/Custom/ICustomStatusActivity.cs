@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace Gateway.Entities.Activities.Custom
+namespace DiscordDataObjects.Users.Activities.Custom
 {
     [JsonConverter(typeof(ICustomStatusActivityConverter))]
 

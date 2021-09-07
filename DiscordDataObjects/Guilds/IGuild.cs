@@ -10,7 +10,7 @@ using Gateway.Payload.DataObjects.Dispatch.DispatchEvents;
 using System;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Guilds
+namespace DiscordDataObjects.Guilds
 {
     public interface IGuild
     {

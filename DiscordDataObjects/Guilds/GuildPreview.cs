@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Guilds
+namespace DiscordDataObjects.Guilds
 {
     internal class GuildPreview
     {

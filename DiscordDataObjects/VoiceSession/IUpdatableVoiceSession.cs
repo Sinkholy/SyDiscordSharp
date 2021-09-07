@@ -1,4 +1,4 @@
-﻿namespace Gateway.Entities.VoiceSession
+﻿namespace DiscordDataObjects.VoiceSession
 {
     internal interface IUpdatableVoiceSession
     {

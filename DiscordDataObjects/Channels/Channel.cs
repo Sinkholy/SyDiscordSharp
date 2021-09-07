@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace Gateway.Entities.Channels
+namespace DiscordDataObjects.Channels
 {
     internal abstract class Channel : IChannel, IUpdatableChannel
     {

@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Gateway.Entities.Activities.Gaming
+namespace DiscordDataObjects.Users.Activities.Gaming
 {
     internal class RichPresenceGamingActivity : GamingActivity, IRichPresenceGamingActivity
     {

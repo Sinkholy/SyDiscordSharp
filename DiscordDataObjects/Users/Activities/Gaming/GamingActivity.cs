@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace Gateway.Entities.Activities.Gaming
+namespace DiscordDataObjects.Users.Activities.Gaming
 {
     internal class GamingActivity : Activity, IGamingActivity
     {

@@ -1,7 +1,7 @@
 ﻿using Gateway.Entities.Presences;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Users
+namespace DiscordDataObjects.Users
 {
     interface IUpdatableGuildUser
     {

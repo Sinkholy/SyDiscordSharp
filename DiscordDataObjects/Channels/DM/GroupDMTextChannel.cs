@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Gateway.Entities.Channels.DM
+namespace DiscordDataObjects.Channels.DM
 {
     internal class GroupDMTextChannel : DMChannel, ITextChannel, IGroupDMTextChannel
     {

@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace Gateway.Entities.Activities.Gaming
+namespace DiscordDataObjects.Users.Activities.Gaming
 {
     [JsonConverter(typeof(IGamingActivityConverter))]
     public interface IGamingActivity : IActivity

@@ -6,7 +6,7 @@ using Gateway.Entities.Emojis;
 using Newtonsoft.Json;
 using System;
 
-namespace Gateway.Entities.Activities
+namespace DiscordDataObjects.Users.Activities
 {
     [JsonObject(MemberSerialization.OptIn)]
     internal abstract class Activity : IActivity

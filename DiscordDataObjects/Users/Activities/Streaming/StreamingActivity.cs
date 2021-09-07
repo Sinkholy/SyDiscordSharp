@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace Gateway.Entities.Activities.Streaming
+namespace DiscordDataObjects.Users.Activities.Streaming
 {
     internal class StreamingActivity : Activity, IStreamingActivity
     {

@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using System;
 
-namespace Gateway.Entities.Integration
+namespace DiscordDataObjects.Guilds.Integration
 {
     public class Integration : IIntegration
     {

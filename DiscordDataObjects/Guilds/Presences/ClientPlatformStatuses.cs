@@ -1,7 +1,7 @@
 ﻿using Gateway.Payload.DataObjects.Enums;
 using Newtonsoft.Json;
 
-namespace Gateway.Entities.Presences
+namespace DiscordDataObjects.Guilds.Presences
 {
     /// <summary>
     /// Represents client online states for all platforms

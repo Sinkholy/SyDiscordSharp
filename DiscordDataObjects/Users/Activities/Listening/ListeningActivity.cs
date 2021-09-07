@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace Gateway.Entities.Activities.Listening
+namespace DiscordDataObjects.Users.Activities.Listening
 {
     internal class ListeningActivity : Activity, IListeningActivity
     {

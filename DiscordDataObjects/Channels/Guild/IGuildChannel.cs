@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Gateway.Entities.Channels.Guild
+namespace DiscordDataObjects.Channels.Guild
 {
     public interface IGuildChannel : IChannel
     {

@@ -2,7 +2,7 @@
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace Gateway.Entities.Message
+namespace DiscordDataObjects.Channels.Message
 {
     [JsonConverter(typeof(IActivityMessageConverter))]
     public interface IActivityMessage : IMessage

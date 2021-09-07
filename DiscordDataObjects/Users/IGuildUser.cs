@@ -2,12 +2,13 @@
 using System;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Users
+namespace DiscordDataObjects.Users
 { 
     public interface IGuildUser : IUser// TODO: поменять некоторые IUser на IGuildUser(по своему усмотрению)
     {
+        IUser User { get; }
         string GuildIdentifier { get; }
-        IReadOnlyCollection<Role> Roles { get; }
+        IReadOnlyCollection<string> RolesIdentifiers { get; }
         DateTime JoinedAt { get; }
         DateTime? PremiumSince { get; }
         string Nickname { get; }

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Gateway.Entities.Users
+namespace DiscordDataObjects.Users
 {
     internal class GuildUser : User, IGuildUser, IUpdatableGuildUser
     {

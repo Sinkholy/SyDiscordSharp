@@ -12,7 +12,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gateway.Entities.Presences
+namespace DiscordDataObjects.Guilds.Presences
 {
     public class Presence : IPresence
     {

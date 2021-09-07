@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Gateway.Entities.Activities
+namespace DiscordDataObjects.Users.Activities
 {
     internal class RichPresenceActivitySecrets
     {

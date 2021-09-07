@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Gateway.Entities.Channels.Guild.Voice
+namespace DiscordDataObjects.Channels.Guild.Voice
 { 
     [JsonObject(MemberSerialization.OptIn)]
     internal class GuildVoiceChannel : GuildChannel, IVoiceChannel, IGuildVoiceChannel, IUpdatableGuildVoiceChannel

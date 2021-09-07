@@ -3,7 +3,7 @@ using Gateway.Entities.Guilds;
 using Gateway.Entities.Users;
 using Newtonsoft.Json;
 
-namespace Gateway.Entities.Webhook
+namespace DiscordDataObjects.Webhook
 {
     public class Webhook : IWebhook
     {

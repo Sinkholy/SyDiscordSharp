@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace Gateway.Entities.VoiceSession
+namespace DiscordDataObjects.VoiceSession
 {
     [JsonConverter(typeof(IVoiceSessionConverter))]
     public interface IVoiceSession

@@ -1,6 +1,6 @@
 ﻿using Gateway.Entities.Users;
 
-namespace Gateway.Entities.Channels.DM
+namespace DiscordDataObjects.Channels.DM
 {
     public interface IDMChannel : IChannel
     {

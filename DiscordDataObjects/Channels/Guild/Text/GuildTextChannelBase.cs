@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Channels.Guild.Text
+namespace DiscordDataObjects.Channels.Guild.Text
 {
     internal abstract class GuildTextChannelBase : GuildChannel, ITextChannel, IGuildTextChannel, IUpdatableGuildTextChannel
     {

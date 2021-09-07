@@ -1,7 +1,7 @@
 ﻿using Gateway.Entities.Users;
 using Newtonsoft.Json;
 
-namespace Gateway.Entities.Channels.DM
+namespace DiscordDataObjects.Channels.DM
 {
     internal abstract class DMChannel : Channel, IDMChannel // TODO: могу ли я создавать DM-каналы и "скармливать"
                                                             // их дискорду?

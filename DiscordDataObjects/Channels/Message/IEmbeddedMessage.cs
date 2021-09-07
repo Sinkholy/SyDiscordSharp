@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 
-namespace Gateway.Entities.Message
+namespace DiscordDataObjects.Channels.Message
 {
     [JsonConverter(typeof(IEmbeddedMessageConverter))]
     public interface IEmbeddedMessage : IMessage

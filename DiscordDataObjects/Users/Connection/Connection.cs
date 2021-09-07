@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Gateway.Entities.Users.Connection
+namespace DiscordDataObjects.Users.Connection
 {
     public class Connection : IConnection
     {

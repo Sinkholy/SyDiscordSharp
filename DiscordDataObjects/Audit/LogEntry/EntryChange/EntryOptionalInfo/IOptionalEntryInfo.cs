@@ -1,4 +1,4 @@
-﻿namespace Gateway.Entities.Audit.LogEntry.EntryOptionalInfo
+﻿namespace DiscordDataObjects.Audit.LogEntry.EntryOptionalInfo
 {
     public interface IOptionalEntryInfo
     {

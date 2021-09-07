@@ -2,7 +2,7 @@
 using Gateway.Entities.Guilds;
 using Gateway.Entities.Users;
 
-namespace Gateway.Entities.Webhook
+namespace DiscordDataObjects.Webhook
 {
     public interface IWebhook
     {

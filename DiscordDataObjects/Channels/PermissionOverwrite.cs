@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Gateway.Entities.Channels
+namespace DiscordDataObjects.Channels
 {
     public class PermissionOverwrite // TODO: разобраться с Receiving\Sending и Permissions sets
     {

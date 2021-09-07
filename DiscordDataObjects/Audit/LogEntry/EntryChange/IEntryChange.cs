@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Gateway.Entities.Audit.LogEntry.EntryChange
+namespace DiscordDataObjects.Audit.LogEntry.EntryChange
 {
     public interface IEntryChange
     {

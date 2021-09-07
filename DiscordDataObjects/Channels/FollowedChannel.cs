@@ -1,6 +1,6 @@
 ﻿using Newtonsoft.Json;
 
-namespace Gateway.Entities
+namespace DiscordDataObjects.Channels
 {
     public class FollowedChannel
     {

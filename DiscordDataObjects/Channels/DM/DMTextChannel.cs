@@ -1,4 +1,4 @@
-﻿namespace Gateway.Entities.Channels.DM
+﻿namespace DiscordDataObjects.Channels.DM
 {
     internal class DMTextChannel : DMChannel, ITextChannel, IDMTextChannel
     {

@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace Gateway.Entities.Message
+namespace DiscordDataObjects.Channels.Message
 {
     [JsonObject(MemberSerialization.OptIn)]
     internal class Message : MessageBase, IMessage, IUpdatableMessage
