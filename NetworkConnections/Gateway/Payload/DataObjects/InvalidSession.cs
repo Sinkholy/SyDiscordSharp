@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Gateway.Payload.DataObjects
 {
-    internal class InvalidSession : IGatewayDataObject
+    internal class InvalidSession
     {
         internal bool Resumable { get; private set; }
         internal InvalidSession(bool resumable)

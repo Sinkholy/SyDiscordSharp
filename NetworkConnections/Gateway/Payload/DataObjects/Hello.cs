@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Gateway.Payload.DataObjects
 {
     [JsonObject(MemberSerialization.OptIn)]
-    class Hello : IGatewayDataObject
+    class Hello
     {
         [JsonProperty(PropertyName = "heartbeat_interval", Order = 0)]
         public TimeSpan HeartbeatInterval;
