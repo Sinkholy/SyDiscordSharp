@@ -1,7 +1,8 @@
-﻿using Gateway.Entities.Activities.Custom;
-using Gateway.Entities.Activities.Gaming;
-using Gateway.Entities.Activities.Listening;
-using Gateway.Entities.Activities.Streaming;
+﻿using DiscordDataObjects.Users.Activities.Custom;
+using DiscordDataObjects.Users.Activities.Gaming;
+using DiscordDataObjects.Users.Activities.Listening;
+using DiscordDataObjects.Users.Activities.Streaming;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;

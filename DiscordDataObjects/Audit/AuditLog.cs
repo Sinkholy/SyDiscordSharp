@@ -1,8 +1,9 @@
-﻿using Gateway.Entities.Audit.LogEntry;
-using Gateway.Entities.Channels;
-using Gateway.Entities.Integration;
-using Gateway.Entities.Users;
-using Gateway.Entities.Webhook;
+﻿using DiscordDataObjects.Audit.LogEntry;
+using DiscordDataObjects.Channels;
+using DiscordDataObjects.Guilds.Integration;
+using DiscordDataObjects.Users;
+using DiscordDataObjects.Webhook;
+
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
@@ -19,7 +20,7 @@ namespace DiscordDataObjects.Audit
         [JsonProperty(PropertyName = "audit_log_entries")]
         private AuditLogEntry[] entries;
         [JsonProperty(PropertyName = "integrations")]
-        private Integration.Integration[] integrations;
+        private Integration[] integrations;
         [JsonProperty(PropertyName = "webhooks")]
         private Webhook.Webhook[] webhooks;
         [JsonProperty(PropertyName = "users")]

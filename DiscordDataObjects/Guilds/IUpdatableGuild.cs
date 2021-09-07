@@ -1,9 +1,8 @@
-﻿using Gateway.Entities.Channels;
-using Gateway.Entities.Emojis;
-using Gateway.Entities.Invite;
-using Gateway.Entities.Presences;
-using Gateway.Entities.Users;
-using Gateway.Entities.VoiceSession;
+﻿using DiscordDataObjects.Channels;
+using DiscordDataObjects.Guilds.Invite;
+using DiscordDataObjects.Guilds.Presences;
+using DiscordDataObjects.Users;
+using DiscordDataObjects.VoiceSession;
 
 namespace DiscordDataObjects.Guilds
 {

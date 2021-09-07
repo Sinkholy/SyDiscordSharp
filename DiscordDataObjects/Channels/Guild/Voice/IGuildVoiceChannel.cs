@@ -1,5 +1,6 @@
-﻿using Gateway.Entities.VoiceSession;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
+using DiscordDataObjects.VoiceSession;
 
 namespace DiscordDataObjects.Channels.Guild.Voice
 {

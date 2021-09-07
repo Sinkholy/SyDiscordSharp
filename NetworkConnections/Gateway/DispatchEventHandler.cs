@@ -1,13 +1,11 @@
-﻿using Gateway.DataObjects;
+﻿using DiscordDataObjects.Channels;
+using DiscordDataObjects.Guilds;
+using DiscordDataObjects.Guilds.Invite;
+using DiscordDataObjects.Guilds.Presences;
+using DiscordDataObjects.VoiceSession;
+
+using Gateway.DataObjects;
 using Gateway.DataObjects.Voice;
-using Gateway.Entities;
-using Gateway.Entities.Channels;
-using Gateway.Entities.Guilds;
-using Gateway.Entities.Invite;
-using Gateway.Entities.Message;
-using Gateway.Entities.Presences;
-using Gateway.Entities.Users;
-using Gateway.Entities.VoiceSession;
 using Gateway.Payload.DataObjects.Dispatch.DispatchEvents;
 using Gateway.Payload.DataObjects.Enums;
 using Newtonsoft.Json;

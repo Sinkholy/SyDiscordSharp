@@ -1,4 +1,5 @@
-﻿using Gateway.Entities.Integration;
+﻿using DiscordDataObjects.Guilds.Integration;
+
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
@@ -25,6 +26,6 @@ namespace DiscordDataObjects.Users.Connection
         public IReadOnlyCollection<IIntegration> Integrations => integrations;
 
         [JsonProperty(PropertyName = "integrations")]
-        private Integration.Integration[] integrations;
+        private Integration[] integrations;
     }
 }

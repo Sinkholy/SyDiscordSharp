@@ -1,5 +1,4 @@
-﻿using Gateway.Entities.Presences;
-using Gateway.Payload.DataObjects.Dispatch.DispatchEvents;
+﻿using Gateway.Payload.DataObjects.Dispatch.DispatchEvents;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

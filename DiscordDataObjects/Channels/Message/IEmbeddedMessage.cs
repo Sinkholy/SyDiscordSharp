@@ -1,4 +1,5 @@
-﻿using Gateway.Entities.Embed;
+﻿using DiscordDataObjects.Channels.Message.Embed;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;

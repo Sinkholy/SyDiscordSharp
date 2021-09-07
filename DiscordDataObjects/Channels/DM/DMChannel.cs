@@ -1,4 +1,5 @@
-﻿using Gateway.Entities.Users;
+﻿using DiscordDataObjects.Users;
+
 using Newtonsoft.Json;
 
 namespace DiscordDataObjects.Channels.DM

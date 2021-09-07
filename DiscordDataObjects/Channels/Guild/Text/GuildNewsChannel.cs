@@ -1,5 +1,6 @@
-﻿using Gateway.Entities.Channels.Guild.IUpdatable;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
+using DiscordDataObjects.Channels.Guild.IUpdatable;
 
 namespace DiscordDataObjects.Channels.Guild.Text
 {

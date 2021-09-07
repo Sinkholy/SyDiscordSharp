@@ -1,4 +1,5 @@
-﻿using Gateway.Entities.Integration;
+﻿using DiscordDataObjects.Guilds.Integration;
+
 using System.Collections.Generic;
 
 namespace DiscordDataObjects.Users.Connection

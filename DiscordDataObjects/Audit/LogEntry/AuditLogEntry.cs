@@ -1,5 +1,6 @@
-﻿using Gateway.Entities.Audit.LogEntry.EntryChange;
-using Gateway.Entities.Audit.LogEntry.EntryOptionalInfo;
+﻿using DiscordDataObjects.Audit.LogEntry.EntryChange;
+using DiscordDataObjects.Audit.LogEntry.EntryOptionalInfo;
+
 using Newtonsoft.Json;
 using System.Collections.Generic;
 

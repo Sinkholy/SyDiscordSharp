@@ -1,6 +1,7 @@
-﻿using Gateway.Entities.Channels;
-using Gateway.Entities.Guilds;
-using Gateway.Entities.Users;
+﻿using DiscordDataObjects.Channels;
+using DiscordDataObjects.Guilds;
+using DiscordDataObjects.Users;
+
 using Newtonsoft.Json;
 
 namespace DiscordDataObjects.Webhook

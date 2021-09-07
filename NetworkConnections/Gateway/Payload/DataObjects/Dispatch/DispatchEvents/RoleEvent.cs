@@ -1,5 +1,5 @@
-﻿using Gateway.Entities;
-using Gateway.Entities.Guilds;
+﻿using DiscordDataObjects.Guilds;
+
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

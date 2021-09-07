@@ -1,4 +1,5 @@
-﻿using Gateway.Entities.Channels.Guild.IUpdatable;
+﻿using DiscordDataObjects.Channels.Guild.IUpdatable;
+
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

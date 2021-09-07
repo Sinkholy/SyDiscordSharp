@@ -1,9 +1,10 @@
-﻿using Gateway.Entities.Audit.LogEntry;
-using Gateway.Entities.Channels;
-using Gateway.Entities.Integration;
-using Gateway.Entities.Users;
-using Gateway.Entities.Webhook;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
+using DiscordDataObjects.Audit.LogEntry;
+using DiscordDataObjects.Channels;
+using DiscordDataObjects.Guilds.Integration;
+using DiscordDataObjects.Users;
+using DiscordDataObjects.Webhook;
 
 namespace DiscordDataObjects.Audit
 {

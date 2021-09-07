@@ -1,4 +1,5 @@
-﻿using Gateway.Entities.Activities;
+﻿using DiscordDataObjects.Users.Activities;
+
 using Gateway.Payload.DataObjects;
 using Gateway.Payload.DataObjects.Dispatch;
 using Gateway.Payload.DataObjects.Enums;

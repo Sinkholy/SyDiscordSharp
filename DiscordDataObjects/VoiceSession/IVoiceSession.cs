@@ -1,5 +1,6 @@
-﻿using Gateway.DataObjects.Voice;
-using Gateway.Entities.Users;
+﻿using DiscordDataObjects.Users;
+
+using Gateway.DataObjects.Voice;
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;

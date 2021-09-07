@@ -1,5 +1,4 @@
-﻿using Gateway.Entities.Users;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Gateway.Payload.DataObjects.Dispatch.DispatchEvents
 {

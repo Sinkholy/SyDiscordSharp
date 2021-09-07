@@ -1,11 +1,10 @@
-﻿using Gateway.DataObjects.Voice;
-using Gateway.Entities.Channels;
-using Gateway.Entities.Channels.Guild;
-using Gateway.Entities.Emojis;
-using Gateway.Entities.Invite;
-using Gateway.Entities.Presences;
-using Gateway.Entities.Users;
-using Gateway.Entities.VoiceSession;
+﻿using DiscordDataObjects.Channels;
+using DiscordDataObjects.Channels.Guild;
+using DiscordDataObjects.Guilds.Invite;
+using DiscordDataObjects.Guilds.Presences;
+using DiscordDataObjects.Users;
+using DiscordDataObjects.VoiceSession;
+
 using Gateway.Payload.DataObjects.Dispatch.DispatchEvents;
 using System;
 using System.Collections.Generic;

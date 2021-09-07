@@ -1,4 +1,4 @@
-﻿using Gateway.Entities.Emojis;
+﻿using DiscordDataObjects.Emojis;
 
 namespace DiscordDataObjects.Channels.Message
 {

@@ -1,10 +1,11 @@
-﻿using Gateway.Entities.Users;
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+
+using DiscordDataObjects.Guilds;
+using DiscordDataObjects.Users;
 
 namespace DiscordDataObjects.Emojis
 {

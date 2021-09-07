@@ -1,6 +1,4 @@
-﻿using Gateway.Entities.Guilds;
-using Gateway.Entities.Users;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;

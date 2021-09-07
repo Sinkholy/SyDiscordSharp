@@ -1,4 +1,5 @@
-﻿using Gateway.Entities.Emojis;
+﻿using DiscordDataObjects.Emojis;
+
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

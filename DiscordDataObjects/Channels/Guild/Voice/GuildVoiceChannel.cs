@@ -1,5 +1,6 @@
-﻿using Gateway.Entities.Channels.Guild.IUpdatable;
-using Gateway.Entities.VoiceSession;
+﻿using DiscordDataObjects.Channels.Guild.IUpdatable;
+using DiscordDataObjects.VoiceSession;
+
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

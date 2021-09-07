@@ -1,6 +1,5 @@
-﻿using Gateway.Entities;
-using Gateway.Entities.Presences;
-using Gateway.Entities.Users;
+﻿using DiscordDataObjects.Guilds.Presences;
+
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

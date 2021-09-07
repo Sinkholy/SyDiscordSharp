@@ -1,4 +1,4 @@
-﻿using Gateway.Entities.Users;
+﻿using DiscordDataObjects.Users;
 
 namespace DiscordDataObjects.Channels.DM
 {

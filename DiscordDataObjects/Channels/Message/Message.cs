@@ -1,6 +1,6 @@
-﻿using Gateway.Entities.Channels;
-using Gateway.Entities.Emojis;
-using Gateway.Entities.Users;
+﻿using DiscordDataObjects.Emojis;
+using DiscordDataObjects.Users;
+
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

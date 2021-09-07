@@ -1,6 +1,7 @@
-﻿using Gateway.Entities.Audit.LogEntry.EntryChange;
-using Gateway.Entities.Audit.LogEntry.EntryOptionalInfo;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+
+using DiscordDataObjects.Audit.LogEntry.EntryChange;
+using DiscordDataObjects.Audit.LogEntry.EntryOptionalInfo;
 
 namespace DiscordDataObjects.Audit.LogEntry
 {

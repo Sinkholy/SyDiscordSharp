@@ -1,6 +1,7 @@
-﻿using Gateway.Entities.Presences;
-using System;
+﻿using System;
 using System.Collections.Generic;
+
+using DiscordDataObjects.Guilds.Presences;
 
 namespace DiscordDataObjects.Users
 { 

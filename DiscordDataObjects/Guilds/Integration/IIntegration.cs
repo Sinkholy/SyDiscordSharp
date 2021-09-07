@@ -1,5 +1,6 @@
-﻿using Gateway.Entities.Users;
-using System;
+﻿using System;
+
+using DiscordDataObjects.Users;
 
 namespace DiscordDataObjects.Guilds.Integration
 {

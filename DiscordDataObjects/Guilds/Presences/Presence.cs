@@ -1,8 +1,6 @@
-﻿using Gateway.Entities;
-using Gateway.Entities.Activities;
-using Gateway.Entities.Emojis;
-using Gateway.Entities.Guilds;
-using Gateway.Entities.Users;
+﻿using DiscordDataObjects.Users;
+using DiscordDataObjects.Users.Activities;
+
 using Gateway.Payload.DataObjects.Enums;
 using Newtonsoft.Json;
 using System;

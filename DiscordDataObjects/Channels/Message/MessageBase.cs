@@ -1,6 +1,4 @@
-﻿using Gateway.Entities.Emojis;
-using Gateway.Entities.Guilds;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace DiscordDataObjects.Channels.Message
 {

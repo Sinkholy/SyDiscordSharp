@@ -1,4 +1,6 @@
-﻿using Gateway.Entities.Users;
+﻿using DiscordDataObjects.Guilds;
+using DiscordDataObjects.Users;
+
 using System;
 
 namespace DiscordDataObjects.Emojis

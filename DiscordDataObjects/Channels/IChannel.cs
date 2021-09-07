@@ -1,7 +1,8 @@
-﻿using Gateway.Entities.Channels.DM;
-using Gateway.Entities.Channels.Guild;
-using Gateway.Entities.Channels.Guild.Text;
-using Gateway.Entities.Channels.Guild.Voice;
+﻿using DiscordDataObjects.Channels.DM;
+using DiscordDataObjects.Channels.Guild;
+using DiscordDataObjects.Channels.Guild.Text;
+using DiscordDataObjects.Channels.Guild.Voice;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
