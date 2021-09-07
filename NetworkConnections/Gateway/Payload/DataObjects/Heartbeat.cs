@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Gateway.Payload.DataObjects
 {
     [JsonObject(MemberSerialization.OptIn)]
-    class Heartbeat : IGatewayDataObject
+    class Heartbeat
     {
         [JsonProperty(PropertyName = "s")]
         public int Sequence;

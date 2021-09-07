@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Gateway.Payload.DataObjects
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public class Resume : IGatewayDataObject
+    public class Resume
     {
         [JsonProperty(propertyName: "token", Order = 0)]
         public string Token;

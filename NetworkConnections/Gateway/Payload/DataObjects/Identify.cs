@@ -7,7 +7,7 @@ using System;
 namespace Gateway.Payload.DataObjects
 {
     [JsonObject(MemberSerialization.OptIn)]
-    internal class Identify : IGatewayDataObject
+    internal class Identify
     {
         [JsonProperty(propertyName: "token")]
         public string Token { get; private set; }
