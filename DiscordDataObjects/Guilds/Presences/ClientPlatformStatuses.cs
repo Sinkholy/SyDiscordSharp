@@ -1,5 +1,4 @@
-﻿using Gateway.Payload.DataObjects.Enums;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace DiscordDataObjects.Guilds.Presences
 {

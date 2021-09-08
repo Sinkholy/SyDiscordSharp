@@ -1,6 +1,5 @@
 ﻿using DiscordDataObjects.Users.Activities;
 
-using Gateway.Payload.DataObjects.Enums;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -20,6 +19,14 @@ namespace DiscordDataObjects.Guilds.Presences
         string Nickname { get; }
         IActivity VisibleActivity { get; }
         IReadOnlyCollection<IActivity> Activities { get; }
+    }
+    public enum UserStatus
+    {
+        Online,
+        Dnd,
+        Idle,
+        Invisible,
+        Offline
     }
     internal class IPresenceConverter : JsonConverter
     {

@@ -1,7 +1,6 @@
 ﻿using DiscordDataObjects.Users;
 using DiscordDataObjects.Users.Activities;
 
-using Gateway.Payload.DataObjects.Enums;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;

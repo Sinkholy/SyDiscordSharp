@@ -1,4 +1,5 @@
-﻿using DiscordDataObjects.Users.Activities;
+﻿using DiscordDataObjects.Guilds.Presences;
+using DiscordDataObjects.Users.Activities;
 
 using Gateway.Payload.DataObjects.Enums;
 using Newtonsoft.Json;
@@ -72,8 +73,8 @@ namespace Gateway.Payload.DataObjects
         private IdentifyIntents(int intents) => Intents = intents.ToString();
         private static int GetCustomValue() //TODO : кастомные интенты
         {
-            return 0; 
-        }
+            return 0;
+		}
     }
     internal class IdentifyPresence
     {
