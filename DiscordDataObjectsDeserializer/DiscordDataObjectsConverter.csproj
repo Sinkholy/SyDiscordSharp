@@ -41,8 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DeserializationResult.cs" />
-    <Compile Include="IDiscordDataObjectsStringDeserializer.cs" />
+    <Compile Include="ConversionResult.cs" />
+    <Compile Include="IDataObjectsDeserializer.cs" />
+    <Compile Include="IDataObjectsSerializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
