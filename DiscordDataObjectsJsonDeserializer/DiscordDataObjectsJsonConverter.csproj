@@ -46,13 +46,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Converters\IEmojiConverter.cs" />
-    <Compile Include="DiscordDataObjectsJsonDeserializer.cs" />
+    <Compile Include="DiscordDataObjectsJsonConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DiscordDataObjectsDeserializer\DiscordDataObjectsDeserializer.csproj">
+    <ProjectReference Include="..\DiscordDataObjectsDeserializer\DiscordDataObjectsConverter.csproj">
       <Project>{68756a6e-bbf2-4eee-a9b0-4358d9fdda46}</Project>
-      <Name>DiscordDataObjectsDeserializer</Name>
+      <Name>DiscordDataObjectsConverter</Name>
     </ProjectReference>
     <ProjectReference Include="..\DiscordDataObjects\DiscordDataObjects.csproj">
       <Project>{fbb8f0ab-8029-40cd-802e-dde604adf694}</Project>
