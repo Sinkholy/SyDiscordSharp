@@ -3,5 +3,6 @@
 	public interface IDataObjectsSerializer<TSerialized>
 	{
 		ConversionResult<TSerialized> Serialize<T>(T @object);
+		bool IsTypeSerializable<T>();
 	}
 }
