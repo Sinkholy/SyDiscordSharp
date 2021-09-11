@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="Converters\IEmojiConverter.cs" />
     <Compile Include="DiscordDataObjectsJsonConverter.cs" />
+    <Compile Include="ITypeConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

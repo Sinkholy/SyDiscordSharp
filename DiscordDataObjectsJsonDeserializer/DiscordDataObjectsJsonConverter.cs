@@ -3,93 +3,103 @@ using System.Collections.Generic;
 
 using DiscordDataObjectsDeserializer;
 
-using Newtonsoft.Json;
-
 namespace DiscordDataObjectsJsonDeserializer
 {
-	public class DiscordDataObjectsJsonConverter : IDataObjectsDeserializer<string>, IDataObjectsSerializer<string> 
+	public class DiscordDataObjectsJsonConverter : IDataObjectsDeserializer<string>, IDataObjectsSerializer<string>
 	{
-		// TODO: подумай над тем, чтобы использовать JsonSerializer
-		readonly Dictionary<Type, JsonConverter> converterByType;
+		const string NonDeserializableConverterError = "Convertion error. Presented type converter cannot deserialize.";
+		const string NonSerializableConverterError = "Convertion error. Presented type converter cannot serialize.";
+		const string NoTypeConverterError = "Convertion error. No converter for type presented.";
+
+		readonly Dictionary<Type, object> converterByType;
 
 		public DiscordDataObjectsJsonConverter()
 		{
-			converterByType = new Dictionary<Type, JsonConverter>();
-			SerializeIfNoConvertersPresented = false;
+			converterByType = new Dictionary<Type, object>();
 		}
 
-		public bool SerializeIfNoConvertersPresented { get; private set; }
+		public ITypeConverter<string, object> DefaultSerializer { get; set; }
+		bool DefaultSerializerPresented => DefaultSerializer != null;
 
+		public bool IsTypeDeserializable<T>()
+		{
+			bool result = false;
+			bool typeConverterExists = IsTypePresented<T>();
+			if (typeConverterExists)
+			{
+				var converter = GetTypeConverter<T>();
+				result = converter.CanDeserialize;
+			}
+			return result;
+		}
+
+		public bool IsTypeSerializable<T>()
+		{
+			bool result = false;
+			bool typeConverterExists = IsTypePresented<T>();
+			if (typeConverterExists)
+			{
+				var converter = GetTypeConverter<T>();
+				result = converter.CanSerialize;
+			}
+			return result;
+		}
 		public ConversionResult<T> Deserialize<T>(string serialized)
 		{
-			bool typeCanBeConverted = IsTypePresented(typeof(T));
+			bool typeCanBeConverted = IsTypePresented<T>();
 			if (typeCanBeConverted)
 			{
-				// TODO: вероятнее всего необходимо обернуть непосредственно процесс конвертации
-				// В блок try catch для того, чтобы более явно указывать тип ошибки.
-				JsonConverter converter = GetTypeConverter(typeof(T));
-				var deserialized = JsonConvert.DeserializeObject<T>(serialized, converter); 
-				return ConversionResult<T>.Successfull(deserialized);
+				var converter = GetTypeConverter<T>();
+				return converter.CanDeserialize
+					? converter.Deserialize(serialized)
+					: ConversionResult<T>.Failed(ConversionErrorEnum.UnknownType, NonDeserializableConverterError);
 			}
 			else
 			{
-				var error = ConversionError.UnknownType;
-				string errorDesc = "Type cannot be deserialized. No match converters"; // TODO: более подробно описать ошибку
-				return ConversionResult<T>.Failed(error, errorDesc);
+				return ConversionResult<T>.Failed(ConversionErrorEnum.UnknownType, NoTypeConverterError);
 			}
 		}
-
 		public ConversionResult<string> Serialize<T>(T @object)
 		{
-			// TODO: вероятнее всего необходимо обернуть непосредственно процесс конвертации
-			// В блок try catch для того, чтобы более явно указывать тип ошибки если она появится.
-			var targetType = typeof(T);
-			if (IsTypePresented(targetType))
+			bool typeCanBeConverted = IsTypePresented<T>();
+			if (typeCanBeConverted)
 			{
-				JsonConverter converter = GetTypeConverter(targetType);
-				var serialized = JsonConvert.SerializeObject(@object, converter);
-				return ConversionResult<string>.Successfull(serialized);
-			}
-			else if (SerializeIfNoConvertersPresented)
-			{
-				var serialized = JsonConvert.SerializeObject(@object);
-				return ConversionResult<string>.Successfull(serialized);
+				var converter = GetTypeConverter<T>();
+				return converter.CanSerialize
+					? converter.Serialize(@object)
+					: ConversionResult<string>.Failed(ConversionErrorEnum.UnknownType, NonSerializableConverterError);
 			}
 			else
 			{
-				var error = ConversionError.UnknownType;
-				string errorDesc = "Type cannot be deserialized. No match converters"; // TODO: более подробно описать ошибку
-				return ConversionResult<string>.Failed(error, errorDesc);
+				return DefaultSerializerPresented
+					? DefaultSerializer.Serialize(@object)
+					: ConversionResult<string>.Failed(ConversionErrorEnum.UnknownType, NoTypeConverterError);
 			}
 		}
-		public void AddNewConvertableType(Type targetType, JsonConverter converter)
+		public void AddNewConvertableType<T>(ITypeConverter<string, T> converter)
 		{
-			if (targetType is null)
-			{
-				throw new ArgumentNullException("targetType");
-			}
 			if (converter is null)
 			{
 				throw new ArgumentNullException("converter");
 			}
-			if (IsTypePresented(targetType))
+			if (IsTypePresented<T>())
 			{
-				string exceptionDescription = $"Converter for {targetType} type already presented. Cannot add multiple converters.";
-				throw new ArgumentException(exceptionDescription, "targetType");
+				string exceptionDescription = $"Converter for {typeof(T)} type already presented. Cannot add multiple converters.";
+				throw new ArgumentException(exceptionDescription, "T");
 			}
-			AddNewConvertableTypeLocal(targetType, converter);
+			AddNewConvertableTypeLocal<T>(converter);
 		}
-		bool IsTypePresented(Type targetType)
+		bool IsTypePresented<T>()
 		{
-			return converterByType.ContainsKey(targetType);
+			return converterByType.ContainsKey(typeof(T));
 		}
-		void AddNewConvertableTypeLocal(Type targetType, JsonConverter converter)
+		void AddNewConvertableTypeLocal<T>(ITypeConverter<string, T> converter)
 		{
-			converterByType.Add(targetType, converter);
+			converterByType.Add(typeof(T), converter);
 		}
-		JsonConverter GetTypeConverter(Type targetType)
+		ITypeConverter<string, T> GetTypeConverter<T>()
 		{
-			return converterByType[targetType];
+			return converterByType[typeof(T)] as ITypeConverter<string, T>;
 		}
 	}
 }
