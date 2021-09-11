@@ -121,8 +121,16 @@ namespace SystemNetHttpCommunicationWrapper
 
 			public Header AuthorizationHeader
 			{
-				get => client.Headers.AuthorizationHeader;
-				set => client.Headers.AuthorizationHeader = value;
+				get
+				{
+					var header = client.httpClient.DefaultRequestHeaders.Authorization;
+					return new Header(header.Scheme, header.Parameter);
+				}
+				set
+				{
+					var header = new System.Net.Http.Headers.AuthenticationHeaderValue(value.Scheme, value.Parameter);
+					client.httpClient.DefaultRequestHeaders.Authorization = header;
+				}
 			}
 			public Header UserAgentHeader
 			{

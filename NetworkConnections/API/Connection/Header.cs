@@ -8,7 +8,7 @@
 			Parameter = parameter;
 		}
 
-		internal string Scheme { get; private set; }
-		internal string Parameter { get; private set; }
+		public string Scheme { get; private set; }
+		public string Parameter { get; private set; }
 	}
 }
