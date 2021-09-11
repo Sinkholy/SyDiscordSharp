@@ -48,20 +48,15 @@
     <Compile Include="BotHttpToken.cs" />
     <Compile Include="Connection\Header.cs" />
     <Compile Include="Connection\IHeaders.cs" />
-    <Compile Include="Connection\Wrappers\Headers.cs" />
     <Compile Include="DiscordHttpClient.cs" />
-    <Compile Include="Enums\HttpMethods.cs" />
     <Compile Include="Enums\JsonErrorCode.cs" />
     <Compile Include="Enums\TokenType.cs" />
     <Compile Include="GatewayUriResponse.cs" />
     <Compile Include="Connection\HttpStatusCode.cs" />
-    <Compile Include="Connection\Wrappers\SystemNetHttpClientWrapper.cs" />
     <Compile Include="Connection\IHttpContent.cs" />
     <Compile Include="Connection\HttpRequestMessage.cs" />
     <Compile Include="Connection\IHttpConnection.cs" />
     <Compile Include="Connection\HttpResponseMessage.cs" />
-    <Compile Include="Connection\Wrappers\SystemNetHttpMessageContentWrapper.cs" />
-    <Compile Include="IObjectDeserializer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -69,9 +64,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\JsonHandler\JsonHandler.csproj">
-      <Project>{c48f68a6-f399-49ec-bd48-ce1c06c91a97}</Project>
-      <Name>JsonHandler</Name>
+    <ProjectReference Include="..\..\DiscordDataObjectsDeserializer\DiscordDataObjectsConverter.csproj">
+      <Project>{68756a6e-bbf2-4eee-a9b0-4358d9fdda46}</Project>
+      <Name>DiscordDataObjectsConverter</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

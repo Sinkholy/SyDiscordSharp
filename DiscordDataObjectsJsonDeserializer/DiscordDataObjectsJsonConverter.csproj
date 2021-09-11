@@ -45,8 +45,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Converters\BasicTypeJsonConverter.cs" />
     <Compile Include="Converters\IEmojiConverter.cs" />
     <Compile Include="DiscordDataObjectsJsonConverter.cs" />
+    <Compile Include="Converters\GatewayInfoJsonConverter.cs" />
     <Compile Include="ITypeConverter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -58,6 +60,10 @@
     <ProjectReference Include="..\DiscordDataObjects\DiscordDataObjects.csproj">
       <Project>{fbb8f0ab-8029-40cd-802e-dde604adf694}</Project>
       <Name>DiscordDataObjects</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NetworkConnections\API\HttpCommunication.csproj">
+      <Project>{8755b0f1-a987-4c74-aa98-8bfdd9a4fe82}</Project>
+      <Name>HttpCommunication</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />
